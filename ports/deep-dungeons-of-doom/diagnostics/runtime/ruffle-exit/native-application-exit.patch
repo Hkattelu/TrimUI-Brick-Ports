@@ -1,0 +1,15 @@
+diff --git a/core/src/avm2/globals/flash/desktop/NativeApplication.as b/core/src/avm2/globals/flash/desktop/NativeApplication.as
+index 48072a8..ce36575 100644
+--- a/core/src/avm2/globals/flash/desktop/NativeApplication.as
++++ b/core/src/avm2/globals/flash/desktop/NativeApplication.as
+@@ -7,2 +7,3 @@ package flash.desktop {
+     import flash.system.Security;
++    import flash.system.fscommand;
+     import flash.utils.Timer;
+@@ -63,3 +64,5 @@ package flash.desktop {
+         public function exit(exitCode:int = 0):void {
+-            stub_method("flash.desktop.NativeApplication", "exit");
++            // Use the host's normal quit path so the player can flush storage.
++            // TODO: The host quit command does not yet carry a nonzero exit code.
++            fscommand("quit");
+         }

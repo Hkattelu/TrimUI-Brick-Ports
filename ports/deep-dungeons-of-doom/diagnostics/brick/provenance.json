@@ -1,0 +1,35 @@
+{
+  "recordedOn": "2026-10-24",
+  "packageVerification": "Each package matched its official Ubuntu Packages SHA256; compressed indexes matched SHA256 fields in HTTPS-fetched InRelease. OpenPGP signatures were not independently verified.",
+  "indexes": [
+    {
+      "url": "https://ports.ubuntu.com/ubuntu-ports/dists/noble/main/binary-arm64/Packages.xz",
+      "sha256": "4a1901e6124fb0a111f5dffc8f5c14474f449e2ecfa71f2eaf0b29917edb53f9"
+    },
+    {
+      "url": "https://ports.ubuntu.com/ubuntu-ports/dists/noble-security/main/binary-arm64/Packages.xz",
+      "sha256": "6de795b8858e597a259111be394742965be2a9565e2d7efb682230e4da55b65a"
+    },
+    {
+      "url": "https://ports.ubuntu.com/ubuntu-ports/dists/noble-updates/main/binary-arm64/Packages.xz",
+      "sha256": "b269b44a196eec5e8cee0a73896628faea51e4001089ec5f3769fc5ff044ca0b"
+    }
+  ],
+  "ruffle": {
+    "url": "https://github.com/ruffle-rs/ruffle/releases/download/nightly-2026-10-24/ruffle-nightly-2026_10_24-linux-aarch64.tar.gz",
+    "archiveSha256": "49b49213f32dabcdabbc2f9cd46cdf9653125069f429f54ec7b09fa2f9848720",
+    "executableSha256": "6814582ba9bbf9a3cdd062b3e7cf1a37043e75d6c752e665aee4edf7c5dec121"
+  },
+  "installedWeston": {
+    "devicePath": "/mnt/SDCARD/Emus/shared/PortMaster/libs/weston_pkg_0.2.squashfs",
+    "bytes": 44654592,
+    "sha256": "4c929287617b1276b5cbffcd188eea77aa979a2a84524fd222d03ed3d408c82b",
+    "wrapperVersion": "0.2.8 Preview 1"
+  },
+  "marker": {
+    "bytes": 36,
+    "sha256": "e633eebe366bee81572daf62e98b4ece1f3edb011f4b5559b527dbe51dd134b4",
+    "source": "New-MarkerSwf.ps1",
+    "originalCodeOnly": true
+  }
+}

@@ -1,0 +1,74 @@
+diff --git a/src/arena.rs b/src/arena.rs
+index 09950f7..224c8ef 100644
+--- a/src/arena.rs
++++ b/src/arena.rs
+@@ -283,6 +283,22 @@ where
+         }
+     }
+ 
++    /// Pay allocation debt for at most `steps` collector state-machine steps.
++    ///
++    /// Retains the usual tracing, sweeping, and debt accounting. A step may trace
++    /// or drop an arbitrarily large value, so this is not a wall-time guarantee.
++    /// Call repeatedly between mutations to keep collection ahead of allocation.
++    #[inline]
++    pub fn collect_debt_steps(&mut self, steps: usize) {
++        unsafe {
++            self.context.do_collection(
++                &self.root,
++                RunUntil::PayDebtOrSteps(steps),
++                Stop::Full,
++            );
++        }
++    }
++
+     /// Run only the *marking* part of incremental garbage collection until allocation debt is zero.
+     ///
+     /// This does *not* transition collection past the [`CollectionPhase::Marked`]
+diff --git a/src/context.rs b/src/context.rs
+index e613513..8e4f2be 100644
+--- a/src/context.rs
++++ b/src/context.rs
+@@ -135,6 +135,8 @@ pub(crate) enum Phase {
+ pub(crate) enum RunUntil {
+     // Run collection until we reach the stop condition *or* debt is zero.
+     PayDebt,
++    // Also yield after a bounded number of collector state-machine steps.
++    PayDebtOrSteps(usize),
+     // Run collection until we reach our stop condition.
+     Stop,
+ }
+@@ -282,8 +284,15 @@ impl Context {
+         stop: Stop,
+     ) {
+         let mut cx = PhaseGuard::enter(self, None);
++        let mut remaining_steps = match run_until {
++            RunUntil::PayDebtOrSteps(steps) => Some(steps),
++            _ => None,
++        };
++        let pay_debt = run_until != RunUntil::Stop;
+ 
+-        if run_until == RunUntil::PayDebt && !(cx.metrics.allocation_debt() > 0.0) {
++        if remaining_steps == Some(0)
++            || (pay_debt && !(cx.metrics.allocation_debt() > 0.0))
++        {
+             cx.log_progress("GC: paused");
+             return;
+         }
+@@ -346,9 +355,15 @@ impl Context {
+                 Phase::Drop => unreachable!(),
+             }
+ 
+-            if run_until == RunUntil::PayDebt && !(cx.metrics.allocation_debt() > 0.0) {
++            if pay_debt && !(cx.metrics.allocation_debt() > 0.0) {
+                 break;
+             }
++            if let Some(remaining) = remaining_steps.as_mut() {
++                *remaining -= 1;
++                if *remaining == 0 {
++                    break;
++                }
++            }
+         }
+ 
+         cx.log_progress("GC: yielding...");

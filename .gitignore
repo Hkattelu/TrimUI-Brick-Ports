@@ -1,0 +1,50 @@
+# This repo ships ONLY scripts + docs.
+# Never commit copyrighted content (ROMs, BIOS, music) or downloaded binaries.
+
+# --- ROMs / disc images ---
+*.nes
+*.sfc
+*.smc
+*.fig
+*.gb
+*.gbc
+*.gba
+*.n64
+*.z64
+*.v64
+*.nds
+*.iso
+*.cso
+*.pbp
+*.chd
+*.bin
+*.cue
+*.img
+*.mdf
+*.mds
+*.m3u
+
+# --- archives (downloaded paks / rom packs) ---
+*.zip
+*.7z
+*.rar
+
+# --- BIOS ---
+Bios/
+bios/
+
+# --- music ---
+*.mp3
+*.flac
+*.m4a
+*.wav
+*.ogg
+*.opus
+*.aac
+
+# --- build / temp / OS cruft ---
+build/
+tmp/
+*.tmp
+.DS_Store
+Thumbs.db

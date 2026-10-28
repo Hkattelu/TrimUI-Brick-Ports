@@ -1,0 +1,182 @@
+[
+  {
+    "package": "libc6",
+    "version": "2.39-0ubuntu8.9",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/g/glibc/libc6_2.39-0ubuntu8.9_arm64.deb",
+    "sha256": "ad109797c5f78a5eeb6d4c296bfbaae68b239111a0c9ac0eb97b8d430284ac45",
+    "index": "noble-updates-Packages",
+    "bytes": 2776414,
+    "dependencies": "libgcc-s1"
+  },
+  {
+    "package": "libssl3t64",
+    "version": "3.0.13-0ubuntu3.16",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/o/openssl/libssl3t64_3.0.13-0ubuntu3.16_arm64.deb",
+    "sha256": "8b2dff5ee02f3e1eaaf8106ff372c5ba61b88ee57b7658e163a2de0b90b4956e",
+    "index": "noble-updates-Packages",
+    "bytes": 1837684,
+    "dependencies": "libc6 (>= 2.38)"
+  },
+  {
+    "package": "libudev1",
+    "version": "255.4-1ubuntu8.18",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/s/systemd/libudev1_255.4-1ubuntu8.18_arm64.deb",
+    "sha256": "f3ecaa3ae86de0a92dd158ae6626f4d461ff5309fbded2224fb5bac3b63513b8",
+    "index": "noble-updates-Packages",
+    "bytes": 176292,
+    "dependencies": "libc6 (>= 2.38), libcap2 (>= 1:2.10)"
+  },
+  {
+    "package": "libcap2",
+    "version": "1:2.66-5ubuntu2.4",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/libc/libcap2/libcap2_2.66-5ubuntu2.4_arm64.deb",
+    "sha256": "3c4459762b9ee61c773209bc45db1ca7cf34e1254cc047260d309a8db11b3490",
+    "index": "noble-updates-Packages",
+    "bytes": 30676,
+    "dependencies": "libc6 (>= 2.38)"
+  },
+  {
+    "package": "libfreetype6",
+    "version": "2.13.2+dfsg-1ubuntu0.2",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/f/freetype/libfreetype6_2.13.2+dfsg-1ubuntu0.2_arm64.deb",
+    "sha256": "d334b74c57a7c7b7847c1851161ead832a66e4160cf8393bbd142bd3864ee75e",
+    "index": "noble-updates-Packages",
+    "bytes": 393340,
+    "dependencies": "libbrotli1 (>= 0.6.0), libbz2-1.0, libc6 (>= 2.33), libpng16-16t64 (>= 1.6.2), zlib1g (>= 1:1.1.4)"
+  },
+  {
+    "package": "libbrotli1",
+    "version": "1.1.0-2build2",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/b/brotli/libbrotli1_1.1.0-2build2_arm64.deb",
+    "sha256": "cabf3462d908e72f2e594f19ae87c581c4614f099947e38fbd865bf8eae27014",
+    "index": "Packages",
+    "bytes": 339424,
+    "dependencies": "libc6 (>= 2.29)"
+  },
+  {
+    "package": "libbz2-1.0",
+    "version": "1.0.8-5.1ubuntu0.1",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/b/bzip2/libbz2-1.0_1.0.8-5.1ubuntu0.1_arm64.deb",
+    "sha256": "1a92811105f89bf948a629de99715ef23941ef93c901e0942883029069db3f94",
+    "index": "noble-updates-Packages",
+    "bytes": 35936,
+    "dependencies": "libc6 (>= 2.17)"
+  },
+  {
+    "package": "libpng16-16t64",
+    "version": "1.6.43-5ubuntu0.7",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/libp/libpng1.6/libpng16-16t64_1.6.43-5ubuntu0.7_arm64.deb",
+    "sha256": "6e724abe81e94ff73d9b28b545a13329c0b7e4ea6fd8022ecbcd2b3492d0117d",
+    "index": "noble-updates-Packages",
+    "bytes": 186982,
+    "dependencies": "libc6 (>= 2.29), zlib1g (>= 1:1.2.3.4)"
+  },
+  {
+    "package": "zlib1g",
+    "version": "1:1.3.dfsg-3.1ubuntu2.3",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/z/zlib/zlib1g_1.3.dfsg-3.1ubuntu2.3_arm64.deb",
+    "sha256": "84536bcf440cf0f988899b24b6c7df32cb9ff9f0dfa97d5e7efcc2dc088d15dc",
+    "index": "noble-updates-Packages",
+    "bytes": 62084,
+    "dependencies": "libc6 (>= 2.17)"
+  },
+  {
+    "package": "libasound2t64",
+    "version": "1.2.11-1ubuntu0.3",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/a/alsa-lib/libasound2t64_1.2.11-1ubuntu0.3_arm64.deb",
+    "sha256": "de49425b8480c651eae0ffbe24a1f1d88b2ea578f95a291b95f78fae10662ec6",
+    "index": "noble-updates-Packages",
+    "bytes": 386648,
+    "dependencies": "libasound2-data (>= 1.2.11-1ubuntu0.3), libc6 (>= 2.38)"
+  },
+  {
+    "package": "libasound2-data",
+    "version": "1.2.11-1ubuntu0.3",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/a/alsa-lib/libasound2-data_1.2.11-1ubuntu0.3_all.deb",
+    "sha256": "0c26896193480d9dbb055e85e8ddfb9c9f34cf19afee340987cd6311e2886fc1",
+    "index": "noble-updates-Packages",
+    "bytes": 21350,
+    "dependencies": null
+  },
+  {
+    "package": "libgcc-s1",
+    "version": "14.2.0-4ubuntu2~24.04.1",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/g/gcc-14/libgcc-s1_14.2.0-4ubuntu2~24.04.1_arm64.deb",
+    "sha256": "5b191f79ad985a9a653dbba45214619f729f9178a9bdf92f7c68db06c50d070b",
+    "index": "noble-updates-Packages",
+    "bytes": 61884,
+    "dependencies": "gcc-14-base (= 14.2.0-4ubuntu2~24.04.1), libc6 (>= 2.35)"
+  },
+  {
+    "package": "gcc-14-base",
+    "version": "14.2.0-4ubuntu2~24.04.1",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/g/gcc-14/gcc-14-base_14.2.0-4ubuntu2~24.04.1_arm64.deb",
+    "sha256": "bddbe21061fdc73a23e7de79ece91693bf61aa22d634d1c69c5048385c114968",
+    "index": "noble-updates-Packages",
+    "bytes": 50984,
+    "dependencies": null
+  },
+  {
+    "package": "libwayland-client0",
+    "version": "1.22.0-2.1build1",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/w/wayland/libwayland-client0_1.22.0-2.1build1_arm64.deb",
+    "sha256": "f1d258e71fd42820cbc7ddd0cae3ae0b928e27b46e0b63877caa6affbe653752",
+    "index": "Packages",
+    "bytes": 25904,
+    "dependencies": "libc6 (>= 2.38), libffi8 (>= 3.4)"
+  },
+  {
+    "package": "libwayland-cursor0",
+    "version": "1.22.0-2.1build1",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/w/wayland/libwayland-cursor0_1.22.0-2.1build1_arm64.deb",
+    "sha256": "ee69ed1d5ff3c430cb09173809b73dfb044a9c3595e21ee1a31f67f9d5c07451",
+    "index": "Packages",
+    "bytes": 10256,
+    "dependencies": "libc6 (>= 2.28), libwayland-client0 (>= 1.20.0)"
+  },
+  {
+    "package": "libwayland-egl1",
+    "version": "1.22.0-2.1build1",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/w/wayland/libwayland-egl1_1.22.0-2.1build1_arm64.deb",
+    "sha256": "50e4ac8e2714b9eb84a47b8fe84d51a806104ec998530c61de349ec5b659ff43",
+    "index": "Packages",
+    "bytes": 5622,
+    "dependencies": "libc6 (>= 2.17)"
+  },
+  {
+    "package": "libffi8",
+    "version": "3.4.6-1build1",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/libf/libffi/libffi8_3.4.6-1build1_arm64.deb",
+    "sha256": "a4d4607144bc599328a913d7312761fd8f4a650d67c7d5058f1f3667d771d37c",
+    "index": "Packages",
+    "bytes": 22716,
+    "dependencies": "libc6 (>= 2.34)"
+  },
+  {
+    "package": "libxkbcommon0",
+    "version": "1.6.0-1build1",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/libx/libxkbcommon/libxkbcommon0_1.6.0-1build1_arm64.deb",
+    "sha256": "4ef68b9d56971a3119f40684f52a200be5c7c1bf8c5ef430a2d502e910bf8b61",
+    "index": "Packages",
+    "bytes": 122198,
+    "dependencies": "xkb-data, libc6 (>= 2.38)"
+  },
+  {
+    "package": "xkb-data",
+    "version": "2.41-2ubuntu1.1",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/x/xkeyboard-config/xkb-data_2.41-2ubuntu1.1_all.deb",
+    "sha256": "e99f2a0b4c56cdf35dec489e56b6a8418826cab8ce6306ec6d0bd98e2cd0014a",
+    "index": "noble-updates-Packages",
+    "bytes": 397328,
+    "dependencies": null
+  },
+  {
+    "package": "libvulkan1",
+    "version": "1.3.275.0-1build1",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/v/vulkan-loader/libvulkan1_1.3.275.0-1build1_arm64.deb",
+    "sha256": "9459488a53ead304d00587c874f9b31d56d59c9aeae5c46b6f78801a89d53e63",
+    "index": "Packages",
+    "bytes": 149690,
+    "dependencies": "libc6 (>= 2.38)"
+  }
+]

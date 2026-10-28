@@ -1,0 +1,122 @@
+{
+  "recordedOn": "2026-10-24",
+  "purpose": "Original Stage3D context-creation and clear/present diagnostic",
+  "artifact": {
+    "name": "stage3d-startup-present.swf",
+    "bytes": 2249,
+    "sha256": "4a12a6b904b3fafb28ea38697211c010d71d321e88452bac085c83a6ea0d0bb7",
+    "swfVersion": 18,
+    "stageWidth": 550,
+    "stageHeight": 400,
+    "frameRate": 60,
+    "gameContentIncluded": false
+  },
+  "sources": [
+    {
+      "name": "Stage3DProbe.as",
+      "sha256": "8dc0ccb4fb84b719f99f9f4832f6f009e965f295b10967de9c38f6713e1b844f"
+    },
+    {
+      "name": "BuildStage3DProbe.java",
+      "sha256": "67279b189addd92845fc394584f900156629d459bb8030ab5cb93ba637988693"
+    }
+  ],
+  "toolInputs": {
+    "java": "OpenJDK 22.0.2+9-70",
+    "ffdecVersion": "26.3.0",
+    "ffdecLibJarSha256": "232d5738aac20a16f2cb39318003b014c08c1ccd24266f70103e6f19d54a9321",
+    "playerglobalSwcName": "playerglobal32_0.swc",
+    "playerglobalSwcSha256": "7d4d6168d27603cfb3b750302448e354e0bbc1bdd58f5d101c3dcf6891e9bb65"
+  },
+  "checks": [
+    "Java compiler succeeded",
+    "FFDec ActionScript compiler succeeded",
+    "Build from alternate source directory produced identical SWF SHA256",
+    "FFDec decompilation retained event listeners and intended Stage3D calls",
+    "ABC inspection found requestContext3D(2), configureBackBuffer(4), clear(4), present(0)"
+  ],
+  "runtimeOrGraphicsExecutedBySourceGenerator": false,
+  "renderedChecks": [
+    {
+      "date": "2026-10-24",
+      "evidenceRun": "20261024-212506-930",
+      "platform": "Windows64, OpenGL 4.6",
+      "runtime": "Lightspark 0.10.0-git with borrowed-slot fallback",
+      "runtimeLibrarySha256": "314019cab3a42b265708f23404dc39f594bbc32359d8ddb318eae33e69992fcf",
+      "arguments": ["--air", "--exit-on-error"],
+      "movieSha256": "4a12a6b904b3fafb28ea38697211c010d71d321e88452bac085c83a6ea0d0bb7",
+      "visibleResult": "Coordinating agent inspected plain green rendered output",
+      "traceMarkers": ["STAGE3D_CONTEXT_CREATED", "STAGE3D_CONFIGURED", "STAGE3D_FIRST_PRESENT"],
+      "steadyReportedFps": "59-60",
+      "termination": "Owned diagnostic process ended at its bounded time limit",
+      "exitCode": -1,
+      "logCaveat": "Startup queued-frame warnings were present",
+      "scope": "Context creation, back-buffer configuration and visible clear/present only",
+      "notTested": ["shader programs", "vertex/index buffers", "textures", "Starling", "DDD", "controls", "audio", "Brick rendering"]
+    }
+  ],
+  "deviceMechanicalChecks": [
+    {
+      "date": "2026-10-24",
+      "traceTimeUtc": "2026-10-25T01:35:49Z",
+      "platform": "Original TrimUI Brick, AArch64 Linux 4.9.191",
+      "runtime": "Ruffle nightly-2026-10-24 with isolated Ubuntu libraries",
+      "runtimeExecutableSha256": "6814582ba9bbf9a3cdd062b3e7cf1a37043e75d6c752e665aee4edf7c5dec121",
+      "graphicsApi": "gl",
+      "adapter": "PowerVR Rogue GE8300",
+      "probe": "synthetic-stage3d-startup",
+      "movieSha256": "4a12a6b904b3fafb28ea38697211c010d71d321e88452bac085c83a6ea0d0bb7",
+      "traceMarkers": ["STAGE3D_DOCUMENT_CREATED", "STAGE3D_STAGE_READY", "STAGE3D_REQUEST", "STAGE3D_REQUEST_RETURNED", "STAGE3D_CONTEXT_CREATED", "STAGE3D_CONFIGURED", "STAGE3D_FIRST_PRESENT"],
+      "termination": "Owned diagnostic timer",
+      "exitCode": 143,
+      "westonMountReleased": true,
+      "noResidualOwnedProcessesConfirmedByCoordinator": true,
+      "returnedToMenuConfirmedByCoordinator": true,
+      "visualStatus": "Initial capture was too early and showed the menu; superseded by the later confirmed black result below",
+      "greenFrameVisuallyConfirmed": false,
+      "scope": "Context/create/configure/present API progression and cleanup; visible Stage3D output unconfirmed",
+      "evidence": ["device-test/stage3d-graphics/ruffle.log", "device-test/stage3d-graphics/result.txt", "device-test/stage3d-weston/result.txt"]
+    }
+  ],
+  "deviceVisualChecks": [
+    {
+      "date": "2026-10-24",
+      "evidenceRun": "graphics-20261024-224514-16191",
+      "platform": "Original TrimUI Brick, AArch64 Linux 4.9.191",
+      "runtime": "Ruffle nightly-2026-10-24 with isolated Ubuntu libraries",
+      "runtimeExecutableSha256": "6814582ba9bbf9a3cdd062b3e7cf1a37043e75d6c752e665aee4edf7c5dec121",
+      "graphicsApi": "gl",
+      "adapter": "PowerVR Rogue GE8300",
+      "movieSha256": "4a12a6b904b3fafb28ea38697211c010d71d321e88452bac085c83a6ea0d0bb7",
+      "readinessMarker": "STAGE3D_FIRST_PRESENT green",
+      "readinessTimeUtc": "2026-10-25T02:45:17.922065Z",
+      "captureTimeLocal": "2026-10-24T22:45:20-04:00",
+      "captureReadiness": "Capture followed the explicit first-present marker",
+      "visibleResult": "Black screen, inspected by coordinating and source agents",
+      "captureSha256": "ab489a021e2f123ea46de327c6f661ae49c9d976338d9da29e4e3dfc0f5a09c2",
+      "greenFrameVisuallyConfirmed": false,
+      "termination": "Owned diagnostic timer",
+      "exitCode": 143,
+      "westonMountReleased": true,
+      "separateMenuCaptureForThisRun": false,
+      "scope": "API progression and cleanup passed; visible green output failed",
+      "evidence": ["device-test/stage3d-visual-run.txt", "device-test/stage3d-visual-ruffle.log", "device-test/stage3d-visual-cleanup.txt", "device-test/stage3d-confirmed.jpg"]
+    }
+  ],
+  "sourceInvestigation": {
+    "runtimeRevision": "nightly-2026-10-24",
+    "swfFlagComparison": {
+      "fixture": {"actionScript3": true, "useDirectBlit": false, "useGPU": false, "useNetwork": false},
+      "purchasedGame": {"actionScript3": true, "useDirectBlit": false, "useGPU": false, "useNetwork": true}
+    },
+    "composition": "Stage::render_viewport renders visible contexts below the display list without a DirectBlit/GPU flag check; WgpuContext3D::should_render requires a configured texture",
+    "clearOnlyFinding": "Clear stores a pending color; make_render_pass consumes it and is called by DrawTriangles; present swaps buffers and discards the pending color without making a render pass",
+    "interpretation": "This predicts a black clear-only fixture on the pinned Ruffle backend independently of Brick hardware; desktop Ruffle comparison remains pending",
+    "sources": [
+      "https://github.com/ruffle-rs/ruffle/blob/nightly-2026-10-24/core/src/display_object/stage.rs#L623",
+      "https://github.com/ruffle-rs/ruffle/blob/nightly-2026-10-24/render/wgpu/src/context3d/mod.rs#L367",
+      "https://github.com/ruffle-rs/ruffle/blob/nightly-2026-10-24/render/wgpu/src/context3d/mod.rs#L511",
+      "https://github.com/ruffle-rs/ruffle/blob/nightly-2026-10-24/render/wgpu/src/context3d/mod.rs#L1249"
+    ]
+  }
+}

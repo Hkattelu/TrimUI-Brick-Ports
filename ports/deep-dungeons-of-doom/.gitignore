@@ -1,0 +1,11 @@
+.work/
+dist/
+gamedata/
+*.swf
+*.swf.json
+*.ane
+*.exe
+*.dll
+*.png
+*.jpg
+*.log

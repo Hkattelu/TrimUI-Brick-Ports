@@ -1,0 +1,82 @@
+diff --git a/tests/tests/regression_tests.rs b/tests/tests/regression_tests.rs
+index 0d5d47d..2981226 100644
+--- a/tests/tests/regression_tests.rs
++++ b/tests/tests/regression_tests.rs
+@@ -22,6 +22,7 @@ use std::thread::sleep;
+ mod environment;
+ mod external_interface;
+ mod shared_object;
++mod shared_object_reference_probe;
+
+ const TEST_TOML_NAME: &str = "test.toml";
+
+@@ -112,6 +113,11 @@ fn main() {
+         external_interface_avm2(&*env_clone)
+     }));
+
++    let env_clone = env.clone();
++    runner.with_additional_test(Trial::test("shared_object_reference_probe", move || {
++        shared_object_reference_probe::run(&*env_clone)
++    }));
++
+     let conclusion = runner.run();
+
+     // Workaround for shutdown races on slow / software GPU drivers; see
+diff --git a/tests/tests/shared_object_reference_probe.rs b/tests/tests/shared_object_reference_probe.rs
+new file mode 100644
+index 0000000..392a833
+--- /dev/null
++++ b/tests/tests/shared_object_reference_probe.rs
+@@ -0,0 +1,33 @@
++use ruffle_core::backend::storage::{MemoryStorageBackend, StorageBackend};
++use ruffle_test_framework::environment::Environment;
++use ruffle_test_framework::options::TestOptions;
++use ruffle_test_framework::runner::TestStatus;
++use ruffle_test_framework::test::Test;
++use ruffle_test_framework::vfs::{PhysicalFS, VfsPath};
++use std::thread::sleep;
++
++pub fn run(environment: &impl Environment) -> Result<(), libtest_mimic::Failed> {
++    let mut storage: Box<dyn StorageBackend> = Box::<MemoryStorageBackend>::default();
++    for phase in 1..=2 {
++        let test = Test::from_options(
++            TestOptions {
++                num_frames: Some(1),
++                output_path: format!("output{phase}.txt").into(),
++                ..Default::default()
++            },
++            VfsPath::new(PhysicalFS::new("tests/swfs/avm2/original_amf_reference_probe/")),
++            "shared_object_reference_probe".to_string(),
++        )?;
++        let mut runner = test.create_test_runner(environment)?;
++        runner.player().lock().unwrap().swap_storage(&mut storage);
++        loop {
++            match runner.tick()? {
++                TestStatus::Continue => {}
++                TestStatus::Sleep(duration) => sleep(duration),
++                TestStatus::Finished => break,
++            }
++        }
++        runner.player().lock().unwrap().swap_storage(&mut storage);
++    }
++    Ok(())
++}
+diff --git a/tests/tests/swfs/avm2/original_amf_reference_probe/output1.txt b/tests/tests/swfs/avm2/original_amf_reference_probe/output1.txt
+new file mode 100644
+index 0000000..6e0fab5
+--- /dev/null
++++ b/tests/tests/swfs/avm2/original_amf_reference_probe/output1.txt
+@@ -0,0 +1 @@
++AMF_REFS_WRITE flushed
+diff --git a/tests/tests/swfs/avm2/original_amf_reference_probe/output2.txt b/tests/tests/swfs/avm2/original_amf_reference_probe/output2.txt
+new file mode 100644
+index 0000000..52b14e3
+--- /dev/null
++++ b/tests/tests/swfs/avm2/original_amf_reference_probe/output2.txt
+@@ -0,0 +1,6 @@
++AMF_REFS_CHECK dictionaryValues PASS
++AMF_REFS_CHECK dictionaryIdentity PASS
++AMF_REFS_CHECK vectorValues PASS
++AMF_REFS_CHECK vectorIdentity PASS
++AMF_REFS_CHECK withinRootControl PASS
++AMF_REFS_READ_DONE

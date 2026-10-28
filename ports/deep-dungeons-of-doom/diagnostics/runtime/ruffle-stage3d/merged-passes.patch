@@ -1,0 +1,324 @@
+diff --git a/render/wgpu/src/context3d/mod.rs b/render/wgpu/src/context3d/mod.rs
+index 878379d..bb07fa5 100644
+--- a/render/wgpu/src/context3d/mod.rs
++++ b/render/wgpu/src/context3d/mod.rs
+@@ -28,6 +28,7 @@ use std::sync::Arc;
+ use tracing::instrument;
+ 
+ mod current_pipeline;
++mod pending_pass;
+ mod shader_pair;
+ mod timing;
+ 
+@@ -48,6 +49,14 @@ fn constant_ring_enabled() -> bool {
+     *ENABLED.get_or_init(|| std::env::var("RUFFLE_DDD_CONSTANT_RING").is_ok_and(|v| v == "1"))
+ }
+ 
++fn merge_passes_enabled() -> bool {
++    static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
++    *ENABLED.get_or_init(|| {
++        constant_ring_enabled()
++            && std::env::var("RUFFLE_DDD_MERGE_PASSES").is_ok_and(|value| value == "1")
++    })
++}
++
+ struct ConstantState {
+     vertex: Vec<u8>,
+     fragment: Vec<u8>,
+@@ -100,6 +109,7 @@ pub struct WgpuContext3D {
+     // order and its own immutable staging chunks until the group is submitted.
+     ordered_submissions: bool,
+     pending_draw_commands: Vec<wgpu::CommandBuffer>,
++    pending_pass: Option<pending_pass::Pass>,
+     // IDs are wrapper addresses, used only for conservative dependency checks.
+     // A reused address can cause an extra flush, never skip a required one.
+     pending_buffer_uses: Option<std::collections::HashSet<usize>>,
+@@ -209,10 +219,12 @@ impl WgpuContext3D {
+             buffer_command_encoder,
+             ordered_submissions: constant_ring_enabled(),
+             pending_draw_commands: Vec::new(),
++            pending_pass: None,
+             pending_buffer_uses: (constant_ring_enabled()
+-                && std::env::var("RUFFLE_DDD_SELECTIVE_BUFFER_BARRIERS")
+-                    .is_ok_and(|value| value == "1"))
+-                .then(std::collections::HashSet::new),
++                && (merge_passes_enabled()
++                    || std::env::var("RUFFLE_DDD_SELECTIVE_BUFFER_BARRIERS")
++                        .is_ok_and(|value| value == "1")))
++            .then(std::collections::HashSet::new),
+             clear_color: None,
+             seen_clear_command: false,
+             scissor_rectangle: None,
+@@ -220,6 +232,7 @@ impl WgpuContext3D {
+     }
+ 
+     fn flush_ordered_submissions(&mut self) {
++        self.end_pending_pass();
+         if self.pending_draw_commands.is_empty() {
+             return;
+         }
+@@ -248,6 +261,91 @@ impl WgpuContext3D {
+         }
+     }
+ 
++    fn end_pending_pass(&mut self) {
++        let Some(pass) = self.pending_pass.take() else {
++            return;
++        };
++        self.buffer_staging_belt.finish();
++        let next =
++            self.descriptors
++                .device
++                .create_command_encoder(&wgpu::CommandEncoderDescriptor {
++                    label: Some("Stage3D uploads after merged pass"),
++                });
++        let uploads = std::mem::replace(&mut self.buffer_command_encoder, next);
++        // Each buffer/constant region is immutable across these pending draws.
++        // Same-buffer writes flush first; all uploads can precede this one pass.
++        self.pending_draw_commands.push(uploads.finish());
++        self.pending_draw_commands
++            .push(pass.encode(&self.descriptors.device));
++    }
++
++    fn record_merged_draw(
++        &mut self,
++        index: &IndexBufferWrapper,
++        indices: std::ops::Range<u32>,
++        can_draw: bool,
++    ) {
++        let size = self.current_texture_size.unwrap();
++        let mut scissor = [0, 0, size.width, size.height];
++        if let Some(rect) = self.scissor_rectangle {
++            if rect.x_min.to_pixels() < 0.0
++                || rect.y_min.to_pixels() < 0.0
++                || rect.x_max.to_pixels() as u32 > size.width
++                || rect.y_max.to_pixels() as u32 > size.height
++                || rect.x_min == rect.x_max
++                || rect.y_min == rect.y_max
++            {
++                tracing::error!(
++                    "Invalid scissor rectangle {:?} for texture size {:?}",
++                    rect,
++                    size
++                );
++                self.scissor_rectangle = None;
++            } else {
++                scissor = [
++                    rect.x_min.to_pixels() as u32,
++                    rect.y_min.to_pixels() as u32,
++                    rect.width().to_pixels() as u32,
++                    rect.height().to_pixels() as u32,
++                ];
++            }
++        }
++        let uses = self.pending_buffer_uses.as_mut().unwrap();
++        let mut seen = Vec::new();
++        let mut vertices = Vec::new();
++        for attr in self.vertex_attributes.iter().flatten() {
++            let address = Rc::as_ptr(&attr.buffer) as usize;
++            uses.insert(address);
++            if !seen.contains(&address) {
++                seen.push(address);
++                vertices.push(attr.buffer.buffer.clone());
++            }
++        }
++        uses.insert(index as *const IndexBufferWrapper as usize);
++        let draw = pending_pass::Draw {
++            pipeline: self.compiled_pipeline.clone(),
++            bind_group: self.bind_group.clone(),
++            offsets: self.constant_state.as_ref().unwrap().offsets,
++            vertices,
++            index: index.buffer.clone(),
++            indices,
++            stencil: self.current_pipeline.stencil_ref_value(),
++            scissor,
++            can_draw,
++        };
++        if self.pending_pass.is_none() {
++            self.pending_pass = Some(pending_pass::Pass {
++                color: self.current_texture_view.clone().unwrap(),
++                resolve: self.current_texture_resolve_view.clone(),
++                depth: self.current_depth_texture_view.clone(),
++                clear: self.clear_color.take(),
++                draws: Vec::new(),
++            });
++        }
++        self.pending_pass.as_mut().unwrap().draws.push(draw);
++    }
++
+     fn snapshot_constants(&mut self) {
+         let Some(state) = &self.constant_state else {
+             return;
+@@ -689,6 +787,7 @@ impl Context3D for WgpuContext3D {
+                 stencil,
+                 mask,
+             } => {
++                self.end_pending_pass();
+                 self.clear_color = Some(ClearColor {
+                     rgb: wgpu::Color {
+                         r: red,
+@@ -951,6 +1050,7 @@ impl Context3D for WgpuContext3D {
+                 anti_alias,
+                 surface_selector,
+             } => {
++                self.end_pending_pass();
+                 let mut sample_count = anti_alias;
+                 if sample_count == 0 {
+                     sample_count = 1;
+@@ -1038,6 +1138,7 @@ impl Context3D for WgpuContext3D {
+             }
+ 
+             Context3DCommand::SetRenderToBackBuffer => {
++                self.end_pending_pass();
+                 self.set_render_to_back_buffer();
+             }
+ 
+@@ -1082,6 +1183,33 @@ impl Context3D for WgpuContext3D {
+                     );
+                 }
+ 
++                if merge_passes_enabled() {
++                    let start = self.stage3d_timing.as_ref().map(|_| Instant::now());
++                    self.snapshot_constants();
++                    if let Some((pipeline, group)) = new_pipeline {
++                        self.compiled_pipeline = Some(pipeline);
++                        self.bind_group = Some(group);
++                    }
++                    if let (Some(start), Some(timing)) = (start, &mut self.stage3d_timing) {
++                        timing.record(Phase::Prepare, start.elapsed());
++                    }
++                    let start = self.stage3d_timing.as_ref().map(|_| Instant::now());
++                    self.record_merged_draw(index_buffer, indices, can_draw);
++                    if let (Some(start), Some(timing)) = (start, &mut self.stage3d_timing) {
++                        timing.record(Phase::Encode, start.elapsed());
++                    }
++                    let start = self.stage3d_timing.as_ref().map(|_| Instant::now());
++                    if self.pending_pass.as_ref().unwrap().draws.len() >= 32
++                        || self.pending_draw_commands.len() >= 64
++                    {
++                        self.flush_ordered_submissions();
++                    }
++                    if let (Some(start), Some(timing)) = (start, &mut self.stage3d_timing) {
++                        timing.record(Phase::Submit, start.elapsed());
++                        timing.record(Phase::Recall, std::time::Duration::ZERO);
++                    }
++                    return;
++                }
+                 let phase_start = self.stage3d_timing.as_ref().map(|_| Instant::now());
+                 self.snapshot_constants();
+                 self.buffer_staging_belt.finish();
+@@ -1241,6 +1369,9 @@ impl Context3D for WgpuContext3D {
+                 dest,
+                 layer,
+             } => {
++                if merge_passes_enabled() {
++                    self.flush_ordered_submissions();
++                }
+                 let dest = Rc::<dyn Any>::downcast::<TextureWrapper>(dest).unwrap();
+ 
+                 // Unfortunately, we need to copy from the CPU data, rather than using the GPU texture.
+@@ -1515,6 +1646,7 @@ impl Context3D for WgpuContext3D {
+                     samples = self.back_buffer_sample_count,
+                     constant_ring = self.ordered_submissions,
+                     selective_buffer_barriers = self.pending_buffer_uses.is_some(),
++                    merge_passes = merge_passes_enabled(),
+                     ?counts, ?totals_ms, ?maxima_ms,
+                     "Stage3D wall time: draw,index,vertex,constants,texture,configure,other,pipeline,prepare,encode,submit,recall,present; draw includes its five subphases; not GPU completion");
+             }
+diff --git a/render/wgpu/src/context3d/pending_pass.rs b/render/wgpu/src/context3d/pending_pass.rs
+new file mode 100644
+index 0000000..acf6cfa
+--- /dev/null
++++ b/render/wgpu/src/context3d/pending_pass.rs
+@@ -0,0 +1,91 @@
++//! Draw snapshots for the opt-in Stage3D pass-merging experiment.
++use super::{ClearColor, COLOR_MASK, DEPTH_MASK, STENCIL_MASK};
++
++pub(super) struct Draw {
++    pub pipeline: Option<wgpu::RenderPipeline>,
++    pub bind_group: Option<wgpu::BindGroup>,
++    pub offsets: [u32; 2],
++    pub vertices: Vec<wgpu::Buffer>,
++    pub index: wgpu::Buffer,
++    pub indices: std::ops::Range<u32>,
++    pub stencil: u32,
++    pub scissor: [u32; 4],
++    pub can_draw: bool,
++}
++
++pub(super) struct Pass {
++    pub color: wgpu::TextureView,
++    pub resolve: Option<wgpu::TextureView>,
++    pub depth: Option<wgpu::TextureView>,
++    pub clear: Option<ClearColor>,
++    pub draws: Vec<Draw>,
++}
++
++impl Pass {
++    pub fn encode(self, device: &wgpu::Device) -> wgpu::CommandBuffer {
++        let color_load = match self.clear {
++            Some(c) if c.mask & COLOR_MASK != 0 => wgpu::LoadOp::Clear(c.rgb),
++            _ => wgpu::LoadOp::Load,
++        };
++        let depth_load = match self.clear {
++            Some(c) if c.mask & DEPTH_MASK != 0 => wgpu::LoadOp::Clear(c.depth),
++            _ => wgpu::LoadOp::Load,
++        };
++        let stencil_load = match self.clear {
++            Some(c) if c.mask & STENCIL_MASK != 0 => wgpu::LoadOp::Clear(c.stencil),
++            _ => wgpu::LoadOp::Load,
++        };
++        let depth = self
++            .depth
++            .as_ref()
++            .map(|view| wgpu::RenderPassDepthStencilAttachment {
++                view,
++                depth_ops: Some(wgpu::Operations {
++                    load: depth_load,
++                    store: wgpu::StoreOp::Store,
++                }),
++                stencil_ops: Some(wgpu::Operations {
++                    load: stencil_load,
++                    store: wgpu::StoreOp::Store,
++                }),
++            });
++        let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
++            label: Some("Merged Stage3D draws"),
++        });
++        {
++            let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
++                label: Some("Merged Stage3D pass"),
++                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
++                    view: &self.color,
++                    resolve_target: self.resolve.as_ref(),
++                    ops: wgpu::Operations {
++                        load: color_load,
++                        store: wgpu::StoreOp::Store,
++                    },
++                    depth_slice: None,
++                })],
++                depth_stencil_attachment: depth,
++                ..Default::default()
++            });
++            for draw in &self.draws {
++                if let Some(pipeline) = &draw.pipeline {
++                    pass.set_pipeline(pipeline);
++                }
++                if let Some(group) = &draw.bind_group {
++                    pass.set_bind_group(0, group, &draw.offsets);
++                }
++                pass.set_stencil_reference(draw.stencil);
++                let [x, y, w, h] = draw.scissor;
++                pass.set_scissor_rect(x, y, w, h);
++                for (index, buffer) in draw.vertices.iter().enumerate() {
++                    pass.set_vertex_buffer(index as u32, buffer.slice(..));
++                }
++                pass.set_index_buffer(draw.index.slice(..), wgpu::IndexFormat::Uint16);
++                if draw.can_draw {
++                    pass.draw_indexed(draw.indices.clone(), 0, 0..1);
++                }
++            }
++        }
++        encoder.finish()
++    }
++}

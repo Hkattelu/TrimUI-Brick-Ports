@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gameList>
+  <game>
+    <path>./Deep Dungeons of Doom.sh</path>
+    <name>Deep Dungeons of Doom</name>
+    <desc>A dungeon crawler about timing attacks, defending and choosing equipment. Experimental Ruffle port for the original TrimUI Brick with NX Redux. Requires a purchased Windows copy.</desc>
+    <releasedate>20141014T000000</releasedate>
+    <developer>Bossa Studios</developer>
+    <publisher>Bossa Studios</publisher>
+    <genre>RPG</genre>
+    <players>1</players>
+    <image>./deepdungeonsofdoom/screenshot.jpg</image>
+  </game>
+</gameList>

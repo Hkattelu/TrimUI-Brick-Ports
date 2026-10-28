@@ -1,0 +1,587 @@
+diff --git a/desktop/src/app.rs b/desktop/src/app.rs
+index a8bcdf4..2c9c4f0 100644
+--- a/desktop/src/app.rs
++++ b/desktop/src/app.rs
+@@ -2,6 +2,7 @@ use crate::custom_event::{OpenType, RuffleEvent};
+ use crate::gui::{GuiController, MENU_HEIGHT};
+ use crate::player::{LaunchOptions, PlayerController};
+ use crate::preferences::GlobalPreferences;
++use crate::runtime_timing::{Phase, RuntimeTiming};
+ use crate::util::{
+     get_screen_size, gilrs_button_to_gamepad_button, winit_input_to_ruffle_key_descriptor,
+     winit_to_ruffle_text_control,
+@@ -14,6 +15,7 @@ use ruffle_core::events::{ImeEvent, ImeNotification, PlayerNotification};
+ use ruffle_core::swf::HeaderExt;
+ use ruffle_frontend_utils::content::ContentDescriptor;
+ use ruffle_render::backend::ViewportDimensions;
++use std::cell::RefCell;
+ use std::sync::Arc;
+ use std::time::Instant;
+ use winit::application::ApplicationHandler;
+@@ -48,6 +50,8 @@ struct MainWindow {
+     loaded: LoadingState,
+     time: Instant,
+     next_frame_time: Option<Instant>,
++    drain_gamepad: bool,
++    timing: Option<RefCell<RuntimeTiming>>,
+     event_loop_proxy: EventLoopProxy<RuffleEvent>,
+ }
+ 
+@@ -58,7 +62,9 @@ impl MainWindow {
+             // surface also keeps the size it had before, as `GuiController::resize`
+             // refuses to reconfigure it to a zero size.
+             if !self.minimized && !self.occluded {
++                let started = self.start_timing();
+                 self.gui.render(self.player.get());
++                self.record_phase(Phase::GuiRender, started);
+             }
+ 
+             // Important that we return here, or we'll get a feedback loop with egui
+@@ -360,24 +366,52 @@ impl MainWindow {
+     }
+ 
+     fn about_to_wait(&mut self, gilrs: Option<&mut Gilrs>) {
++        let loop_started = self.start_timing();
+         // When we don't have any more pending events, flush any pending mouse
+         // moves, so that they can get coalesced properly.
+         self.flush_mouse_move();
+ 
+-        if let Some(Event { event, .. }) = gilrs.and_then(|gilrs| gilrs.next_event()) {
+-            match event {
+-                EventType::ButtonPressed(button, _) => {
+-                    if let Some(button) = gilrs_button_to_gamepad_button(button) {
+-                        self.handle_player_event(PlayerEvent::GamepadButtonDown { button });
+-                    }
+-                }
+-                EventType::ButtonReleased(button, _) => {
+-                    if let Some(button) = gilrs_button_to_gamepad_button(button) {
+-                        self.handle_player_event(PlayerEvent::GamepadButtonUp { button });
++        let poll_started = self.start_timing();
++        if let (Some(timing), Some(now)) = (&self.timing, poll_started) {
++            timing.borrow_mut().poll_started(now);
++        }
++        let drain = self.drain_gamepad;
++        let counts = crate::gamepad_drain::poll_events(
++            drain,
++            {
++                let mut gilrs = gilrs;
++                move || gilrs.as_deref_mut().and_then(Gilrs::next_event)
++            },
++            |Event { event, .. }| {
++                let event = match event {
++                    EventType::ButtonPressed(button, _) => gilrs_button_to_gamepad_button(button)
++                        .map(|button| PlayerEvent::GamepadButtonDown { button }),
++                    EventType::ButtonReleased(button, _) => gilrs_button_to_gamepad_button(button)
++                        .map(|button| PlayerEvent::GamepadButtonUp { button }),
++                    _ => None,
++                };
++                if let Some(event) = event {
++                    if drain {
++                        // Mouse moves were flushed above. Dispatch every edge in
++                        // FIFO order, but do not render between queued edges.
++                        self.dispatch_player_event(event);
++                    } else {
++                        // Preserve the original one-event/render/tick ordering.
++                        self.handle_player_event(event);
+                     }
++                    true
++                } else {
++                    false
+                 }
+-                _ => {}
+-            }
++            },
++        );
++        self.record_phase(Phase::Poll, poll_started);
++        if let Some(timing) = &self.timing {
++            timing.borrow_mut().events(
++                counts.fetched,
++                counts.converted,
++                counts.limit_reached,
++            );
+         }
+ 
+         // Core loop
+@@ -389,20 +423,75 @@ impl MainWindow {
+             if dt.as_millis() > 0.0 {
+                 self.time = new_time;
+                 self.next_frame_time = self.player.get().map(|mut player| {
++                    let started = self.start_timing();
+                     player.tick(dt);
++                    self.record_phase(Phase::Tick, started);
+                     new_time + player.time_til_next_frame()
+                 });
+             }
+         }
+ 
+         self.render_movie_if_needed();
++        self.record_phase(Phase::Loop, loop_started);
++        self.report_timing();
++    }
++
++    fn start_timing(&self) -> Option<Instant> {
++        self.timing.as_ref().map(|_| Instant::now())
++    }
++
++    fn record_phase(&self, phase: Phase, started: Option<Instant>) {
++        if let (Some(timing), Some(started)) = (&self.timing, started) {
++            timing.borrow_mut().record(phase, started.elapsed());
++        }
++    }
++
++    fn report_timing(&self) {
++        let report = self
++            .timing
++            .as_ref()
++            .and_then(|timing| timing.borrow_mut().take_report(Instant::now()));
++        if let Some(report) = report {
++            let [poll, dispatch, tick, movie, gui, whole_loop] = report.phases;
++            tracing::info!(target: "ddd_runtime_timing",
++                drain = self.drain_gamepad,
++                interval_ms = report.elapsed.as_secs_f64() * 1000.0,
++                gilrs_events = report.gilrs_events,
++                converted_edges = report.converted_edges,
++                skipped_events = report.gilrs_events - report.converted_edges,
++                poll_limit_reached = report.limit_reached,
++                poll_gap_n = report.poll_gap.count,
++                poll_gap_total_ms = report.poll_gap.total.as_secs_f64() * 1000.0,
++                poll_gap_max_ms = report.poll_gap.max.as_secs_f64() * 1000.0,
++                poll_n = poll.count, poll_ms = poll.total.as_secs_f64() * 1000.0,
++                poll_max_ms = poll.max.as_secs_f64() * 1000.0,
++                dispatch_n = dispatch.count, dispatch_ms = dispatch.total.as_secs_f64() * 1000.0,
++                dispatch_max_ms = dispatch.max.as_secs_f64() * 1000.0,
++                tick_n = tick.count, tick_ms = tick.total.as_secs_f64() * 1000.0,
++                tick_max_ms = tick.max.as_secs_f64() * 1000.0,
++                movie_n = movie.count, movie_ms = movie.total.as_secs_f64() * 1000.0,
++                movie_max_ms = movie.max.as_secs_f64() * 1000.0,
++                gui_n = gui.count, gui_ms = gui.total.as_secs_f64() * 1000.0,
++                gui_max_ms = gui.max.as_secs_f64() * 1000.0,
++                loop_n = whole_loop.count, loop_ms = whole_loop.total.as_secs_f64() * 1000.0,
++                loop_max_ms = whole_loop.max.as_secs_f64() * 1000.0,
++                "DDD diagnostic phases: overlapping wall time, not GPU completion"
++            );
++        }
++    }
++
++    fn dispatch_player_event(&self, event: PlayerEvent) -> bool {
++        let started = self.start_timing();
++        let handled = self.player.handle_event(event);
++        self.record_phase(Phase::Dispatch, started);
++        handled
+     }
+ 
+     fn handle_player_event(&mut self, event: PlayerEvent) -> bool {
+         // Apply any pending mouse moves, so that the movie sees the latest
+         // position before e.g. a click.
+         self.flush_mouse_move();
+-        let handled = self.player.handle_event(event);
++        let handled = self.dispatch_player_event(event);
+ 
+         // Handling an event may have made the movie need rendering (on demand).
+         self.render_movie_if_needed();
+@@ -415,7 +504,7 @@ impl MainWindow {
+         }
+ 
+         let (x, y) = self.gui.window_to_movie_position(self.mouse_pos);
+-        self.player.handle_event(PlayerEvent::MouseMove { x, y });
++        self.dispatch_player_event(PlayerEvent::MouseMove { x, y });
+         self.render_movie_if_needed();
+     }
+ 
+@@ -427,7 +516,9 @@ impl MainWindow {
+             && !self.occluded
+             && let Some(player) = player.as_deref_mut()
+         {
++            let started = self.start_timing();
+             player.render();
++            self.record_phase(Phase::MovieRender, started);
+         }
+         if player_needs_render || self.gui.needs_render() {
+             self.gui.window().request_redraw();
+@@ -590,6 +681,9 @@ impl ApplicationHandler<RuffleEvent> for App {
+                 modifiers: Modifiers::default(),
+                 time: Instant::now(),
+                 next_frame_time: None,
++                drain_gamepad: crate::runtime_timing::enabled("RUFFLE_DDD_DRAIN_GAMEPAD"),
++                timing: crate::runtime_timing::enabled("RUFFLE_DDD_TIMING")
++                    .then(|| RefCell::new(RuntimeTiming::new(Instant::now()))),
+                 event_loop_proxy,
+             });
+         }
+diff --git a/desktop/src/gamepad_drain.rs b/desktop/src/gamepad_drain.rs
+new file mode 100644
+index 0000000..8a18437
+--- /dev/null
++++ b/desktop/src/gamepad_drain.rs
+@@ -0,0 +1,161 @@
++//! Private opt-in experiment. The default still consumes one Gilrs event.
++
++pub(crate) const MAX_EVENTS_PER_POLL: usize = 64;
++
++#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
++pub(crate) struct PollCounts {
++    pub fetched: usize,
++    pub converted: usize,
++    /// The limit was reached; this does not prove another event is queued.
++    pub limit_reached: bool,
++}
++
++/// Preserve FIFO dispatch, including unhandled converted edges. `dispatch`
++/// reports conversion, not the movie handler's return value. The bound counts
++/// returned Gilrs events, not raw kernel events or time spent inside Gilrs.
++pub(crate) fn poll_events<E>(
++    drain_pending: bool,
++    mut next: impl FnMut() -> Option<E>,
++    mut dispatch: impl FnMut(E) -> bool,
++) -> PollCounts {
++    let limit = if drain_pending {
++        MAX_EVENTS_PER_POLL
++    } else {
++        1
++    };
++    let mut counts = PollCounts::default();
++    for _ in 0..limit {
++        let Some(event) = next() else {
++            return counts;
++        };
++        counts.fetched += 1;
++        if dispatch(event) {
++            counts.converted += 1;
++        }
++    }
++    counts.limit_reached = drain_pending;
++    counts
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use std::collections::VecDeque;
++
++    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
++    enum Event {
++        Down(u8),
++        Up(u8),
++        Ignored,
++    }
++
++    fn poll(queue: &mut VecDeque<Event>, drain: bool) -> (PollCounts, Vec<Event>) {
++        let mut delivered = Vec::new();
++        let counts = poll_events(
++            drain,
++            || queue.pop_front(),
++            |event| {
++                if event == Event::Ignored {
++                    false
++                } else {
++                    delivered.push(event);
++                    true
++                }
++            },
++        );
++        (counts, delivered)
++    }
++
++    #[test]
++    fn default_consumes_exactly_one_even_when_ignored() {
++        let mut queue = VecDeque::from([Event::Ignored, Event::Down(1), Event::Up(1)]);
++        let (counts, delivered) = poll(&mut queue, false);
++        assert_eq!(
++            counts,
++            PollCounts {
++                fetched: 1,
++                converted: 0,
++                limit_reached: false
++            }
++        );
++        assert!(delivered.is_empty());
++        assert_eq!(queue, [Event::Down(1), Event::Up(1)]);
++    }
++
++    #[test]
++    fn drain_delivers_a_complete_short_tap_before_returning() {
++        let mut queue =
++            VecDeque::from([Event::Down(1), Event::Ignored, Event::Up(1), Event::Ignored]);
++        let (counts, delivered) = poll(&mut queue, true);
++        assert_eq!(delivered, [Event::Down(1), Event::Up(1)]);
++        assert_eq!(
++            counts,
++            PollCounts {
++                fetched: 4,
++                converted: 2,
++                limit_reached: false
++            }
++        );
++        assert!(queue.is_empty());
++    }
++
++    #[test]
++    fn held_and_opposite_direction_edges_keep_fifo_order() {
++        let expected = [
++            Event::Down(1),
++            Event::Up(1),
++            Event::Down(2),
++            Event::Up(2),
++            Event::Down(1),
++        ];
++        let mut queue = VecDeque::from(expected);
++        let (_, delivered) = poll(&mut queue, true);
++        assert_eq!(delivered, expected);
++    }
++
++    #[test]
++    fn ignored_or_unhandled_events_do_not_end_drain() {
++        let mut queue = VecDeque::from([0, 1, 2, 3]);
++        let mut visited = Vec::new();
++        let counts = poll_events(
++            true,
++            || queue.pop_front(),
++            |event| {
++                visited.push(event);
++                event % 2 == 1
++            },
++        );
++        assert_eq!(visited, [0, 1, 2, 3]);
++        assert_eq!(counts.fetched, 4);
++        assert_eq!(counts.converted, 2);
++    }
++
++    #[test]
++    fn bound_does_not_fetch_the_sixty_fifth_event() {
++        let mut queue = VecDeque::from(vec![Event::Ignored; MAX_EVENTS_PER_POLL]);
++        queue.push_back(Event::Down(1));
++        let (counts, delivered) = poll(&mut queue, true);
++        assert_eq!(counts.fetched, 64);
++        assert!(counts.limit_reached);
++        assert!(delivered.is_empty());
++        assert_eq!(queue, [Event::Down(1)]);
++    }
++
++    #[test]
++    fn edge_at_limit_is_dispatched_without_fetching_its_release() {
++        let mut queue = VecDeque::from(vec![Event::Ignored; MAX_EVENTS_PER_POLL - 1]);
++        queue.extend([Event::Down(1), Event::Up(1)]);
++        let (counts, delivered) = poll(&mut queue, true);
++        assert_eq!(counts.fetched, 64);
++        assert_eq!(counts.converted, 1);
++        assert!(counts.limit_reached);
++        assert_eq!(delivered, [Event::Down(1)]);
++        assert_eq!(queue, [Event::Up(1)]);
++    }
++
++    #[test]
++    fn empty_queue_never_dispatches() {
++        let mut queue = VecDeque::<Event>::new();
++        assert_eq!(poll(&mut queue, true), (PollCounts::default(), Vec::new()));
++    }
++}
+diff --git a/desktop/src/main.rs b/desktop/src/main.rs
+index 2265dc2..43cca14 100644
+--- a/desktop/src/main.rs
++++ b/desktop/src/main.rs
+@@ -11,10 +11,12 @@ mod backends;
+ mod cli;
+ mod custom_event;
+ mod dbus;
++mod gamepad_drain;
+ mod gui;
+ mod log;
+ mod player;
+ mod preferences;
++mod runtime_timing;
+ #[cfg(feature = "tracy")]
+ mod tracy;
+ mod util;
+diff --git a/desktop/src/runtime_timing.rs b/desktop/src/runtime_timing.rs
+new file mode 100644
+index 0000000..2c7e39e
+--- /dev/null
++++ b/desktop/src/runtime_timing.rs
+@@ -0,0 +1,187 @@
++//! Coarse wall-clock diagnostics, allocated only when explicitly enabled.
++//! Durations overlap: poll includes dispatch, and loop includes poll/tick/render.
++//! GUI render includes acquisition/submission/presentation, not GPU completion.
++
++use std::time::{Duration, Instant};
++
++#[derive(Clone, Copy)]
++pub(crate) enum Phase {
++    Poll,
++    Dispatch,
++    Tick,
++    MovieRender,
++    GuiRender,
++    Loop,
++}
++
++#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
++pub(crate) struct Metric {
++    pub count: u64,
++    pub total: Duration,
++    pub max: Duration,
++}
++
++impl Metric {
++    fn add(&mut self, duration: Duration) {
++        self.count += 1;
++        self.total += duration;
++        self.max = self.max.max(duration);
++    }
++}
++
++#[derive(Clone, Copy, Debug, Default)]
++pub(crate) struct Report {
++    pub elapsed: Duration,
++    pub phases: [Metric; 6],
++    pub poll_gap: Metric,
++    pub gilrs_events: u64,
++    pub converted_edges: u64,
++    pub limit_reached: u64,
++}
++
++pub(crate) struct RuntimeTiming {
++    report_start: Instant,
++    previous_poll: Option<Instant>,
++    report: Report,
++}
++
++pub(crate) fn enabled_value(value: Option<&str>) -> bool {
++    value == Some("1")
++}
++
++pub(crate) fn enabled(name: &str) -> bool {
++    enabled_value(std::env::var(name).ok().as_deref())
++}
++
++impl RuntimeTiming {
++    pub fn new(now: Instant) -> Self {
++        Self {
++            report_start: now,
++            previous_poll: None,
++            report: Report::default(),
++        }
++    }
++
++    pub fn poll_started(&mut self, now: Instant) {
++        if let Some(previous) = self.previous_poll.replace(now) {
++            self.report
++                .poll_gap
++                .add(now.saturating_duration_since(previous));
++        }
++    }
++
++    pub fn record(&mut self, phase: Phase, duration: Duration) {
++        self.report.phases[phase as usize].add(duration);
++    }
++
++    pub fn events(&mut self, fetched: usize, converted: usize, limit_reached: bool) {
++        self.report.gilrs_events += fetched as u64;
++        self.report.converted_edges += converted as u64;
++        self.report.limit_reached += u64::from(limit_reached);
++    }
++
++    pub fn take_report(&mut self, now: Instant) -> Option<Report> {
++        let elapsed = now.saturating_duration_since(self.report_start);
++        if elapsed < Duration::from_secs(1) {
++            return None;
++        }
++        let mut report = std::mem::take(&mut self.report);
++        report.elapsed = elapsed;
++        self.report_start = now;
++        Some(report)
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn only_exact_one_enables_the_diagnostic() {
++        for value in [
++            None,
++            Some(""),
++            Some("0"),
++            Some("true"),
++            Some(" 1"),
++            Some("1\n"),
++        ] {
++            assert!(!enabled_value(value));
++        }
++        assert!(enabled_value(Some("1")));
++    }
++
++    #[test]
++    fn reports_once_per_second_and_resets_sums_but_retains_poll_boundary() {
++        let start = Instant::now();
++        let mut timing = RuntimeTiming::new(start);
++        timing.poll_started(start);
++        timing.poll_started(start + Duration::from_millis(560));
++        timing.record(Phase::Tick, Duration::from_millis(6));
++        timing.record(Phase::Tick, Duration::from_millis(4));
++        timing.events(4, 2, false);
++        assert!(timing
++            .take_report(start + Duration::from_millis(999))
++            .is_none());
++        let first = timing.take_report(start + Duration::from_secs(1)).unwrap();
++        assert_eq!(
++            first.phases[Phase::Tick as usize],
++            Metric {
++                count: 2,
++                total: Duration::from_millis(10),
++                max: Duration::from_millis(6)
++            }
++        );
++        assert_eq!(first.poll_gap.max, Duration::from_millis(560));
++        assert_eq!(
++            (
++                first.gilrs_events,
++                first.converted_edges,
++                first.limit_reached
++            ),
++            (4, 2, 0)
++        );
++        assert!(timing
++            .take_report(start + Duration::from_millis(1001))
++            .is_none());
++        timing.poll_started(start + Duration::from_millis(1120));
++        let second = timing.take_report(start + Duration::from_secs(2)).unwrap();
++        assert_eq!(second.phases, [Metric::default(); 6]);
++        assert_eq!(
++            second.poll_gap,
++            Metric {
++                count: 1,
++                total: Duration::from_millis(560),
++                max: Duration::from_millis(560)
++            }
++        );
++        assert_eq!(second.gilrs_events, 0);
++    }
++
++    #[test]
++    fn every_phase_is_independent_and_limit_counts_are_retained() {
++        let start = Instant::now();
++        let mut timing = RuntimeTiming::new(start);
++        for (i, phase) in [
++            Phase::Poll,
++            Phase::Dispatch,
++            Phase::Tick,
++            Phase::MovieRender,
++            Phase::GuiRender,
++            Phase::Loop,
++        ]
++        .into_iter()
++        .enumerate()
++        {
++            timing.record(phase, Duration::from_millis(i as u64 + 1));
++        }
++        timing.events(64, 32, true);
++        let report = timing.take_report(start + Duration::from_secs(2)).unwrap();
++        for (i, metric) in report.phases.iter().enumerate() {
++            assert_eq!(metric.count, 1);
++            assert_eq!(metric.total, Duration::from_millis(i as u64 + 1));
++        }
++        assert_eq!(report.limit_reached, 1);
++        assert_eq!(report.elapsed, Duration::from_secs(2));
++    }
++}

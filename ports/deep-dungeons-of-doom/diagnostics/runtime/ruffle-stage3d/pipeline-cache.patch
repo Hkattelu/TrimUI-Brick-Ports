@@ -1,0 +1,257 @@
+diff --git a/render/wgpu/src/context3d/current_pipeline.rs b/render/wgpu/src/context3d/current_pipeline.rs
+index 7fb0e45..e6c0020 100644
+--- a/render/wgpu/src/context3d/current_pipeline.rs
++++ b/render/wgpu/src/context3d/current_pipeline.rs
+@@ -51,13 +51,14 @@ impl IntoWgpu for Context3DStencilAction {
+     }
+ }
+ 
+-use std::cell::Cell;
++use std::cell::{Cell, RefCell};
++use std::collections::HashMap;
+ use std::num::NonZeroU64;
+ use std::rc::Rc;
+ 
+ use crate::bitmaps::WgpuSamplerConfig;
+ use crate::context3d::VertexBufferWrapper;
+-use crate::context3d::shader_pair::{ShaderCompileData, ShaderTextureInfo};
++use crate::context3d::shader_pair::{CompiledShaderProgram, ShaderCompileData, ShaderTextureInfo};
+ use crate::descriptors::Descriptors;
+ 
+ use super::{MAX_VERTEX_ATTRIBUTES, ShaderPairAgal, VertexAttributeInfo};
+@@ -125,6 +126,62 @@ pub struct CurrentPipeline {
+     // (which allows rendering with an 'ignoresampler' tex opcode,
+     // and no calls to Context3D.setSamplerStateAt)
+     sampler_configs: [SamplerConfig; 8],
++
++    // Private opt-in experiment. A hit reuses only the pipeline and its exact layout;
++    // bind groups still reflect the current textures, samplers and uniform buffers.
++    pipeline_cache: Option<RefCell<HashMap<PipelineKey, CachedPipeline>>>,
++}
++
++const MAX_CACHED_PIPELINES: usize = 256;
++
++#[derive(Hash, PartialEq, Eq)]
++struct PipelineKey {
++    shaders: usize,
++    compile_data: ShaderCompileData,
++    // Canonical buffer grouping, stride and full attributes, including shader locations.
++    vertex_buffers: Vec<(u64, Vec<wgpu::VertexAttribute>)>,
++    cull_mode: Option<wgpu::Face>,
++    depth_stencil: Option<DepthStencilState>,
++    color_component: wgpu::BlendComponent,
++    alpha_component: wgpu::BlendComponent,
++    color_mask: wgpu::ColorWrites,
++    target_format: TextureFormat,
++    sample_count: u32,
++}
++
++struct CachedPipeline {
++    pipeline: wgpu::RenderPipeline,
++    bind_group_layout: wgpu::BindGroupLayout,
++    // Keep the pointer key unique even when the program is no longer bound.
++    _shaders: Rc<ShaderPairAgal>,
++}
++
++fn pipeline_cache_enabled(value: Option<&str>) -> bool {
++    value == Some("1")
++}
++
++fn create_pipeline_bindings(
++    descriptors: &Descriptors,
++    compiled_shaders: &CompiledShaderProgram,
++    bind_group_entries: &[BindGroupEntry<'_>],
++    bind_group_label: Option<&str>,
++) -> (wgpu::PipelineLayout, wgpu::BindGroup) {
++    let pipeline_layout_label = create_debug_label!("Pipeline layout");
++    let pipeline_layout = descriptors
++        .device
++        .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
++            label: pipeline_layout_label.as_deref(),
++            bind_group_layouts: &[Some(&compiled_shaders.bind_group_layout)],
++            immediate_size: 0,
++        });
++    let bind_group = descriptors
++        .device
++        .create_bind_group(&wgpu::BindGroupDescriptor {
++            label: bind_group_label,
++            layout: &compiled_shaders.bind_group_layout,
++            entries: bind_group_entries,
++        });
++    (pipeline_layout, bind_group)
+ }
+ 
+ #[derive(Clone)]
+@@ -183,6 +240,12 @@ impl CurrentPipeline {
+             target_format: TextureFormat::Rgba8Unorm,
+ 
+             sampler_configs: [SamplerConfig::default(); 8],
++            pipeline_cache: pipeline_cache_enabled(
++                std::env::var("RUFFLE_DDD_STAGE3D_PIPELINE_CACHE")
++                    .ok()
++                    .as_deref(),
++            )
++            .then(|| RefCell::new(HashMap::new())),
+         }
+     }
+ 
+@@ -399,33 +462,27 @@ impl CurrentPipeline {
+             }
+         }
+ 
+-        let compiled_shaders = self.shaders.as_ref().expect("Missing shaders!").compile(
+-            descriptors,
+-            ShaderCompileData {
+-                vertex_attributes: agal_attributes,
+-                texture_infos,
+-            },
+-        )?;
+-
+-        self.dirty.set(false);
+-
+-        let pipeline_layout_label = create_debug_label!("Pipeline layout");
+-        let pipeline_layout =
+-            descriptors
+-                .device
+-                .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+-                    label: pipeline_layout_label.as_deref(),
+-                    bind_group_layouts: &[Some(&compiled_shaders.bind_group_layout)],
+-                    immediate_size: 0,
+-                });
++        let shaders = self.shaders.as_ref().expect("Missing shaders!");
++        let compile_data = ShaderCompileData {
++            vertex_attributes: agal_attributes,
++            texture_infos,
++        };
+ 
+-        let bind_group = descriptors
+-            .device
+-            .create_bind_group(&wgpu::BindGroupDescriptor {
+-                label: bind_group_label.as_deref(),
+-                layout: &compiled_shaders.bind_group_layout,
+-                entries: &bind_group_entries,
+-            });
++        // With the opt-in absent, keep the original compile/layout/bind-group order.
++        // Cache misses compile fallibly below; failed compilations never enter the cache.
++        let uncached = if self.pipeline_cache.is_none() {
++            let compiled_shaders = shaders.compile(descriptors, compile_data.clone())?;
++            self.dirty.set(false);
++            let (pipeline_layout, bind_group) = create_pipeline_bindings(
++                descriptors,
++                &compiled_shaders,
++                &bind_group_entries,
++                bind_group_label.as_deref(),
++            );
++            Some((compiled_shaders, pipeline_layout, bind_group))
++        } else {
++            None
++        };
+ 
+         struct BufferData {
+             buffer: Rc<VertexBufferWrapper>,
+@@ -533,8 +590,17 @@ impl CurrentPipeline {
+                 // call setVertexBufferAt once to bind the first 4 floats per vertex.
+                 // However, the total size of the bindings can be at most the total
+                 // amount of data per vertex. Verify that here
+-                let data_bytes_per_vertex = (data.buffer.data_32_per_vertex * 4) as u64;
+-                if data.total_size > data_bytes_per_vertex as usize {
++                let data_bytes_per_vertex = if self.pipeline_cache.is_some() {
++                    // Form the key without overflowing the original u8 arithmetic.
++                    u64::from(data.buffer.data_32_per_vertex) * 4
++                } else {
++                    (data.buffer.data_32_per_vertex * 4) as u64
++                };
++                // Cache lookups need a pure key: on a miss, shader errors must be
++                // returned before the existing vertex-bounds assertion below.
++                if self.pipeline_cache.is_none()
++                    && data.total_size > data_bytes_per_vertex as usize
++                {
+                     panic!("Total size of bound vertex attributes {:?} exceeds data_bytes_per_vertex {:?}", data.total_size,
+                     data_bytes_per_vertex);
+                 }
+@@ -548,6 +614,64 @@ impl CurrentPipeline {
+             })
+             .collect::<Vec<_>>();
+ 
++        let key = self.pipeline_cache.as_ref().map(|_| PipelineKey {
++            shaders: Rc::as_ptr(shaders) as usize,
++            compile_data: compile_data.clone(),
++            vertex_buffers: wgpu_vertex_buffers
++                .iter()
++                .flatten()
++                .map(|layout| (layout.array_stride, layout.attributes.to_vec()))
++                .collect(),
++            cull_mode,
++            depth_stencil: depth_stencil.clone(),
++            color_component: self.color_component,
++            alpha_component: self.alpha_component,
++            color_mask: self.color_mask,
++            target_format: self.target_format,
++            sample_count: self.sample_count,
++        });
++        if let (Some(cache), Some(key)) = (&self.pipeline_cache, &key) {
++            let cached = cache.borrow().get(key).map(|cached| {
++                (cached.pipeline.clone(), cached.bind_group_layout.clone())
++            });
++            if let Some((pipeline, layout)) = cached {
++                let bind_group = descriptors
++                    .device
++                    .create_bind_group(&wgpu::BindGroupDescriptor {
++                        label: bind_group_label.as_deref(),
++                        layout: &layout,
++                        entries: &bind_group_entries,
++                    });
++                self.dirty.set(false);
++                return Ok(Some((pipeline, bind_group)));
++            }
++        }
++        let (compiled_shaders, pipeline_layout, bind_group) = if let Some(uncached) = uncached {
++            uncached
++        } else {
++            let compiled_shaders = shaders.compile(descriptors, compile_data)?;
++            self.dirty.set(false);
++            let (pipeline_layout, bind_group) = create_pipeline_bindings(
++                descriptors,
++                &compiled_shaders,
++                &bind_group_entries,
++                bind_group_label.as_deref(),
++            );
++            (compiled_shaders, pipeline_layout, bind_group)
++        };
++
++        if key.is_some() {
++            // Only cache misses reach here. Match the original error order: shader
++            // compilation is fallible and precedes vertex-layout validation.
++            for data in &index_per_buffer {
++                let data_bytes_per_vertex = (data.buffer.data_32_per_vertex * 4) as u64;
++                if data.total_size > data_bytes_per_vertex as usize {
++                    panic!("Total size of bound vertex attributes {:?} exceeds data_bytes_per_vertex {:?}", data.total_size,
++                    data_bytes_per_vertex);
++                }
++            }
++        }
++
+         let compiled = descriptors
+             .device
+             .create_render_pipeline(&RenderPipelineDescriptor {
+@@ -588,6 +712,20 @@ impl CurrentPipeline {
+                 multiview_mask: None,
+                 cache: None,
+             });
++        if let (Some(cache), Some(key)) = (&self.pipeline_cache, key) {
++            let mut cache = cache.borrow_mut();
++            if cache.len() >= MAX_CACHED_PIPELINES {
++                cache.clear();
++            }
++            cache.insert(
++                key,
++                CachedPipeline {
++                    pipeline: compiled.clone(),
++                    bind_group_layout: compiled_shaders.bind_group_layout.clone(),
++                    _shaders: shaders.clone(),
++                },
++            );
++        }
+         Ok(Some((compiled, bind_group)))
+     }
+ 

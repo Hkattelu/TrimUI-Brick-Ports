@@ -1,0 +1,92 @@
+diff --git a/render/wgpu/src/context3d/mod.rs b/render/wgpu/src/context3d/mod.rs
+index 266087d..878379d 100644
+--- a/render/wgpu/src/context3d/mod.rs
++++ b/render/wgpu/src/context3d/mod.rs
+@@ -100,6 +100,9 @@ pub struct WgpuContext3D {
+     // order and its own immutable staging chunks until the group is submitted.
+     ordered_submissions: bool,
+     pending_draw_commands: Vec<wgpu::CommandBuffer>,
++    // IDs are wrapper addresses, used only for conservative dependency checks.
++    // A reused address can cause an extra flush, never skip a required one.
++    pending_buffer_uses: Option<std::collections::HashSet<usize>>,
+     constant_state: Option<ConstantState>,
+     // We may re-create `render_pass` multiple times while processing
+     // `commands`. If we do, then we only want to perform a clear if there
+@@ -206,6 +209,10 @@ impl WgpuContext3D {
+             buffer_command_encoder,
+             ordered_submissions: constant_ring_enabled(),
+             pending_draw_commands: Vec::new(),
++            pending_buffer_uses: (constant_ring_enabled()
++                && std::env::var("RUFFLE_DDD_SELECTIVE_BUFFER_BARRIERS")
++                    .is_ok_and(|value| value == "1"))
++                .then(std::collections::HashSet::new),
+             clear_color: None,
+             seen_clear_command: false,
+             scissor_rectangle: None,
+@@ -223,6 +230,22 @@ impl WgpuContext3D {
+             .queue
+             .submit(self.pending_draw_commands.drain(..));
+         self.buffer_staging_belt.recall();
++        if let Some(uses) = &mut self.pending_buffer_uses {
++            uses.clear();
++        }
++    }
++
++    fn flush_before_buffer_write(&mut self, address: usize) {
++        // Uploads to unrelated buffers can remain ordered in the existing
++        // command stream. Same-buffer updates still submit earlier draws before
++        // writing, retaining the ordering required by the Brick GLES fixture.
++        if self
++            .pending_buffer_uses
++            .as_ref()
++            .is_none_or(|uses| uses.contains(&address))
++        {
++            self.flush_ordered_submissions();
++        }
+     }
+ 
+     fn snapshot_constants(&mut self) {
+@@ -864,8 +887,8 @@ impl Context3D for WgpuContext3D {
+                 if data.is_empty() {
+                     return;
+                 }
+-                self.flush_ordered_submissions();
+                 let buffer: &mut IndexBufferWrapper = <dyn Any>::downcast_mut(buffer).unwrap();
++                self.flush_before_buffer_write(buffer as *const IndexBufferWrapper as usize);
+ 
+                 // Unfortunately, ActionScript works with 2-byte indices, while wgpu requires
+                 // copy offsets and sizes to have 4-byte alignment. To support this, we need
+@@ -904,9 +927,9 @@ impl Context3D for WgpuContext3D {
+                     return;
+                 }
+ 
+-                self.flush_ordered_submissions();
+                 let buffer: Rc<VertexBufferWrapper> =
+                     Rc::<dyn Any>::downcast(buffer.clone()).unwrap();
++                self.flush_before_buffer_write(Rc::as_ptr(&buffer) as usize);
+ 
+                 // ActionScript can only work with 32-bit chunks of data, so our `write_buffer`
+                 // offset and size will always be a multiple of `COPY_BUFFER_ALIGNMENT` (4 bytes)
+@@ -1110,6 +1133,14 @@ impl Context3D for WgpuContext3D {
+                     render_command_encoder.finish(),
+                 ];
+                 if self.ordered_submissions {
++                    if let Some(uses) = &mut self.pending_buffer_uses {
++                        // Include every bound attribute conservatively, even
++                        // when the shader does not consume it or skips a draw.
++                        for attr in self.vertex_attributes.iter().flatten() {
++                            uses.insert(Rc::as_ptr(&attr.buffer) as usize);
++                        }
++                        uses.insert(index_buffer as *const IndexBufferWrapper as usize);
++                    }
+                     self.pending_draw_commands.extend(commands);
+                     // Bound retention to 32 draws even if the movie never presents.
+                     if self.pending_draw_commands.len() >= 64 {
+@@ -1483,6 +1514,7 @@ impl Context3D for WgpuContext3D {
+                     height = self.back_buffer_size.map_or(0, |s| s.height),
+                     samples = self.back_buffer_sample_count,
+                     constant_ring = self.ordered_submissions,
++                    selective_buffer_barriers = self.pending_buffer_uses.is_some(),
+                     ?counts, ?totals_ms, ?maxima_ms,
+                     "Stage3D wall time: draw,index,vertex,constants,texture,configure,other,pipeline,prepare,encode,submit,recall,present; draw includes its five subphases; not GPU completion");
+             }

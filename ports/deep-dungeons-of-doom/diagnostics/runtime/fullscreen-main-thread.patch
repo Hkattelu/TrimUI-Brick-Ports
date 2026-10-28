@@ -1,0 +1,23 @@
+diff --git a/src/platforms/engineutils.cpp b/src/platforms/engineutils.cpp
+index 4c6340d..988a4e2 100644
+--- a/src/platforms/engineutils.cpp
++++ b/src/platforms/engineutils.cpp
+@@ -921,6 +921,18 @@ void EngineData::setDisplayState(const tiny_string &displaystate,SystemState* sy
+ 		LOG(LOG_ERROR,"no widget available for setting displayState");
+ 		return;
+ 	}
++	// Window operations can synchronously message the SDL event-loop thread.
++	// That thread may be waiting for this VM frame, so queue the operation.
++	if (!isEventLoopThread())
++	{
++		const bool fullscreen = displaystate.startsWith("fullScreen");
++		runInMainThread(sys, [fullscreen](SystemState* state)
++		{
++			if (state->getEngineData())
++				state->getEngineData()->setDisplayState(fullscreen ? "fullScreen" : "normal", state);
++		});
++		return;
++	}
+ 	SDL_SetWindowFullscreen(widget, displaystate.startsWith("fullScreen") ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+ 	int w,h;
+ 	SDL_GetWindowSize(widget,&w,&h);

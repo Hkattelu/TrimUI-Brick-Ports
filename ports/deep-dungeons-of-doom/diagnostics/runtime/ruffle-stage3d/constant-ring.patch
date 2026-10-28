@@ -1,0 +1,395 @@
+diff --git a/render/src/backend.rs b/render/src/backend.rs
+index 14581c3..ace3548 100644
+--- a/render/src/backend.rs
++++ b/render/src/backend.rs
+@@ -276,7 +276,7 @@ pub trait Context3D: Any {
+     // buffer hasn't been configured yet. Unlike `bitmap_handle` (which is the front
+     // buffer, shown after `present`), this holds the content rendered since the
+     // last `present`.
+-    fn back_buffer_handle(&self) -> Option<BitmapHandle>;
++    fn back_buffer_handle(&mut self) -> Option<BitmapHandle>;
+     // The (width, height) of the back buffer, or `None` before it is configured.
+     fn back_buffer_size(&self) -> Option<(u32, u32)>;
+     // Whether every buffer has been cleared since the last `present` (or since
+diff --git a/render/wgpu/src/context3d/current_pipeline.rs b/render/wgpu/src/context3d/current_pipeline.rs
+index e6c0020..50c2d8d 100644
+--- a/render/wgpu/src/context3d/current_pipeline.rs
++++ b/render/wgpu/src/context3d/current_pipeline.rs
+@@ -67,9 +67,9 @@ const AGAL_NUM_VERTEX_CONSTANTS: u64 = 128;
+ const AGAL_NUM_FRAGMENT_CONSTANTS: u64 = 28;
+ pub(super) const AGAL_FLOATS_PER_REGISTER: u64 = 4;
+ 
+-const VERTEX_SHADER_UNIFORMS_BUFFER_SIZE: u64 =
++pub(super) const VERTEX_SHADER_UNIFORMS_BUFFER_SIZE: u64 =
+     AGAL_NUM_VERTEX_CONSTANTS * AGAL_FLOATS_PER_REGISTER * std::mem::size_of::<f32>() as u64;
+-const FRAGMENT_SHADER_UNIFORMS_BUFFER_SIZE: u64 =
++pub(super) const FRAGMENT_SHADER_UNIFORMS_BUFFER_SIZE: u64 =
+     AGAL_NUM_FRAGMENT_CONSTANTS * AGAL_FLOATS_PER_REGISTER * std::mem::size_of::<f32>() as u64;
+ 
+ // The flash Context3D API is similar to OpenGL - it has many methods
+@@ -97,6 +97,7 @@ pub struct CurrentPipeline {
+ 
+     pub vertex_shader_uniforms: Buffer,
+     pub fragment_shader_uniforms: Buffer,
++    pub constant_ring: Option<Buffer>,
+ 
+     has_depth_texture: bool,
+ 
+@@ -196,6 +197,14 @@ pub struct BoundTextureData {
+ 
+ impl CurrentPipeline {
+     pub fn new(descriptors: &Descriptors) -> Self {
++        let constant_ring = super::constant_ring_enabled().then(|| {
++            descriptors.device.create_buffer(&BufferDescriptor {
++                label: Some("DDD per-draw program constants"),
++                size: super::CONSTANT_RING_BYTES,
++                usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
++                mapped_at_creation: false,
++            })
++        });
+         let vertex_shader_uniforms = descriptors.device.create_buffer(&BufferDescriptor {
+             label: Some("Vertex shader uniforms"),
+             size: VERTEX_SHADER_UNIFORMS_BUFFER_SIZE,
+@@ -215,6 +224,7 @@ impl CurrentPipeline {
+             bound_textures: std::array::from_fn(|_| None),
+             vertex_shader_uniforms,
+             fragment_shader_uniforms,
++            constant_ring,
+             dirty: Cell::new(true),
+             culling: Context3DTriangleFace::None,
+ 
+@@ -413,7 +423,10 @@ impl CurrentPipeline {
+             BindGroupEntry {
+                 binding: 0,
+                 resource: BindingResource::Buffer(wgpu::BufferBinding {
+-                    buffer: &self.vertex_shader_uniforms,
++                    buffer: self
++                        .constant_ring
++                        .as_ref()
++                        .unwrap_or(&self.vertex_shader_uniforms),
+                     offset: 0,
+                     size: Some(NonZeroU64::new(VERTEX_SHADER_UNIFORMS_BUFFER_SIZE).unwrap()),
+                 }),
+@@ -421,7 +434,10 @@ impl CurrentPipeline {
+             BindGroupEntry {
+                 binding: 1,
+                 resource: BindingResource::Buffer(wgpu::BufferBinding {
+-                    buffer: &self.fragment_shader_uniforms,
++                    buffer: self
++                        .constant_ring
++                        .as_ref()
++                        .unwrap_or(&self.fragment_shader_uniforms),
+                     offset: 0,
+                     size: Some(NonZeroU64::new(FRAGMENT_SHADER_UNIFORMS_BUFFER_SIZE).unwrap()),
+                 }),
+diff --git a/render/wgpu/src/context3d/mod.rs b/render/wgpu/src/context3d/mod.rs
+index 296bd30..266087d 100644
+--- a/render/wgpu/src/context3d/mod.rs
++++ b/render/wgpu/src/context3d/mod.rs
+@@ -38,6 +38,24 @@ use current_pipeline::CurrentPipeline;
+ 
+ use self::shader_pair::ShaderPairAgal;
+ 
++// Per-draw uniform regions follow Fancy Pants PortMaster patch 0011 by
++// crxssrazr93 (MIT/Apache-2.0), pinned at 86a641c2aa6a3901efddcaa492b37e8f3e27ce13.
++// Keep vertex/index submission barriers: the Brick fixture requires them.
++const CONSTANT_RING_BYTES: u64 = 1 << 20;
++
++fn constant_ring_enabled() -> bool {
++    static ENABLED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
++    *ENABLED.get_or_init(|| std::env::var("RUFFLE_DDD_CONSTANT_RING").is_ok_and(|v| v == "1"))
++}
++
++struct ConstantState {
++    vertex: Vec<u8>,
++    fragment: Vec<u8>,
++    cursor: u64,
++    offsets: [u32; 2],
++    alignment: u64,
++}
++
+ const COLOR_MASK: u32 = 1 << 0;
+ const DEPTH_MASK: u32 = 1 << 1;
+ const STENCIL_MASK: u32 = 1 << 2;
+@@ -78,6 +96,11 @@ pub struct WgpuContext3D {
+     vertex_attributes: [Option<VertexAttributeInfo>; MAX_VERTEX_ATTRIBUTES],
+ 
+     buffer_command_encoder: CommandEncoder,
++    // Private single-context experiment. Each pair retains upload-before-draw
++    // order and its own immutable staging chunks until the group is submitted.
++    ordered_submissions: bool,
++    pending_draw_commands: Vec<wgpu::CommandBuffer>,
++    constant_state: Option<ConstantState>,
+     // We may re-create `render_pass` multiple times while processing
+     // `commands`. If we do, then we only want to perform a clear if there
+     // was an explicit `Clear` command. Otherwise, we want to preserve the
+@@ -140,7 +163,18 @@ impl WgpuContext3D {
+                     label: create_debug_label!("Buffer command encoder").as_deref(),
+                 });
+ 
++        let constant_state = constant_ring_enabled().then(|| ConstantState {
++            vertex: vec![0; current_pipeline::VERTEX_SHADER_UNIFORMS_BUFFER_SIZE as usize],
++            fragment: vec![0; current_pipeline::FRAGMENT_SHADER_UNIFORMS_BUFFER_SIZE as usize],
++            cursor: 0,
++            offsets: [0; 2],
++            alignment: descriptors
++                .device
++                .limits()
++                .min_uniform_buffer_offset_alignment as u64,
++        });
+         Self {
++            constant_state,
+             profile,
+             stage3d_timing: std::env::var("RUFFLE_DDD_STAGE3D_TIMING")
+                 .is_ok_and(|value| value == "1")
+@@ -170,12 +204,64 @@ impl WgpuContext3D {
+             front_buffer_resolve_texture_view: None,
+ 
+             buffer_command_encoder,
++            ordered_submissions: constant_ring_enabled(),
++            pending_draw_commands: Vec::new(),
+             clear_color: None,
+             seen_clear_command: false,
+             scissor_rectangle: None,
+         }
+     }
+ 
++    fn flush_ordered_submissions(&mut self) {
++        if self.pending_draw_commands.is_empty() {
++            return;
++        }
++        // Every queued upload encoder was finished and its chunks unmapped at
++        // its draw boundary. Do not finish the current upload encoder here:
++        // uploads after the last draw still belong to the next draw, as before.
++        self.descriptors
++            .queue
++            .submit(self.pending_draw_commands.drain(..));
++        self.buffer_staging_belt.recall();
++    }
++
++    fn snapshot_constants(&mut self) {
++        let Some(state) = &self.constant_state else {
++            return;
++        };
++        let vertex_size = state.vertex.len() as u64;
++        let fragment_size = state.fragment.len() as u64;
++        let vertex_stride = vertex_size.next_multiple_of(state.alignment);
++        let fragment_stride = fragment_size.next_multiple_of(state.alignment);
++        let needed = vertex_stride + fragment_stride;
++        assert!(needed <= CONSTANT_RING_BYTES);
++        if state.cursor + needed > CONSTANT_RING_BYTES {
++            // A wrap is a submission boundary, never an overwrite of queued draws.
++            self.flush_ordered_submissions();
++            self.constant_state.as_mut().unwrap().cursor = 0;
++        }
++        let state = self.constant_state.as_mut().unwrap();
++        let ring = self.current_pipeline.constant_ring.as_ref().unwrap();
++        state.offsets = [state.cursor as u32, (state.cursor + vertex_stride) as u32];
++        self.buffer_staging_belt
++            .write_buffer(
++                &mut self.buffer_command_encoder,
++                ring,
++                state.offsets[0] as u64,
++                NonZeroU64::new(vertex_size).unwrap(),
++            )
++            .copy_from_slice(&state.vertex);
++        self.buffer_staging_belt
++            .write_buffer(
++                &mut self.buffer_command_encoder,
++                ring,
++                state.offsets[1] as u64,
++                NonZeroU64::new(fragment_size).unwrap(),
++            )
++            .copy_from_slice(&state.fragment);
++        state.cursor += needed;
++    }
++
+     fn create_depth_texture(&self, width: u32, height: u32, sample_count: u32) -> TextureView {
+         self.descriptors
+             .device
+@@ -266,7 +352,11 @@ impl WgpuContext3D {
+             ..Default::default()
+         });
+         if let Some(bind_group) = self.bind_group.as_ref() {
+-            pass.set_bind_group(0, bind_group, &[]);
++            let offsets = self
++                .constant_state
++                .as_ref()
++                .map_or(&[][..], |state| &state.offsets[..]);
++            pass.set_bind_group(0, bind_group, offsets);
+         }
+         if let Some(compiled_pipeline) = self.compiled_pipeline.as_ref() {
+             pass.set_pipeline(compiled_pipeline);
+@@ -362,9 +452,47 @@ impl Context3D for WgpuContext3D {
+     fn bitmap_handle(&self) -> BitmapHandle {
+         self.front_buffer_raw_texture_handle.clone()
+     }
+-    fn back_buffer_handle(&self) -> Option<BitmapHandle> {
+-        self.back_buffer_size
+-            .map(|_| self.back_buffer_raw_texture_handle.clone())
++    fn back_buffer_handle(&mut self) -> Option<BitmapHandle> {
++        let size = self.back_buffer_size?;
++        if !self.ordered_submissions || !self.seen_clear_command {
++            return Some(self.back_buffer_raw_texture_handle.clone());
++        }
++        self.flush_ordered_submissions();
++        // BitmapData's blit may itself be deferred. Preserve the image at this
++        // readback boundary even if later Stage3D draws overwrite the back buffer.
++        let source = crate::as_texture(&self.back_buffer_raw_texture_handle);
++        let format = source.texture.format();
++        let snapshot = self.descriptors.device.create_texture(&TextureDescriptor {
++            label: Some("Ordered Stage3D back-buffer snapshot"),
++            size,
++            mip_level_count: 1,
++            sample_count: 1,
++            dimension: TextureDimension::D2,
++            format,
++            view_formats: &[format],
++            usage: TextureUsages::COPY_DST
++                | TextureUsages::COPY_SRC
++                | TextureUsages::TEXTURE_BINDING,
++        });
++        let mut encoder = self
++            .descriptors
++            .device
++            .create_command_encoder(&Default::default());
++        encoder.copy_texture_to_texture(
++            source.texture.as_image_copy(),
++            snapshot.as_image_copy(),
++            size,
++        );
++        self.descriptors.queue.submit([encoder.finish()]);
++        Some(BitmapHandle(Arc::new(Texture {
++            view: snapshot.create_view(&Default::default()),
++            texture: snapshot,
++            repeating_linear: Default::default(),
++            repeating_nearest: Default::default(),
++            clamped_linear: Default::default(),
++            clamped_nearest: Default::default(),
++            copy_count: Cell::new(0),
++        })))
+     }
+     fn back_buffer_size(&self) -> Option<(u32, u32)> {
+         self.back_buffer_size.map(|size| (size.width, size.height))
+@@ -559,6 +687,7 @@ impl Context3D for WgpuContext3D {
+                 wants_best_resolution: _,
+                 wants_best_resolution_on_browser_zoom: _,
+             } => {
++                self.flush_ordered_submissions();
+                 let format = wgpu::TextureFormat::Rgba8Unorm;
+ 
+                 let mut sample_count = anti_alias;
+@@ -735,6 +864,7 @@ impl Context3D for WgpuContext3D {
+                 if data.is_empty() {
+                     return;
+                 }
++                self.flush_ordered_submissions();
+                 let buffer: &mut IndexBufferWrapper = <dyn Any>::downcast_mut(buffer).unwrap();
+ 
+                 // Unfortunately, ActionScript works with 2-byte indices, while wgpu requires
+@@ -774,6 +904,7 @@ impl Context3D for WgpuContext3D {
+                     return;
+                 }
+ 
++                self.flush_ordered_submissions();
+                 let buffer: Rc<VertexBufferWrapper> =
+                     Rc::<dyn Any>::downcast(buffer.clone()).unwrap();
+ 
+@@ -929,6 +1060,7 @@ impl Context3D for WgpuContext3D {
+                 }
+ 
+                 let phase_start = self.stage3d_timing.as_ref().map(|_| Instant::now());
++                self.snapshot_constants();
+                 self.buffer_staging_belt.finish();
+                 let new_encoder = self.descriptors.device.create_command_encoder(
+                     &wgpu::CommandEncoderDescriptor {
+@@ -973,15 +1105,26 @@ impl Context3D for WgpuContext3D {
+                     timing.record(Phase::Encode, start.elapsed());
+                 }
+                 let phase_start = self.stage3d_timing.as_ref().map(|_| Instant::now());
+-                self.descriptors.queue.submit([
++                let commands = [
+                     finished_buffer_command_encoder.finish(),
+                     render_command_encoder.finish(),
+-                ]);
++                ];
++                if self.ordered_submissions {
++                    self.pending_draw_commands.extend(commands);
++                    // Bound retention to 32 draws even if the movie never presents.
++                    if self.pending_draw_commands.len() >= 64 {
++                        self.flush_ordered_submissions();
++                    }
++                } else {
++                    self.descriptors.queue.submit(commands);
++                }
+                 if let (Some(start), Some(timing)) = (phase_start, &mut self.stage3d_timing) {
+                     timing.record(Phase::Submit, start.elapsed());
+                 }
+                 let phase_start = self.stage3d_timing.as_ref().map(|_| Instant::now());
+-                self.buffer_staging_belt.recall();
++                if !self.ordered_submissions {
++                    self.buffer_staging_belt.recall();
++                }
+                 if let (Some(start), Some(timing)) = (phase_start, &mut self.stage3d_timing) {
+                     timing.record(Phase::Recall, start.elapsed());
+                 }
+@@ -1023,6 +1166,18 @@ impl Context3D for WgpuContext3D {
+                 if matrix_raw_data_column_major.is_empty() {
+                     return;
+                 }
++                if let Some(state) = &mut self.constant_state {
++                    let data = matrix_raw_data_column_major.as_flattened();
++                    let offset = first_register as usize
++                        * AGAL_FLOATS_PER_REGISTER as usize
++                        * std::mem::size_of::<f32>();
++                    let destination = match program_type {
++                        ProgramType::Vertex => &mut state.vertex,
++                        ProgramType::Fragment => &mut state.fragment,
++                    };
++                    destination[offset..offset + data.len()].copy_from_slice(data);
++                    return;
++                }
+                 let buffer = match program_type {
+                     ProgramType::Vertex => &self.current_pipeline.vertex_shader_uniforms,
+                     ProgramType::Fragment => &self.current_pipeline.fragment_shader_uniforms,
+@@ -1292,6 +1447,10 @@ impl Context3D for WgpuContext3D {
+     #[instrument(level = "debug", skip_all)]
+     fn present(&mut self) {
+         let present_start = self.stage3d_timing.as_ref().map(|_| Instant::now());
++        self.flush_ordered_submissions();
++        if let Some(state) = &mut self.constant_state {
++            state.cursor = 0;
++        }
+         std::mem::swap(
+             &mut self.back_buffer_raw_texture_handle,
+             &mut self.front_buffer_raw_texture_handle,
+@@ -1323,6 +1482,7 @@ impl Context3D for WgpuContext3D {
+                     width = self.back_buffer_size.map_or(0, |s| s.width),
+                     height = self.back_buffer_size.map_or(0, |s| s.height),
+                     samples = self.back_buffer_sample_count,
++                    constant_ring = self.ordered_submissions,
+                     ?counts, ?totals_ms, ?maxima_ms,
+                     "Stage3D wall time: draw,index,vertex,constants,texture,configure,other,pipeline,prepare,encode,submit,recall,present; draw includes its five subphases; not GPU completion");
+             }
+diff --git a/render/wgpu/src/context3d/shader_pair.rs b/render/wgpu/src/context3d/shader_pair.rs
+index 1ea54b9..540dd19 100644
+--- a/render/wgpu/src/context3d/shader_pair.rs
++++ b/render/wgpu/src/context3d/shader_pair.rs
+@@ -85,7 +85,7 @@ impl ShaderPairAgal {
+                         visibility: wgpu::ShaderStages::VERTEX,
+                         ty: wgpu::BindingType::Buffer {
+                             ty: wgpu::BufferBindingType::Uniform,
+-                            has_dynamic_offset: false,
++                            has_dynamic_offset: super::constant_ring_enabled(),
+                             min_binding_size: None,
+                         },
+                         count: None,
+@@ -96,7 +96,7 @@ impl ShaderPairAgal {
+                         visibility: wgpu::ShaderStages::FRAGMENT,
+                         ty: wgpu::BindingType::Buffer {
+                             ty: wgpu::BufferBindingType::Uniform,
+-                            has_dynamic_offset: false,
++                            has_dynamic_offset: super::constant_ring_enabled(),
+                             min_binding_size: None,
+                         },
+                         count: None,

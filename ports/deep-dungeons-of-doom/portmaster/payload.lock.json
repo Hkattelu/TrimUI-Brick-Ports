@@ -1,0 +1,1870 @@
+{
+  "schema": 1,
+  "runtimeSourceCommit": "ddb9a7c16792378837d95d62ee69927015882c6f",
+  "upstreamCommit": "159d7dbbca40bd475c8693df011b3dbf66213844",
+  "runtimeBuildProfile": "dist",
+  "saveOrigin": "file:///ddd-offline/ddd-offline.swf",
+  "gameVariant": "StashActions",
+  "files": [
+    {
+      "path": "portable/usr/share/alsa/cards/CMI8738-MC8.conf",
+      "sha256": "010df70a0dbf4fcfc3b19b43a9af30d58fa7e1121da8069573857336a62a889c"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/al",
+      "sha256": "b2c689f19123dd19d2097fbfe1b260cf1ec90b7caba8f0094089863f7bd99bd0"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/cn",
+      "sha256": "b296dc2bff116f3d6198536111acca540b766b2ffeb5ae0ff44b20aa9afe0348"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/Aureon71.conf",
+      "sha256": "b27ede016371d8b5202ad22092618da188e9509b889882e1f619e746321fe3c6"
+    },
+    {
+      "path": "portable/lib/libcrypto.so.3",
+      "sha256": "b27a2396652ee28629c94d59d667c417dbffdf2dee84e5bf140bd17d3eedb7d9"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/olpc",
+      "sha256": "b0ccc40066ba04bba9afd68a002ace2b1adedde2f16caa044b7b5b1d2c167b26"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/CMI8738-MC6.conf",
+      "sha256": "aff8b0c75abbfe770cb2aab21612b5f404b5468a858d6bf333a535e40ee5611c"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/digital_vndr/pc",
+      "sha256": "ae823d2f59bfa9df036ac82972c7e2faf51a892fb11d0336b0b8d5ab9b039613"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/xfree86",
+      "sha256": "ade96d0e9fa4427c48e50ec708407bbd94c1bf4560fd05581391647e5f9ee9bb"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/sgi_vndr/indigo",
+      "sha256": "ad5059622a0b70e9555cb09515f73474abd16035b28742ca3b4b685530ef09ed"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/nl",
+      "sha256": "ad29e5013fef2f54435368d68da9395387356bfc57264e305f76c701b58e8216"
+    },
+    {
+      "path": "portable/lib/libbz2.so.1.0.4",
+      "sha256": "ac19913f44443f68f2e3ca29d79caaa785cd257bb424b028234bb4a2e8745c07"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/et",
+      "sha256": "b38196b423ffaee0c4f1737c559ca848943378a806aee16bdd1660993ecd8e05"
+    },
+    {
+      "path": "portable/lib/libbz2.so.1.0",
+      "sha256": "ac19913f44443f68f2e3ca29d79caaa785cd257bb424b028234bb4a2e8745c07"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/tr",
+      "sha256": "abfa3ce7dee8367b0f2cde52d71f194c2c708afa6358fb9fc0cf365424936add"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/README",
+      "sha256": "ab88a02b01ce646a5a3965a05f1876b70b97b24e4d6409973126a0baa59126a5"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/gb",
+      "sha256": "ab83683e51e26b55df4606af51f470ad6f2b167740b08667cf55d2a1c78e1489"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/level2",
+      "sha256": "ab1f791d69969eb8444f9661138cf5e28b38420dbd14bcac1adb1cda70742180"
+    },
+    {
+      "path": "portable/lib/libudev.so.1.7.8",
+      "sha256": "aa6d64bdfafc40a30b3206e7ae31fde008f013b180aa1ab877ec1bde0a240ca6"
+    },
+    {
+      "path": "portable/lib/libudev.so.1",
+      "sha256": "aa6d64bdfafc40a30b3206e7ae31fde008f013b180aa1ab877ec1bde0a240ca6"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/eg",
+      "sha256": "a91c117ff0507c529cb21b52276480316ebd242278c6e4c5c2b00da100f046be"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/sgi_vndr/indy",
+      "sha256": "a8e49f04133afdbbcf18b1039f9b9fdd912729ce5d6dc89eacecde2a8263a82c"
+    },
+    {
+      "path": "run-game.sh",
+      "sha256": "a7f8a203e28b21b1e23e2e8dc2aee1b437a27eb0a40e24abcbba52e3ac666aba"
+    },
+    {
+      "path": "portable/usr/share/doc/libudev1/copyright",
+      "sha256": "a7d06854714a1ca99f6dbd1a1641dde5bcf28635be149f6554449618f8f427f3"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/types/nokia",
+      "sha256": "a63b9d10e7898c5f78d12777675bed2d0d1b723b13c18692fb46e44f85ea082e"
+    },
+    {
+      "path": "portable/lib/libbz2.so.1",
+      "sha256": "ac19913f44443f68f2e3ca29d79caaa785cd257bb424b028234bb4a2e8745c07"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/pc",
+      "sha256": "b38584a903c8e5eaec371d9fe8fe6611f5bf3baaf5a38a3d555d47c0d07f3f40"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ph",
+      "sha256": "b49de978a8db4edd9b2cad83570e2587e173ed0161b4650758cf18f3e6629d64"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/mousekeys",
+      "sha256": "b4de6898f10617c8172f9a35aae362def187793e1d995f5bb646e0c220b31255"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/dsnoop.conf",
+      "sha256": "c2ac63498263b277b6adc2f19caf5463ce49f4ef8f8612fa17ac71433e5d008c"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/be",
+      "sha256": "c138ceefdb05673add619e1a6072096daa3560acb643b68781f9933edfb3b4e4"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/iso9995",
+      "sha256": "bfb9feee868fde37f9f5f4ba43924f2b70f621ebe058e1d4c7cef6f7aa4278ca"
+    },
+    {
+      "path": "portable/lib/libanl.so.1",
+      "sha256": "bd1c7a5cbca7aa923d63ef814743555c37ab69fbee29f34991fee47380eb4ac2"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/tw",
+      "sha256": "bce31a2f0d2e84fa670231c5f0ce1e69298c4f67ad4563a34595a51a4054c293"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/digital_vndr/lk",
+      "sha256": "bcaf380ea202b768b0b6de1d087685dc972d830550826a20f4c05634ab300aeb"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/de",
+      "sha256": "bbc0fec438099da4d15977f01f9d50e28059f53894adaf7e93c496e6c4d84820"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/keytronic",
+      "sha256": "bb69ce82e59cd77acf169e299747ade9e79c1f07edbfe62674ede353aec2a57b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/xfree68_vndr/ataritt",
+      "sha256": "bb4b57d006e1eec048ecb57ee0326d3e2cb47320a8888eeb0962f4fcb9f99f3d"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/no",
+      "sha256": "ba358021d65f21efcaa80021e8cae64b63c3dad21ce991cca9158e26a8da219e"
+    },
+    {
+      "path": "portable/lib/libwayland-cursor.so.0.22.0",
+      "sha256": "b9ec80ef43478736bb4efbc8a80daa15c12464b68905f74203292e2914ade4d8"
+    },
+    {
+      "path": "portable/lib/libwayland-cursor.so.0",
+      "sha256": "b9ec80ef43478736bb4efbc8a80daa15c12464b68905f74203292e2914ade4d8"
+    },
+    {
+      "path": "portable/lib/libpcprofile.so",
+      "sha256": "b981f7ca9b7891472c828fcd4ac1954cfc4eaa0011b9c763b1f3541bc1192487"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/de",
+      "sha256": "b90eb0c1686d9c52c583e9537f1200bb50d09244586af4901df2d22836e5b8dd"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/kpdl",
+      "sha256": "b81ef8aa7cfa4b3272986272150fd445b8effeff986c2097cd88fba880fed1bb"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/nec_vndr/jp",
+      "sha256": "b7d8c5d70465456c1847674885ab0c711abe86876b1f8321fbe478f8441d967f"
+    },
+    {
+      "path": "portable/lib/libbrotlidec.so.1.1.0",
+      "sha256": "b7895f0fd4ad47408cb01fcb959ae6792804c15512526166f9bf48358714d0b5"
+    },
+    {
+      "path": "portable/lib/libbrotlidec.so.1",
+      "sha256": "b7895f0fd4ad47408cb01fcb959ae6792804c15512526166f9bf48358714d0b5"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/gr",
+      "sha256": "b7641ce65f51dc8f97f627155625065adde50ad74b061932ffe4d7ee37810de1"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/xorg.xml",
+      "sha256": "b6f661b0c2ab40b92c7a22e8d7f129047ed91c3931d93746a2b7de4daabccd71"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/evdev.xml",
+      "sha256": "b6f661b0c2ab40b92c7a22e8d7f129047ed91c3931d93746a2b7de4daabccd71"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/base.xml",
+      "sha256": "b6f661b0c2ab40b92c7a22e8d7f129047ed91c3931d93746a2b7de4daabccd71"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/Echo_Echo3G.conf",
+      "sha256": "b6df2b1986dbc8cc543130f6fe07c58e8c0f96f360891081096df1d3b4bd865f"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/aliases.conf",
+      "sha256": "b625c34ccc217835412953da73520429b44859ce51efaa31a3dc6a4d72a3bbe9"
+    },
+    {
+      "path": "launcher-common.sh",
+      "sha256": "b524725b4afa487d20e043462b24db8b08e28ef364598e91174cd3b70e248f88"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/nl",
+      "sha256": "a61e97302f6a73a56553417db6852f5a31bc2bd392de8d0f9060770890ce4211"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/gb",
+      "sha256": "a522c43d6d7d75dffdaae93d0e4428611064c58b3b2a30bd2c01bb2368982070"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/digital_vndr/unix",
+      "sha256": "a4c55d89a1ccd5741d8b36d24e18c2b5bc64ca26a4eaabe3c2f7e8e3b3039e99"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/ibm",
+      "sha256": "a49eb0ebdcd564a3050bd0df6158f8586791e1ba9a2fc63ff8109e8b9b6a492f"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/Maestro3.conf",
+      "sha256": "9291749b971d36f4f436127d105641031b44dde0da9ea0411937fb4e34897f24"
+    },
+    {
+      "path": "portable/lib/libresolv.so.2",
+      "sha256": "92890287859788043628489a25fa39a623119328f6c0ac8e91f9ca60ab90650e"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/hhk",
+      "sha256": "90d19f2f14dacc76a75353c7aa20518e6a244bb9cf132e6ad01532f9d969fae8"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/teck",
+      "sha256": "90b60ffb32d3c8465756b7563579ef57542f9c9747b17925f5c05c05122db91a"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/eu",
+      "sha256": "9080d6de013f2d61e1d34fd64bbc8715c7ee217ebc95e2d681b15bc2b50bb343"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/tw",
+      "sha256": "9021512e53f36526c57b07481d47dd63711f690e8ffe616efff4921856eb265c"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/VIA8237.conf",
+      "sha256": "8fe2eb01c92038c0b50f98f0386c435db852fe131323a585f529d89f81fb2ba7"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/surround41.conf",
+      "sha256": "8ee8178f092294ff94ce2e065126888992eeb35cd5119e53487fd0b55fc8be32"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/ATIIXP-MODEM.conf",
+      "sha256": "8ec8c18a874dc42f6cf925dff57b9cd8b86f0cda3e8ae9de0c6b382811ee4286"
+    },
+    {
+      "path": "portable/lib/padlock.so",
+      "sha256": "8ec87af07698bcbb2be6fc9dc98f732df16c730a3c5a15ac29d97dd63175c48f"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/si",
+      "sha256": "8ea12df796d51f64e688ef876ca50b0f77eee77daf2eb36d7b6797da7962cdae"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/it",
+      "sha256": "8d89f6176a2ea0a7883fc526ee7ecc8b6bb7f6f928aa0f38964657785ad1a3a1"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/ataritt",
+      "sha256": "8d39211d4948fe77c483d45f953ea983c0e11c120ababe634fdc696300106fa2"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/types/mousekeys",
+      "sha256": "8cd68606f38aa725915ea7a0de775f322a27b5b79bcd871569ac72b31b93585f"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/shift",
+      "sha256": "8bd3a36b2e5e0c246613cd00af5600b6d2cc5c9a02f490be5c8d8a7790240c6b"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/RME9652.conf",
+      "sha256": "8a065a1bc0f7e9843e54fc098ccebb049dc85981d93f7e1a24db26f958f33339"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/ICE1724.conf",
+      "sha256": "88fcf5d6019e425f849f9d2aa67a5620203235982fe80993f0d6c6c9bb65a18e"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/empty",
+      "sha256": "887e05c9d27f1269ee87908c81bccef237b34e22f5db7e30ff8c3381691c6ac8"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/lk",
+      "sha256": "881d6d40a3964c766af10874618ca342c610656e7a1bba598f8c1cbefeca98af"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ancient",
+      "sha256": "876736500bc7d547713d2ad1740f5a1379d98214fc459b80163e7d24736cdd97"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/tj",
+      "sha256": "86998ddb19288374722a120ae597d25d381f81027fa0a9a4143942f4a5138521"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/microsoft",
+      "sha256": "867259b20312d6de2ed2ae3f64de8ba50985e7c7ab33696623c5a1abb39449f6"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/aliases",
+      "sha256": "85f774170fc1526e8a909a1e2952423dae3891b721abc293a27dc450818dcc6d"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/hp",
+      "sha256": "8532049b1e4081644d8dff6e4b95aad643072c7acff1f816654b944490fd2076"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/fujitsu",
+      "sha256": "8526ca756290d468e390f0c3b8b06c56068c1ea71c7d0f44bffd95a2efb66a43"
+    },
+    {
+      "path": "portable/lib/librt.so.1",
+      "sha256": "93d0d5ab643b50ac1a61c2c7baf670e8aa94973fa5a2584d13db05295d5b5a0e"
+    },
+    {
+      "path": "portable/lib/libutil.so.1",
+      "sha256": "c2c2f3733137b0acaee7b3abb9d6ee8ce05783013bce6e20da363cd7eb986703"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/lt",
+      "sha256": "94a6c2f9906311d1614312d2ec79169d96a5b2114e46c6097caea4549170e12e"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/USB-Audio.conf",
+      "sha256": "961520f46a0826778aed3716a2b573bd039af6bd8605858651dc56d3d0621c6e"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/cm",
+      "sha256": "a493106e2be40b589930a9686ca7c87d9bf0e55a5faea9c8861f1ae8c5298e0d"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/hp_vndr/us",
+      "sha256": "a45716601c3bc5bff86656e1d5cc3158b5e46a21acafc853699e6d52087ae0e5"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ng",
+      "sha256": "a44bb469226af83ab9dc344f31e38395c3957d51179c5a1d7b77bfeafb487a8b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/fi",
+      "sha256": "a3cbf7ad9cde215e89f6866c8aecfa77d818df61e84e07cac0ef609b01bf4bba"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/in",
+      "sha256": "a2233d12ecafe1d9c7e67c7e23f700132665db23ce9e8e59afb6c02317a717fe"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/bt",
+      "sha256": "a14842315c52340a6f8273a610b255bfe3af765bdf669117c94d4e9f227652d7"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/iq",
+      "sha256": "a1252c14090c5003fa6e60fa9778c29ea00af6e3dcfad86bf64159dee9f64640"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/nokia",
+      "sha256": "9f442dbc1742a738e44ecb2566ee5f41832c5ba19f351d040f3a6823af8deef2"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/fr",
+      "sha256": "9f0bc9c9c039735fd88b61741e002758743a7dde5d03cfad6dfeed6490419dbf"
+    },
+    {
+      "path": "portable/usr/share/doc/zlib1g/copyright",
+      "sha256": "9e5b96d63773a5d177ba264254390f792be07e41748ebd94730981c6cac31cc6"
+    },
+    {
+      "path": "portable/lib/libffi.so.8.1.4",
+      "sha256": "9dd873a938c4d7df76912d01f6a28aa4aa73d583bd20485a0dbfe5aa9673a191"
+    },
+    {
+      "path": "portable/lib/libffi.so.8",
+      "sha256": "9dd873a938c4d7df76912d01f6a28aa4aa73d583bd20485a0dbfe5aa9673a191"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/br",
+      "sha256": "9c721caae3a260f18ba27348e73e9062ddcfacac932efc9529061d199af28780"
+    },
+    {
+      "path": "portable/usr/share/doc/libasound2t64/copyright",
+      "sha256": "9b356b4fae53b5d5e7668e048f085d68a5039de7b6afbf465f50e81513334062"
+    },
+    {
+      "path": "portable/usr/share/doc/libasound2-data/copyright",
+      "sha256": "9b356b4fae53b5d5e7668e048f085d68a5039de7b6afbf465f50e81513334062"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/dk",
+      "sha256": "9a77a31278f483b0a95bd86d02b3077667a3b4a68730fbdd7c02ab95bcfaaccf"
+    },
+    {
+      "path": "portable/lib/libfreetype.so.6.20.1",
+      "sha256": "99245e15654c582d5f421034652fd8c2970a23774bc06b84e335b755de45338f"
+    },
+    {
+      "path": "portable/lib/libfreetype.so.6",
+      "sha256": "99245e15654c582d5f421034652fd8c2970a23774bc06b84e335b755de45338f"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/fujitsu_vndr/jp",
+      "sha256": "989052df4b33f585ce2a5c6a1fd8b8dd4150f9853e4d636be35076ad6a87030c"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/GUS.conf",
+      "sha256": "97942d9546bca7fa50841e74168d7e1e8f62468ff8cb9fc3794dd7e3770d8ace"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/xtest",
+      "sha256": "978f3f50180025e7de1bbd3b6cd93fab05e1dfa28d48bcf30b8d10eaddb0363d"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/ara",
+      "sha256": "9730036f3a8c50740e8fdb9d1e512775c2c7e3252c28f0813e8b54f7a1fcaf90"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/jp",
+      "sha256": "9693f30a3abd68c85d2159bf42401edcf7c01cfc8f6655c138ddb9b132c90a41"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/ch",
+      "sha256": "965c049784e75492c57ecfcce94116d8a612b88c47521a8432662d043ead25ab"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/pk",
+      "sha256": "9622626141bcd84299507a616a383882f8407e8d69970a2bca733213131e15aa"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/bg",
+      "sha256": "95f97e580ab1537c4eb4a30e20a4b83f0b5bcb2cee351731864c000290392687"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ge",
+      "sha256": "c373d734fe34bdea78569ae8dee654cabbcbc84803f57344a10d8e11db473bf0"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/VIA8233A.conf",
+      "sha256": "c405ae909d53f9dcb71546c46bde37e63d76c6fed2bbd1f0e272ea26c69e832e"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/us",
+      "sha256": "c48909ff9be8e13cb3b035d844f1d5674c225d7072b75ae1954fd2a4f427ffaf"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/ro",
+      "sha256": "ee756aad63da40ea02a952d9441eb8e5e679fe9298fcbf309c57e958d15c603b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/it",
+      "sha256": "ed70d1dfc2bc531cdec7965e2033935b0004f1695e0850aa090e737ac491254e"
+    },
+    {
+      "path": "portable/lib/libmvec.so.1",
+      "sha256": "ecf27aef2109bfe2e251e037e2a5bb252c19077cbf30a4913b50e6ea6e69dc63"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/eurosign",
+      "sha256": "ec63fd5afa4e85b86c9502f8ad4f1b087afd40967d24a3b01f8046f1a2407d63"
+    },
+    {
+      "path": "portable/lib/libnss_dns.so.2",
+      "sha256": "eb3d7a4f0b47991c54030f5e330f0007dee051999546cc669ef7c1967bf1dc35"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/FWSpeakers.conf",
+      "sha256": "eab3789ba81a6800f11fb01a386e32ae397b0d225f4d7144f486e3ee393ad0bb"
+    },
+    {
+      "path": "portable/usr/share/alsa/alsa.conf",
+      "sha256": "ea7c6cedb7da16ba51a0fea3e960416a2240e29c1f5d42e475c1dfcd19eb74ee"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/amiga",
+      "sha256": "ea2cdb8acf152877963564965865873ff1d1b7838695fb487b93eaa7c923d0b5"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/nokia_vndr/su-8w",
+      "sha256": "ea0ae2e0e7d6c172beffd3d3364635c875e6c39b7b627d3027879a9aa4c27e30"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/sanwa",
+      "sha256": "e8a2e1347479a910d2da18aa09a53e992802106f415d349f40e691d0d32de7b2"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/epo",
+      "sha256": "e8978a60f6f5bf13aace45098f0f0530c0487f10b1ab200b46171e5963d90078"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/digital_vndr/us",
+      "sha256": "e87eca7d5567ef11c613f5f70430331853ab99dd1fe4b92c02b61ac27a07be61"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/at",
+      "sha256": "e878e22e81bc7e0dd1f04aabbc7981e6605eee94f64150822f209eb1f31017fc"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/id",
+      "sha256": "e863d4174eed1172524a168b54b90c72849c658d3212b43910cea99042c384ea"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ie",
+      "sha256": "e841894f01c499f3598c3fbb09f930b6b0cca703b65bbc984ea7a8dcbe5408b9"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/digital_vndr/lk",
+      "sha256": "e7fd8f7c8b3d9662f70854a4ecd7a97e33f1047783226434a919312fe936d0f7"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/accessx",
+      "sha256": "e7f0630dbf09f3bb3adf3bb8e8d2464afbd6e616fe0075dbef29b7e82bd2a50d"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sy",
+      "sha256": "e7e1843e8b9b28b438a79109ac622f7814860ef8ca744afafe7bcf6d0771aede"
+    },
+    {
+      "path": "portable/lib/libnss_hesiod.so.2",
+      "sha256": "e7e15943d074d350268c36c49375d2aeaaad4da31153f0d580c0df1cd7089fbb"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/sgi_vndr/indigo",
+      "sha256": "e7567e5fc5892eb1c23b82d3bcfc2a1e2c8eb6e499bac24e641ff300a066cbe3"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ru",
+      "sha256": "e6dbffae1c4d4b6ef2a675380241115f713e455931773b1d4c7ecd8005efa8c7"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/mm",
+      "sha256": "e6d26776976ddf29e08f7f661302aa78f9c7a98e961967c7989ce2eae9ac8d92"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/lv",
+      "sha256": "e6c05346e6ddac49d6fd6d6c1f2d9ec23ccb7f77c83c711487e6f307f3fc91f3"
+    },
+    {
+      "path": "portable/usr/share/doc/libcap2/copyright",
+      "sha256": "e60a5642e12e340060e4e519a65b2eb0330be2917854841c644e36268f607d54"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/tg",
+      "sha256": "e5c809d98c545ef1a1c66b462526ce8ed62a97432f13464ed74f96341e505778"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/README",
+      "sha256": "f0d444a24488ccc5e905ff5fc0e8190a613c3938851cb14641660c466a983297"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/cz",
+      "sha256": "e4fae163e9652d293e749b6be066d5de99823d4793cc1d299d83ce7a50d5cf52"
+    },
+    {
+      "path": "portable/lib/libgcc_s.so.1",
+      "sha256": "f2d3ad2bf0b61f6bc944cc37d7b6ab7f88d2582b41ff989ca164803f56cc5f20"
+    },
+    {
+      "path": "portable/lib/libwayland-client.so.0",
+      "sha256": "f31270db49694b1236d0e161ee23765ed82acec9c01bc9e0d6444e8d744f85e2"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/latin",
+      "sha256": "fe44b3fb50d309a1d8c7f1497e6d7a0af33e791165d36e8966701b9f5a0262d9"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/xfree86",
+      "sha256": "fe02da14c9216fce5278c4dbb7059a12063649b3bade565a808c1f5bb2f3a602"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/fujitsu",
+      "sha256": "fdfdc37ea7e0599d5811ff4be05cc54915dcba6fe521a22bc82d3fc4ddc00110"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ba",
+      "sha256": "fde993c5a87ca245efd331948d4a1212805107aeebe720b1233c855c045c42d3"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/dk",
+      "sha256": "fcefecdcbc25406de793791957e035ef57a8ab4988960ccbe6031235ec3f04bb"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/nbsp",
+      "sha256": "fcdebe89f88e385ca2ba178274cd3b04c0e7066afa10395e8c30671997baa441"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/bd",
+      "sha256": "fc21d55bac4ef2fdb96f92f52aa9f3633653ebcadf907f785d0ab3c6d49a7b12"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/types/level5",
+      "sha256": "faabfcdb7c1324c3787846fb82e03746a0644d58e671907bd4e8ede308a4e652"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/us",
+      "sha256": "fa87a54d94055a91e7a049229bd69e8b61748c357dc1d40c3dde29eaec960292"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/ES1968.conf",
+      "sha256": "fa3218152521ad798b5770aad93363fd57557c84dd32d630bf273041c21fa5dc"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/ee",
+      "sha256": "fa064f289af80f5bd2b1dcf12b77f8b02a8821d418712a9f3bdb103567d9d92e"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/rs",
+      "sha256": "f9cd6947f3eb509a7e3776d7f2b7143cf8e7d92b1cfb165f04552cbe6e6732cb"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/front.conf",
+      "sha256": "f9c8750ab61549d15b24adccc39587459e1fd6a448f259625d3c31fb0e46f8db"
+    },
+    {
+      "path": "libddd_alsa_poll_recovery.so",
+      "sha256": "f90be5aa32fbb9ff1dce495a2ffd86070320a778d248c5fb560a86a565e8fb7a"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/ICH.conf",
+      "sha256": "f846aba377c4930fa524fda0ef149b51f519065c9980403e1698371ae7a418fa"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ee",
+      "sha256": "f7adbb45038afd86df55ddae6ac580c1fe7e4946cdf9175d1283db706bf309d9"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/se",
+      "sha256": "f64031683d4f0eb69a8d040a0061e12180cb7adadd6ad80c37e1ff14f875d0a2"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/ICH4.conf",
+      "sha256": "f5f2ddbc85bd703a0fea9c677e9043bb98cd95b8578064092b67ae4c2b557b3c"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ctrl",
+      "sha256": "f483e41594282730c37a4aa2b623df15790df8e1711a7e63ae5b49ef21f45e2f"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ml",
+      "sha256": "f437f0f5dd3c3f5217358b342528cc34d748b2c8cdb8c3574a7091b2949c0a28"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/il",
+      "sha256": "f42072a57f056b3bfe05c781f24d913d9cf18a604f5a7e53008e3416fe270aff"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/FireWave.conf",
+      "sha256": "f4123f0f106c0baf213020ef8cb5aed19e79a2d896fb9e6603d43c001a704254"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/AU8820.conf",
+      "sha256": "f396368a200d99288919481bc398996b52e278ebb65f64974bc741dccdf1723a"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/surround40.conf",
+      "sha256": "f32c9810643fe2a371ff0e3c62011b4fbb544702e08424425983f74146989394"
+    },
+    {
+      "path": "portable/lib/libwayland-client.so.0.22.0",
+      "sha256": "f31270db49694b1236d0e161ee23765ed82acec9c01bc9e0d6444e8d744f85e2"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/no",
+      "sha256": "f303a877ef01bf7b37e704a381bea9be6254b83a70f4a429b8133f6d55d40369"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/Audigy2.conf",
+      "sha256": "8485eab66bcc53c6b21f18a3997607b77eabd698b437a4788d86baf67948a838"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/mn",
+      "sha256": "e4cd56da6ba817e6ef50ceb431c3d6be07e10a24358011634849452acb353c27"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/pt",
+      "sha256": "e38d648c2dd89093ee881c238d88749459091aa740d93b52bfcd5d9bb002c765"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/pl",
+      "sha256": "d0265e967143126a0ac25d22a0efbbfa4b7a250bbab2214359d34f5196ef4be5"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/YMF744.conf",
+      "sha256": "d024c523af4e2dbcf967e88b2101ce340bc8dd1c1fa5f5ef3746fffe4ec11d7f"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/caps",
+      "sha256": "d001767068fe2791a48f829153820a8717f659e08c9a061759cd66e9e37a3833"
+    },
+    {
+      "path": "portable/usr/share/doc/libfreetype6/copyright",
+      "sha256": "ce6d766883ea111e7f47acc09e9d49be8827daa6a03f2c2707243a425d41f0e9"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/sgi_vndr/iris",
+      "sha256": "ce07fdaefbf422068d81ad11db84e97e5293e623815707b1bff37ee5089a38f8"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/PS3.conf",
+      "sha256": "cddd47a62dcb70aa209d2788f743c469a3d799a0e1093fea5d200837a5ea6f9a"
+    },
+    {
+      "path": "portable/lib/libssl.so.3",
+      "sha256": "cd89f6e6eea72583e1f1f98f8ea6b0f5e9281d7a0e4262a2e36f648be789d565"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/xfree98",
+      "sha256": "cd7b8343937d98653b3a2f698fcc5dc3aff3a6b523d2cce5307d6eead5006602"
+    },
+    {
+      "path": "portable/lib/libc_malloc_debug.so.0",
+      "sha256": "cd1ae6b61915b5d0bf6349ba169a223c68d36a221b57d56f6c6ab645dacf88c7"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/dpl.conf",
+      "sha256": "ccec7c194270433c2dcdf3622b2ef25e3197020da800662c6111ff8b8638f30b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/br",
+      "sha256": "cb737f0b05aea6d8a368e766da5eab7d4469788f242a073487d3157de8a95655"
+    },
+    {
+      "path": "portable/lib/libpng16.so.16.43.0",
+      "sha256": "cb6e50ae78b927c643263e7c0ae55f846d2a01986d870d2c27e7b999347058ed"
+    },
+    {
+      "path": "portable/lib/libpng16.so.16",
+      "sha256": "cb6e50ae78b927c643263e7c0ae55f846d2a01986d870d2c27e7b999347058ed"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/ataritt",
+      "sha256": "ca9cea12436c8b04fb9bd26b7d324aa8b1ad2c3843d358370f7b4a8bf30998b7"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/AU8810.conf",
+      "sha256": "ca5b2b36906ef6f4322df049e44148d2c5657768dcbc21c55e696eebe5eeb0fe"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/olpc",
+      "sha256": "ca4f6a2a5228e120b0f89af67a0c9c0e0cc605f99912e017134981726993fbec"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/macintosh",
+      "sha256": "c9911cf1fb2137221cbafc1c17264dd5c111aa24fbd96c58db1db8ec6cd4033b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/is",
+      "sha256": "c7ac379e288142cab096db9a0c93d4e37255c7a9b3cf1ecd5b1cd43646fdb10e"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/PMac.conf",
+      "sha256": "c79d68b2205708c68f073c4b3e86006c0b1fcbe2d93026f69f3b0671fcf97a29"
+    },
+    {
+      "path": "portable/lib/libwayland-egl.so.1.22.0",
+      "sha256": "c714397e5fd2ff5de7998299e74a007190776d3d9ec3e91b856a4cae1019746a"
+    },
+    {
+      "path": "portable/lib/libwayland-egl.so.1",
+      "sha256": "c714397e5fd2ff5de7998299e74a007190776d3d9ec3e91b856a4cae1019746a"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/AACI.conf",
+      "sha256": "c6e894381791831b01df3403c5493027bcc22b11b9c018c32df93a8f17794ffe"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sharp_vndr/ws003sh",
+      "sha256": "c6bbd8c17341074097e18919fefb61403a1955562d42ef88e7be9c06eca97993"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/VXPocket.conf",
+      "sha256": "c5d14491b5de612c7bbc69b4b5989fd1002d93f6fd6a3a672249951f9367a515"
+    },
+    {
+      "path": "portable/usr/share/doc/libvulkan1/copyright",
+      "sha256": "c579213e28f67944a7e407816b8a8e1d2d2406b3d820e420aa923807c450dc07"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/bw",
+      "sha256": "d038072be9eee7b2ce64079f9bcc95bbc0b91009e3d1c8ed9049e65e5a35da21"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/kh",
+      "sha256": "e49599f6871af00a457f60206621ef2f1916415756a08cabe44750778c13c0a6"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/misc",
+      "sha256": "d105da789ead1201ae5c8b094efff1bd0ee636f610f3347b175d45b15e12621b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/steelseries",
+      "sha256": "d1b3a84216e73c5279044c72002c9f3ebc7b3b79364e496294272172843f19c4"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/hu",
+      "sha256": "e2278fae876a1064ed2c079daa70cdb9787911e464b9f96d306b38fe5cb7bff6"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/fr",
+      "sha256": "e1325139967be5e3e54401904dadff76809312fba557375cb8f6d9414cd26630"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/sgi_vndr/indy",
+      "sha256": "e108ef5dc954bd6f4fa8ce1588822b4dfdea3552975b4d6d64a3b58a4bbada49"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/pl",
+      "sha256": "e1087090c3d79885addf001de0acccbe1b5502c087a1fb9d29eba6661bc48652"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/README",
+      "sha256": "e074717ddf8dbfda1e911efb80cf22ebad64e30c74766c0da24a084b1261056b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/level5",
+      "sha256": "e07406a8982fa3fc94c9bbedbd6a3e3a0159d3e7426960e3b60d7f5bcb8bba1a"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sharp_vndr/ws020sh",
+      "sha256": "df6a2ec02e3b33721a37c4f141997a53ef275d1bd105cf44e1562a2134b6c248"
+    },
+    {
+      "path": "ddd.swf",
+      "sha256": "df2b4af61a382e112eab5fd7e02db17f562325068621b6bb598fa0e9e9029804"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/side.conf",
+      "sha256": "de6aa38da3163709d3b81cc8a56c4afed3e76788cc0cd912c14ec6c5b2a0761a"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/dz",
+      "sha256": "dd386fe1f35be1f9d6cc1f45e3d451003468850a159d66873064ef41f14e6bb5"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/CMI8338.conf",
+      "sha256": "db64d0d74de40d5c975dbceecf64feff164a4cc709ccbfa67958b457a2615218"
+    },
+    {
+      "path": "portable/lib/loader_attic.so",
+      "sha256": "db41d39a84bf8b774a4dcafe9182d4bb0e0b43e3351a028e00260362fe6c1b40"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/group",
+      "sha256": "d962772859c00eb77223056cf3ec22e12c11b31ae8204760ca94e1c31f220000"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/amiga",
+      "sha256": "d8469bc1c9375625b62c93847e6e1505598d825bb29d176a5a5f028f0e6a45d0"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/center_lfe.conf",
+      "sha256": "d7c6d1582e910445db3bdacdce95d57f5833373d57944b92d3604478df992663"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/th",
+      "sha256": "d79780232cab492ca0ae2c55e6fcd15631051852a1f68aaffb7cdcfa51e47a4d"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/lt",
+      "sha256": "d78d7fae4fbf70b9061067c8a5cf35c565a398585bb2e4eae6877b888a7c9e7d"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/jp",
+      "sha256": "d73a3ceec9ec8bf55bc81385ce57efbdc9c96b9599c1fa81fd080303ed353937"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/PC-Speaker.conf",
+      "sha256": "d6c8185b9a3bcfa829632ea2238ea1804f9eb7568d2047bdaf8e519e883146ee"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/level5",
+      "sha256": "d5a6af25714fa768177862b3ffbc5e38d9ec22784aae962f4a4e43f60221036d"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/brai",
+      "sha256": "d4de99d29c79da17d1c0bd5177833abc74d6f79b1465e19d57d697fc0f26af63"
+    },
+    {
+      "path": "portable/usr/share/doc/libc6/copyright",
+      "sha256": "d3c95b56fa33e28b57860580f0baf4e4f4de2a268a2b80f1d031a5191bade265"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/be",
+      "sha256": "d39ca886dc7a1e03d14fd4364aa337dc104c560b7a067efaca2cca0c6144fa1a"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/no",
+      "sha256": "d3615167325dbec6caa394d798e056a3331dc75089dba810b2a8abc658c251bb"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/bqn",
+      "sha256": "d22cb1cd606d450430f07f4b485aaed40a033782c731c09ff38454300268c76e"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/sony",
+      "sha256": "d139cbf6038f8b03e870727a101aa89a7891bc745e92aaf15ba0bbb6007c084c"
+    },
+    {
+      "path": "portable/lib/libasound.so.2",
+      "sha256": "ffcf03bddf79f3a3d9b9b93b3548cec3a8bd6f6f495dcf0e3bff2dd7e6e34d2f"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/gh",
+      "sha256": "843c5769823dbbc74335ac7cbddf521d92069a9201636df4716d0dcd03a3cad5"
+    },
+    {
+      "path": "portable/usr/share/doc/libbz2-1.0/copyright",
+      "sha256": "832ed535ff3c3d025a8d2348eb1b697b89addcf2eaadbc17650262040b9145e2"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/xfree98",
+      "sha256": "37d80f9625f9e844a417daaca8b89030f9b001ee1ebdebbfa18475daeb224d70"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/EMU10K1.conf",
+      "sha256": "367fe3988d35b9aa297be855a99504cbad7928fa22153e0b9d753a399eba2a80"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/solaris",
+      "sha256": "364f88f9d81591d0cfb2a7d137cc31a2e27b0b12028ffadc64b6903f9e84dc97"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ua",
+      "sha256": "35f438958263a93328dce858bbbe4f8f4bd34dec9b1d70ea0f1508595144559a"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/digital_vndr/pc",
+      "sha256": "34c3fdc8757f9e13d194731bdc0b36ba88559c79904f53ed5a23a269be18bb18"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/latam",
+      "sha256": "33dae9987ef52f5dce1ec12c466e11847a9840c25aba1c5e64dd44b0cb6d3de4"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/fo",
+      "sha256": "3392fcbf4f21b39ced92f4c555361ec38f0e3b5b4e4c1d85fa33d0c5b68527b1"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/ICE1712.conf",
+      "sha256": "31761fd7920b74f976eb545f356c835d82cdd4d266812aca8c49c1575c642c85"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/types/pc",
+      "sha256": "316c9cfb47ee6fb9901ee99cead1c6c59fe24fe0c58c250272515a0429c786d7"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/nl",
+      "sha256": "31486df49c4e8bd47371197849bc6ece7ae2ceb43a73f0af49e17ad4eb2ca5d6"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/iec958.conf",
+      "sha256": "30e4411fb010b64f1c570534c805ce4ce9be98ed1bbad95a2cdb7e6ed8bb1bcd"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/types/iso9995",
+      "sha256": "37dc0a4905d8eae972fb8e4eb87a2f5b3050a86aa2fcbe217630647163aea975"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/kr",
+      "sha256": "303d93a6d16950ec7f0d8f8efb11b6ee17dd7c664d0acb5b8dadb1ab9b80acb6"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/VIA8233.conf",
+      "sha256": "2ee6d46c2bda0be75a42bf29f9bf242ebfd3502dbee57a5bd08c0cae4b48d097"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/digital_vndr/lk",
+      "sha256": "2edf152ecdba233761f41559374454c53332251d8a98a787b1ec60d12a0987ae"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/sony",
+      "sha256": "2e76a6a112c7606f72a293b41f3b58f733cc444d8160f0c741770c8e058e3d81"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/tr",
+      "sha256": "2d0fd93105fcd948fe1df940cf10f6925848690161007de948b0d23893abfe11"
+    },
+    {
+      "path": "ddd-log-drain",
+      "sha256": "2c7d3c43db29bba367ad65c52ef6beb7dd778bae7c91ec11727f58acda460593"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/chicony",
+      "sha256": "2ba104cfa6aa1efaced20e0b4f12df8015b473ccc0832e2898dabf153e15b184"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/cz",
+      "sha256": "28e3de65804f749d835e677ae74ee7e815173e9ca1e976bca1319281208db8b7"
+    },
+    {
+      "path": "portable/lib/libthread_db.so.1",
+      "sha256": "27983441852871ca5f460eb391ace8a1f51ddde146960c14ab979c9320092972"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/md",
+      "sha256": "27585ef75113257fc6436a92f90c50c955a2ecc27f8415dbd6fbdf70bc2db8da"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/kg",
+      "sha256": "2612789b3aeb9cfec78ad7ae330fa15216a1165ca7f1f23cd7cf3af95c0b7e13"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/rupeesign",
+      "sha256": "24dde1d4fca8228394270b3b2cf71ab029466f8353a0345f8129ad4e56c59c93"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/typo",
+      "sha256": "3020278bd1a50e05d6596d770990b50a6186d2228c282a86376831d2a2ba36bd"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/EMU10K1X.conf",
+      "sha256": "37fe34f7ddc7a7758863cfd8f32718b1434acee5b5a93548ff5605629468648d"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/basic",
+      "sha256": "381cdef43f910f7f4ddb476b2ff258afe3af6881051f9c71efa5554108c30b4a"
+    },
+    {
+      "path": "portable/lib/ld-linux-aarch64.so.1",
+      "sha256": "390027e5f45f236bd1838bc54bf464c5ff01d260ab9f8b415ea8276641bce505"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/evdev.lst",
+      "sha256": "48d142b5fbfab54f76b98fe7cdd170a2be956b9b0cbe3c613042324b24a5dff2"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/base.lst",
+      "sha256": "48d142b5fbfab54f76b98fe7cdd170a2be956b9b0cbe3c613042324b24a5dff2"
+    },
+    {
+      "path": "portable/lib/libnsl.so.1",
+      "sha256": "4882b6d62f47801209fa1eea18fa2afe88ffd7785c5f3a2175022d87c78de7cc"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/surround21.conf",
+      "sha256": "4849b4b523b4995d5d700370787511ab4cd73db447f8fc02dd6e0bb221025120"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/ru",
+      "sha256": "47988c5fc6eacac30f67c9c7d71e932172b8f8a7ea831f37a3640f6124b3a4f5"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/trans",
+      "sha256": "471d549573a8a2c4fb720c9134d23dda1e29df2b4164d003d01b41332e65c15c"
+    },
+    {
+      "path": "portable/usr/share/doc/libpng16-16t64/copyright",
+      "sha256": "4620d402b97601a910946acccbbe2e15bdffac11615bf9046520990d3b00f2b9"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/evdev",
+      "sha256": "43a2ee6f57dd6a3217b4bba6dc2126bd8b27ea3ac5532e880b0be5d6ea30c668"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/winbook",
+      "sha256": "4127b78751d12f032f2bc49e5cbdd45e6882a9708077ed0d39e3c53cdf7fc220"
+    },
+    {
+      "path": "ddd-exit-watch",
+      "sha256": "3f519514adf9abc55bfdfedd53be5a942796a0b3efc3262b7be2eb404473cb4b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/am",
+      "sha256": "3f3db7a60e794f6d137b0a9a021d266cc254d4c137dbd6df7d70f8f77eab85b3"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/la",
+      "sha256": "3f0adb95edd2b8bb03204f6896781820fbd9c3fdba1c50cca389007b136d6de8"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/jolla_vndr/sbj",
+      "sha256": "3ef5c6a29a7d25956eca1f900f045d861d5bdfe6b85cbf09a28a05cf61a31286"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/ch",
+      "sha256": "3df2aa2b1d1e31e883f3a8c15fa48de0adde3e27b08411fbcd83e37d68487423"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ma",
+      "sha256": "3d8e3875fe3881bfdaac645a7d72062d9c8efd0638464ff5c73e0bcf4406732c"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/dk",
+      "sha256": "3d005ca3a9243e75cdf6978fef98a5956a406064693096a21694fcdb24a63cc1"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ca",
+      "sha256": "3c7a55a158984dcb9b24103b8ad9af343532cc55a283c1039f5dbfc7595b714b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/lv",
+      "sha256": "3c4405f48f2db1ae22b07086cf058a1919e7d4756c58c6562b87db2215320449"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/np",
+      "sha256": "3bdc658d1739df8a5e8ed0649d02ab73e59b2006c78f4fee2a85992b7f5cd5d6"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/ICH-MODEM.conf",
+      "sha256": "3b455ac43aeaf36887eec1300c2580fe645499c8f6ef277f193635b0bd5b26c3"
+    },
+    {
+      "path": "portable/lib/afalg.so",
+      "sha256": "3af7ba17072b3fdf6393bde4105e08ec13f008d34440d2b1a35f799a6a728097"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/HDA-Intel.conf",
+      "sha256": "3a5951177ede3e7afc7259dca02a4f62080a9f388d6489eefe98cd1b74bc0fe8"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/VX222.conf",
+      "sha256": "39f4fedef3fdab641b954608f8f5f2c1d3ed4c1bb919929286b87a668f586529"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/pistachio-card.conf",
+      "sha256": "39ab71393579ea7ed4ad20b58cc61579462b4ac0db559e871840b218dc712fc5"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/nokia_vndr/rx-44",
+      "sha256": "3916745cc30574b3d2111f5f7f8da08f1b45283a63c8478eb5a76a348d7645b0"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/lednum",
+      "sha256": "24c54410578e535f6284801c3f1bd342203eb766836bec18b3d40646d165f33d"
+    },
+    {
+      "path": "portable/usr/share/doc/libbrotli1/copyright",
+      "sha256": "24a64e5bb83d0960d1835696a1e23c0896ad6055b0ca47c66ab0eb9a766324b1"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/az",
+      "sha256": "244f3748072dd88d1ff2e597b21f7d3e896b551ffcb003432960ee0ca9c29a2d"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/hp",
+      "sha256": "2410b73208fdb5addbf85c6f245207c07b1e4f0f0d3771c7a297413205f93161"
+    },
+    {
+      "path": "portable/lib/libvulkan.so.1",
+      "sha256": "1384294a60185c780fb324dfa87fc3367bdd6e4f71a8307a52c329ca2bcafe0a"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/typematrix",
+      "sha256": "12b99ee4a0ce181af768d23d464ed48f4927acbea778980543856cc9b1f89877"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/complete",
+      "sha256": "11d1fd1f5364ef778eb0edc36b4f1955ca165c1900703f163c1406aa8ae767cd"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/compose",
+      "sha256": "10947142db6939e7adf1004b5cde6b190d577706ff4b7c0f0ca0a0ddb57262d9"
+    },
+    {
+      "path": "portable/lib/libc.so.6",
+      "sha256": "0f1905dc27dbc6715875c70527bc8da846a10084c9c483e9d8ff76dce8d69d0e"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/se",
+      "sha256": "0ed0a8812a315ec803d65dd020fd5dc98bae96d80b953cd00dd8ba6be068c91a"
+    },
+    {
+      "path": "portable/lib/libbrotlienc.so.1.1.0",
+      "sha256": "0e39569ce7768abb8fb525cad5b098cb571d4e1b922d099b4fcfdca8e54ed0e9"
+    },
+    {
+      "path": "portable/lib/libbrotlienc.so.1",
+      "sha256": "0e39569ce7768abb8fb525cad5b098cb571d4e1b922d099b4fcfdca8e54ed0e9"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/CA0106.conf",
+      "sha256": "0dff9acb89c5772ddd5bdf60bc11ce75d73e9097dd5214f2579ac2097834fc2a"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/SI7018.conf",
+      "sha256": "0d351ba328e6d216857cd0f73632b1e5b929fd9aafc622d7089d44ba78f3b549"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/terminate",
+      "sha256": "0bf67addb6f096da3de29be0c8fd2ca7546e9164a4d0e874202d95c34d745598"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sony_vndr/us",
+      "sha256": "0bad62591381a64e630cbe1f5962fe5971b489bda8d6bf62a40a10b131fdb52c"
+    },
+    {
+      "path": "portable/lib/libnss_compat.so.2",
+      "sha256": "0b14214f10648b57e72cd736395f79548690b5da31fe5c1d1865dfd411418696"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sn",
+      "sha256": "08e1ad5524f54a9ef776a8dbf60c33228cccb5dced3873f0573ceb6020f236c6"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/hr",
+      "sha256": "0891f79bed0f754db251fa6a381ac05b96b060e91206c9612c49e3614e49ee11"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/nec",
+      "sha256": "053c5be4fa72d2a2729aaf91880780abacac2f130d48bc123d68b9478d312c28"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/Aureon51.conf",
+      "sha256": "049002e88438628c145792a7059855d08c14c7f33b290a5547eb9203deffb7d2"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/types/cancel",
+      "sha256": "047acba53c463dc55d40d664210b5ffee85ba061aeb06949c56473ca012c2a68"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/types/complete",
+      "sha256": "038d66c8861dbc797b7d2226bc9135698e62adf3d6d9f99f1be60b768f591aee"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/everex",
+      "sha256": "02bba936b15c726757b5eaef267994d31ad3af8090f259f59e3904aa9ba66013"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/it",
+      "sha256": "027a99d3d660d6cff46e6ee9364ace8dc23b3c2af617bc3b58090f1dd097d399"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/types/README",
+      "sha256": "025721133e20380f998c5c6dce07aea624baad997855cba6e389ca3c26fe05b1"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/FM801.conf",
+      "sha256": "022ca9b10d7cc8a32f60b0aff3960fdd9fb06a68a2cecb2a54da5426d64f1903"
+    },
+    {
+      "path": "portable/lib/libbrotlicommon.so.1.1.0",
+      "sha256": "016600f673a5d1a565cf98f608d8425033593ab78827eccc3384596f70386c8c"
+    },
+    {
+      "path": "portable/lib/libbrotlicommon.so.1",
+      "sha256": "016600f673a5d1a565cf98f608d8425033593ab78827eccc3384596f70386c8c"
+    },
+    {
+      "path": "portable/lib/libvulkan.so.1.3.275",
+      "sha256": "1384294a60185c780fb324dfa87fc3367bdd6e4f71a8307a52c329ca2bcafe0a"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/xorg.lst",
+      "sha256": "48d142b5fbfab54f76b98fe7cdd170a2be956b9b0cbe3c613042324b24a5dff2"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/VIA686A.conf",
+      "sha256": "13d828536619f7b9aa16d00b6d8231e5e26266aa417dec1c5f293c9d6263e5ce"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/SB-XFi.conf",
+      "sha256": "14751edd67a1b842be0c44a8104ba132acc85e619a4ffdf3cfb094656b345daa"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/fr",
+      "sha256": "23cb3962d1bdb215e669cf4037f6cf0762e1963e69642b5a8405abe0e2a9ff15"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/fi",
+      "sha256": "237792b3659a7a5f800599560c7a884576352aa6eafc7424abf32a0075a2b852"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/thinkpad",
+      "sha256": "22dcd7964e2074d1562c0431b0ed1cf6c32d16f53e0f487c3aef7be91616b368"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sk",
+      "sha256": "2241508923aeef0c880b049dbecebe8bd8e983237cd4465dba251c52e47b975c"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/sk",
+      "sha256": "21003ec72540577f0ce1defb4c07942b46a9f662214db3ef4406ad488d5c5b7c"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/es",
+      "sha256": "20fec559a8027cd34926318da82ceb2c0f45404cea6cb40ec55bd966b852c14e"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/ledcompose",
+      "sha256": "20fa02f9fe45d9a5f81cca79255755ca7836433c455c727b05f0d3e99b21ae61"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/by",
+      "sha256": "20e4241858341092487714aa0ca6aa789647fbc06f7b95a42f4a3f3c3fa810aa"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/types/default",
+      "sha256": "205a4131e04cf5ecb1c4d831c61594c56db731ef46d0eb5844b1c744666b3677"
+    },
+    {
+      "path": "portable/usr/share/doc/gcc-14-base/copyright",
+      "sha256": "20390f8a6f3b1e4d7cb45dd8652dabb259bbef688cbad839bcdb0b9ba7252f79"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/capslock",
+      "sha256": "1fe187515174b87f0636e88d199afc84acac59e3a36319d39b625a4ff525bc67"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/za",
+      "sha256": "1e765c9f7f5391e369cdbe64e4020c292478022f9da24f3ace11ce2d96d46527"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/TRID4DWAVENX.conf",
+      "sha256": "1e62875ffadcc69a78cee0146314121aa51317af113ff9782071875d23b22249"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/keypad",
+      "sha256": "1e4c121750d9139e39def3cc9dd1eb50e0206abc3d6e5e4af9f78933cc541a2d"
+    },
+    {
+      "path": "portable/lib/libxkbcommon.so.0.0.0",
+      "sha256": "1dc9466c1328e7bf5dc2f46cc454e68800b950325572f48a81902af8d5c25aa0"
+    },
+    {
+      "path": "portable/lib/libxkbcommon.so.0",
+      "sha256": "1dc9466c1328e7bf5dc2f46cc454e68800b950325572f48a81902af8d5c25aa0"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/sun",
+      "sha256": "1d44df4f47fb06220495c61b2892274fb78df4879ac4626c737484a8d5006e51"
+    },
+    {
+      "path": "portable/lib/libdl.so.2",
+      "sha256": "1c16b2692a155191c97d7fdc5ce937d37c242435f05745046a794a9832b16af4"
+    },
+    {
+      "path": "portable/packages.json",
+      "sha256": "1c0048d6e024f9dbcde3fb8c3908e33a606248cc958df83d2ac54d41f44bd76d"
+    },
+    {
+      "path": "portable/lib/libcap.so.2.66",
+      "sha256": "1b6d3932cf8b60b2f27f80cdd26d9a296b8a9608fc02b4eccb8fb2fdab73fea2"
+    },
+    {
+      "path": "portable/lib/libcap.so.2",
+      "sha256": "1b6d3932cf8b60b2f27f80cdd26d9a296b8a9608fc02b4eccb8fb2fdab73fea2"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/inet",
+      "sha256": "1898f21ec05985f72c66d1d55f3257d26c510753e67d56288247d27e692f9063"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/ua",
+      "sha256": "175354da978368df204e21678eca0ffce9f3e927f4153a73e94b2782722e8ce8"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ro",
+      "sha256": "166cee49aeadfe304716d35f636aaa4b85f67c0660c910dad45680966e102b88"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/types/extra",
+      "sha256": "14a3fc9749313ce38a8559c3fc48775c7705a04af89519062f0c0856350856b6"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/se",
+      "sha256": "144159344ea3e4d4cec1a0e49738ff7b227308b34dd0af52cb7d43ca38759e51"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/Loopback.conf",
+      "sha256": "48d733a429b58b0721895b5c28a9df4aba7f6804c5cfb9df484b801660aa672c"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/types/numpad",
+      "sha256": "4a064b2cabb2099c93dc2c5073bda7c373baac48c49f55205d640142a5c1041d"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/pc",
+      "sha256": "4b2fe0b0f106bc6233c6626e9a0da2f25b1f5f56a05656bfde3b19bf4a11885c"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/ENS1371.conf",
+      "sha256": "72f5b63f7016d076fc59087ab28b60eba988e9bc41814759fc430b364f42997d"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/dell",
+      "sha256": "72dc75198eca15320563a47da33b0eec93699df3f740552bc0e64ec070d6a05a"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ch",
+      "sha256": "71b2bab94965f21dd656a149432518bbce8148a969463965604ae2a3dd5f7e80"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/CMI8338-SWIEC.conf",
+      "sha256": "7120140996a1a2037f0edb4a9d39c1f1074fd7d6072b6132014c0cb314c52301"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/fi",
+      "sha256": "703c28088c5394896924efea276124b4a01f0d321674895c6e0cf42fdd62d9e7"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/evdev",
+      "sha256": "6f52c4f4e0f599a3b57913ac0c74dae4bfff1866c903eaceda45cda51a14d231"
+    },
+    {
+      "path": "portable/lib/libpthread.so.0",
+      "sha256": "6f1ab9e7d7de142dc5e2feaf6d19faceff0a0f40d5e225c922899f5362b8c353"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/surround51.conf",
+      "sha256": "6ee4124c414833fdfd24dbb584092b77564aaa3481a4b73f34c301ac79636428"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sgi_vndr/jp",
+      "sha256": "6e522b6a50470e0de33259e8360bda0524790049b284cbed8e3817f9c08f6889"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/pc",
+      "sha256": "6e1fc869ac431eaa287475c434be6bb1d9eaba79f9592e1949aea60e5605dc96"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/tm",
+      "sha256": "6d909052fdb7b4eb19c18ffecf9a78162d7432a2f2cc9011d1efe5dd069d5be5"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/au",
+      "sha256": "6d54de90977bd0e50751a9413247b338a237e16bd91ac7d588c9340aae60604e"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/mk",
+      "sha256": "6d3a9e38a8e04fbf7b6054a1408399f75ac17f1612362a1985866279e7a3f88f"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/nokia_vndr/rx-51",
+      "sha256": "6c69c2ccb81df74cab9676f6792b38557d886ff62f68366126ff0c537703376b"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/Audigy.conf",
+      "sha256": "6af986179f0e753617e36d3b596fce180394b1000862540954a6262cd59c09f0"
+    },
+    {
+      "path": "portable/usr/share/alsa/ctl/default.conf",
+      "sha256": "6ab4a977ee780c466ab09ce5b3eb11a81e829a07cc277e108416be5fb57360f8"
+    },
+    {
+      "path": "portable/usr/share/doc/libssl3t64/copyright",
+      "sha256": "6a7da622fe0637a334d2a8fc470852d2ffb77d9a2b2f930f854e32a41ad6ef35"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/japan",
+      "sha256": "6a3c404ed599ee6d1ac25dcec0f7c924a7ee715e45555f9a851d52cf3d86716b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/altwin",
+      "sha256": "6a19dc93d2b274ca05d631c1afb0e35db50387c3d223a845d4d0025b55a904e7"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/empty",
+      "sha256": "69997f35044955d76a14361f4751a5aca361d3edca6ba2007368ee7c7e8c024f"
+    },
+    {
+      "path": "portable/lib/libBrokenLocale.so.1",
+      "sha256": "6921ff8260e94272e677f9d28882874c1705b3e5744f8ff0bc899ceab89cf8eb"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/me",
+      "sha256": "691b7050e5b415d95d59ff60d7a1ceb173f48cc677f00bbfe6872fe6dcea0907"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/dmix.conf",
+      "sha256": "68b8d7f66f991d7612cdaf379504bf4ca1ee75fefb3cc3a0479177287d655242"
+    },
+    {
+      "path": "portable/lib/libpsx.so.2.66",
+      "sha256": "67a0a2b17820e61bb95598c36f5baf69b353a20764df0281244c5377e1893e56"
+    },
+    {
+      "path": "portable/lib/libpsx.so.2",
+      "sha256": "67a0a2b17820e61bb95598c36f5baf69b353a20764df0281244c5377e1893e56"
+    },
+    {
+      "path": "portable/usr/share/doc/libwayland-client0/copyright",
+      "sha256": "736bf54141fa9808939ffff2691b817888ea53197484c2099e8d03b954b83e3b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/kinesis",
+      "sha256": "6761649a1e3c0d2339a3567ea7bb57781fc629e7caa2a1e966fa81a3f4b43422"
+    },
+    {
+      "path": "portable/usr/share/doc/libwayland-cursor0/copyright",
+      "sha256": "736bf54141fa9808939ffff2691b817888ea53197484c2099e8d03b954b83e3b"
+    },
+    {
+      "path": "portable/usr/share/doc/libffi8/copyright",
+      "sha256": "737ff68f0eb104d3b0d96b291c3a8f40a775a3ec2b53f9b2e4bcfe3188bde118"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/sun",
+      "sha256": "82a6c5dd6b6a0804efa2fc0f301705d86742198db6773fe5df926c2e53cff3dd"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/digital_vndr/vt",
+      "sha256": "82101ddb99e8841013f5b4624a480032ac8efabbea9472d6edb35d2b6331cab0"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/NFORCE.conf",
+      "sha256": "812eda76155dfa495eb1d743356a2471fe02add40bea1d669188ee3f083b5dc4"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/mv",
+      "sha256": "812bd0d66f8c88dcaae408eac78a078dabaf2151df53a620b571337c86c4ec1c"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/README",
+      "sha256": "808e2a1f26cbfd2e26830f26179365312d0a167bfc11365cd553c8670718279d"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/cd",
+      "sha256": "803a5f118daef69c590e9243dfb27051abe8dd40b61b42d9028c629a5cc74e15"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/uz",
+      "sha256": "7fe72abc792fd38e7b17dd0636aab83c603d5d4af093e3fd9c0ac896469f782e"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/mt",
+      "sha256": "7f783ac5138aa04990552b2e82d0cf513c1adf6e986a3c0ef7a3c5e1cb94e9c4"
+    },
+    {
+      "path": "portable/files.json",
+      "sha256": "7f5d978eecbb1823c2272a144c217c06981f0d238bfc5e79ab433abac8998c01"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/jolla",
+      "sha256": "7f1a36f508f43c9f5613e0b167f4cebec3e6efba4c24e09eff2473fa7261f1d2"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/ENS1370.conf",
+      "sha256": "7e4f5a1d3007a5938c67b7faf2269cbc6c7bf7487797e5c8111574525c75f8bb"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/ledcaps",
+      "sha256": "7d3882ccecb24b1621975fde25fc7e90e5c1c00197cf67820622458f35bb34ae"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/surround50.conf",
+      "sha256": "7d028550074f0e1d14c9a09bb76a6498771c2ca8660a8cebbf61b6c19d5e70da"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/northgate",
+      "sha256": "7ceffcafaff8fa7b0cd30c68c9bc08988ddfa01269fa1b03fdd29941d68ba430"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/gn",
+      "sha256": "7aed3035f7298571a2ce93029d2fcd7f515be9cf0daca97ccb0e81b0b23893a9"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/CS46xx.conf",
+      "sha256": "79bd52df908894e3eca05c52db832a0996732556b038aba3b17a7738e7eda274"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sharp_vndr/sl-c3x00",
+      "sha256": "794b99d7b4aa0fba135d3a48685879673720c62f50192364a128d94de64fac58"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/keycodes/macintosh",
+      "sha256": "791270abfad6a4d37fe105305d0cedcf7e556ebb107a9792e14bf607dbcfbbf7"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/nz",
+      "sha256": "7874d1ad55d3b80246bba95c85a437310587581e900c7f735e73b5c9590403a6"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/apl",
+      "sha256": "785db44cf10ef3b6d041d9c939db509305e519d6f473b9990afd2f40fce7a06a"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/pt",
+      "sha256": "77d8a8218e685d4bc1bf2e0a4b462d5f0f428e8183a2599dc7b0797f8bc8d656"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/PMacToonie.conf",
+      "sha256": "778ac126c680298a4ca4f9e004098466bf51298433b91ca8ba850647e6b3e680"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/ATIIXP-SPDMA.conf",
+      "sha256": "753be05a4280bd8bbe50a04f5a54371886f9867798ee0968eb21156b770337f7"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/default.conf",
+      "sha256": "751d2fdecf36464d11f5b0895f020d5875265ca53423d20eae532d4ce72ecb57"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sharp_vndr/ws011sh",
+      "sha256": "74edf4e8ce1fd45ddc8615d7e4af3a4ff056e82fd088de9e05c361c9c01b5b62"
+    },
+    {
+      "path": "portable/usr/share/doc/libwayland-egl1/copyright",
+      "sha256": "736bf54141fa9808939ffff2691b817888ea53197484c2099e8d03b954b83e3b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/us",
+      "sha256": "83c7aa3d05364b665dacf60ac03aad734285d427970e681819a03b6ee24c62b3"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/gr",
+      "sha256": "674c2f87a41dbaad0cbd789c2760354d86c903347d1e1aa8ec168262ad77a253"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/rear.conf",
+      "sha256": "663ebadd34cf94e8b5780fa51159c62d7cce503cf955f585a44b05eb9e390022"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/sgi_vndr/O2",
+      "sha256": "53b0ebfaa77d50df3281854f56aaf838494afdebdbe6dbe0356f93b7ec67a7c2"
+    },
+    {
+      "path": "portable/lib/libz.so.1.3",
+      "sha256": "52a1d5c0cbffb3596c7f0636cb1af8e131e00eb77ff92d1353057d5161d420d3"
+    },
+    {
+      "path": "portable/lib/libz.so.1",
+      "sha256": "52a1d5c0cbffb3596c7f0636cb1af8e131e00eb77ff92d1353057d5161d420d3"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/af",
+      "sha256": "5228f9e07a9f3a41c7d403b93b31bbe855f67d58a4f34491c4a1f5eb79c6d05c"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/vc4-hdmi.conf",
+      "sha256": "5189377924d34b4442151489b76ec877d19a9676a1332d1bb7e4b20c0281b745"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/level3",
+      "sha256": "5163e13327fb49de204683b8bd0e4fe21cbf66193e51ca7132bd777d1e26fd13"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/xfree68_vndr/amiga",
+      "sha256": "5076bc17b2083f346a05dd13b3ebf44cbd4526064bd5ec48154343a133dbda8b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/latam",
+      "sha256": "5040c4684ae4a5e0d45acdd58a8c96ce4aa3ebf5888feb7f60d0314934c9a6a9"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/my",
+      "sha256": "4f8971b7a72d64457cfbe075403d3cd33cd255ef55dc282518f426d6ed9a3db9"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/ca",
+      "sha256": "4f5b27932fff03764aecf130f83e208815aaf8639f50fcf28540f0f8f9fe67d0"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/vn",
+      "sha256": "4ef686847cbde54e030af22e50d37e7d91f0524c1178b2943769061220933907"
+    },
+    {
+      "path": "portable/lib/libmemusage.so",
+      "sha256": "4e93e83d21531ffac8f54c8cbf46af9f95341a3570dbfc0e3f5b2e455d45d61f"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/jp",
+      "sha256": "4e4b1c33fde47f6275aeb75e7fee572f50da982f43ef4cc81ad606f07417c993"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/ledscroll",
+      "sha256": "4deb4eb4390d48791e27840e564b4c0737598252101063dc0a5b5471b7968da5"
+    },
+    {
+      "path": "ruffle",
+      "sha256": "9df2b904c7e5ffbb31c189ba9431d3197a15c131c7844546994c25fbcbbd85d1"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/gb",
+      "sha256": "4d0c3e74a0c15e7b85314bf6f174ba4473d2489e8b0aa8d0498bf3c1227fa124"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/hdmi.conf",
+      "sha256": "4d0708b1417921f72bece0217547b3b41ca348f93804496a5061f20c92c073f0"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/kr",
+      "sha256": "4cda08f656ac2ad723099d7458b49525b26ef59aa4cce1764c95124c9ae55021"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/RME9636.conf",
+      "sha256": "4c372e8777d554e4cf9b10ece78d967ef06daadaa0362d46468f927d9062ef5f"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/types/basic",
+      "sha256": "4c18eb87250a3ba92b9d9881a4f07316bcda47d186c5f4e9c76e6d4fcbfbf948"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/xorg",
+      "sha256": "4bb79c563eecc789363e49f743e96c59665685a0963c77b1d76bb580cd900276"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/base",
+      "sha256": "4bb79c563eecc789363e49f743e96c59665685a0963c77b1d76bb580cd900276"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ke",
+      "sha256": "4b771f265338d3629d597b3adff4ba74b2dbb86d99447a25b027d1cf530ac8c8"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/evdev.extras.xml",
+      "sha256": "4b38ad3097a927b91af19ea6429a805f70fac5d06eabee8f495b96233b8e683b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/base.extras.xml",
+      "sha256": "4b38ad3097a927b91af19ea6429a805f70fac5d06eabee8f495b96233b8e683b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/geometry/digital_vndr/pc",
+      "sha256": "54208cfcc92b209356668aa25fd6791d874a142219b851cf05ff9904b63cafb4"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/parens",
+      "sha256": "67295705ae19cf0bc047a4f1e975dce4535329cf62319b5401534a60e3a2ec33"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/de",
+      "sha256": "54f76dbf6d4366838ba646262407cefab390763e371c8ab46db59607468e384a"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/CMI8788.conf",
+      "sha256": "554b97e9bd91ca8debe8517e19f01dfb1bdf0e95e8bbffa431556457a1554557"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/srvr_ctrl",
+      "sha256": "652d16838143dbeb218aff2997cc603f9e9731e1e55e2300dee910d167e25d85"
+    },
+    {
+      "path": "portable/usr/share/doc/xkb-data/copyright",
+      "sha256": "648621d1a2180678818eb393565849bbc8b332cc521c21e009d948ea5541b3c3"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/rules/xkb.dtd",
+      "sha256": "63aada3760407202d5aa366ffba231cfa6f24f1d22dbe6aaad04970e2930af7e"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ara",
+      "sha256": "6303373399eecebc0a5eac88465e39f005210fbf93e9d4b0a4bd02e274f17089"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/fujitsu_vndr/us",
+      "sha256": "62f4c9f93395f16ceb95a78b5979c59433472b3a4abe587d3158a45a91dfa694"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/ATIIXP.conf",
+      "sha256": "626f6b628f29714ca8925b67a7a337ab12ec2cdd39c2fc5098ff8dd3865ad678"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/pt",
+      "sha256": "61f29dd95f399aefc611e0b77b66782146af705a07c731c5caf73263498cb30b"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/surround71.conf",
+      "sha256": "615c9e0a739902b304787ea3cb202800ac861727fb2e1501eaa409f4c6a9fc40"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/VXPocket440.conf",
+      "sha256": "600ac09279191aded92809840171fdf6184663c6bc8e0c188df255862536e8e7"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/tz",
+      "sha256": "5f8a7b2a0408fc0cd9e6e2e25e181df047b8ac5024ec0f68f10a55d39be94363"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sharp_vndr/ws007sh",
+      "sha256": "5f11587248f3ad72c9d4db5d7b3397cc493ad73ebb4eb749aa96657200fe4d7b"
+    },
+    {
+      "path": "portable/usr/share/doc/libxkbcommon0/copyright",
+      "sha256": "5eeaeb1b6e029a0274e1573765bb0bae2926ef96a3679203faa4fd00fdaeaa88"
+    },
+    {
+      "path": "portable/lib/libnss_files.so.2",
+      "sha256": "5e07670b49907e670850519ef13bfe49d86306d836ecd5af759e5d051a0a8aea"
+    },
+    {
+      "path": "portable/lib/libm.so.6",
+      "sha256": "5e0391562de36de323fb9cb0f2c1b6bd6d034c840b1dac018499f5fe4ded1b4a"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/olpc",
+      "sha256": "5dd585565e873ed7ea2d264e186ab6c90bda7528a9de05180efd8a21ca8f0151"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/kz",
+      "sha256": "5bedd1321907880e83f8ab5a1146bf50dfa5e5a45cb2d62189a2a069b8a0ca0b"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/ir",
+      "sha256": "5bcf4a91c0392a969d7ae851b251499ce0ba4d6777186c23291dbdb34fd58d69"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/sun_vndr/es",
+      "sha256": "5aa8bd3a16041abf248cc093d42e1e757d4ce66bf148900238212f593e864b1e"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/is",
+      "sha256": "5a99d4736703e57c6a05af766b247c41a16d5e837c974ad7ae11fa06374353bc"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/compat/pc98",
+      "sha256": "5a38d69bc01936edcb19ac2013af10258c020d45bb3391abd0bea59edb88c9c5"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/symbols/macintosh_vndr/apple",
+      "sha256": "596c132fcec067473f9a48aa2ec006ffd1fdbbdcd22e45a0c2a6b3db5dc50977"
+    },
+    {
+      "path": "launch.sh",
+      "sha256": "cd281dc653b09e792408e3a79988b3283dc01ac73aa9c4c587d678eaaf1bcbbe"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/HdmiLpeAudio.conf",
+      "sha256": "58caca46430a262b1f5707275217e97418ae97839c714fecd1509a3c37dc8c10"
+    },
+    {
+      "path": "portable/usr/share/alsa/cards/AU8830.conf",
+      "sha256": "5824b33f63d8884f927688111f38b9b8943747a2ee203646f8bc23ec5a40eae4"
+    },
+    {
+      "path": "portable/usr/share/alsa/pcm/modem.conf",
+      "sha256": "56eaca2008cdef9a8b94f1e622f10b6c21cc1496b9b4e570ff989b19369e85b8"
+    },
+    {
+      "path": "portable/usr/share/X11/xkb/types/caps",
+      "sha256": "5523bd14fa8c51362e946c108d817f2f01a551a7afb25a057e0b4730c0113a63"
+    },
+    {
+      "path": "portable/lib/libasound.so.2.0.0",
+      "sha256": "ffcf03bddf79f3a3d9b9b93b3548cec3a8bd6f6f495dcf0e3bff2dd7e6e34d2f"
+    },
+    {
+      "path": "portable/lib/libCRU.so",
+      "sha256": "6f7f283ca44d461a46e1f8c4825a4879d93959d40eca55f55a4285484c268f48"
+    },
+    {
+      "path": "portable/xwayland-compat/copyright",
+      "sha256": "b0cc79d79748eb168aa6be6bdef1ced2d6e848e388aae687112b4aa2205b24e0"
+    },
+    {
+      "path": "portable/xwayland-compat/egl-provenance.json",
+      "sha256": "12c818c983899500dfb5ff534cdecef96639b7ca509050cfd9d4b428a2d8efb6"
+    },
+    {
+      "path": "portable/xwayland-compat/libEGL.so.1",
+      "sha256": "af6b268d80f2b940dbef0df080b51a927ac8ec41d06626eea4151a189e6b75a7"
+    }
+  ]
+}

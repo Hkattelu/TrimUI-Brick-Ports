@@ -1,0 +1,8 @@
+{
+  "project": "Minerva",
+  "url": "https://raw.githubusercontent.com/gmariani/minerva/9a1bf92193847fcee038404f81ee15688c36cf46/LICENSE.md",
+  "commit": "9a1bf92193847fcee038404f81ee15688c36cf46",
+  "file": "Minerva-ISC",
+  "sha256": "a219db792ef105e357bbcd2cd59372e5e2fb194d78e4709683575fb0e9ff7183",
+  "scope": "Public test fixtures identified by flash-lso/tests/README.md; not part of the runtime executable."
+}

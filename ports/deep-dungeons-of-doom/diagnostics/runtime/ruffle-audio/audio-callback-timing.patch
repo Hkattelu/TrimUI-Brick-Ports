@@ -1,0 +1,444 @@
+diff --git a/core/src/backend/audio/mixer.rs b/core/src/backend/audio/mixer.rs
+index 67eac57..e7713f4 100644
+--- a/core/src/backend/audio/mixer.rs
++++ b/core/src/backend/audio/mixer.rs
+@@ -746,22 +746,64 @@ impl AudioMixerProxy {
+             + dasp::sample::ToSample<f32>
+             + dasp::sample::FromSample<i16>,
+     {
++        self.mix_inner(output_buffer, None);
++    }
++
++    /// Diagnostic wall times: instance lock, other locks, and mixing work.
++    /// Enabled by the caller; the ordinary path performs no clock reads.
++    pub fn mix_with_timing<'a, T>(&self, output_buffer: &mut [T]) -> [std::time::Duration; 3]
++    where
++        T: 'a
++            + Default
++            + dasp::Sample<Signed = T>
++            + dasp::sample::ToSample<f32>
++            + dasp::sample::FromSample<i16>,
++    {
++        let mut phases = [std::time::Duration::ZERO; 3];
++        self.mix_inner(output_buffer, Some(&mut phases));
++        phases
++    }
++
++    fn mix_inner<'a, T>(
++        &self,
++        output_buffer: &mut [T],
++        mut timing: Option<&mut [std::time::Duration; 3]>,
++    )
++    where
++        T: 'a
++            + Default
++            + dasp::Sample<Signed = T>
++            + dasp::sample::ToSample<f32>
++            + dasp::sample::FromSample<i16>,
++    {
++        let mut start = timing.as_ref().map(|_| std::time::Instant::now());
+         let mut sound_instances = self
+             .sound_instances
+             .lock()
+             .expect("Cannot be called reentrant");
++        if let (Some(started), Some(phases)) = (start, timing.as_mut()) {
++            phases[0] = started.elapsed();
++            start = Some(std::time::Instant::now());
++        }
+         let volume = *self.volume.read().expect("Cannot be called reentrant");
+         let mut output_memory = self
+             .output_memory
+             .write()
+             .expect("Cannot be called reentrant");
++        if let (Some(started), Some(phases)) = (start, timing.as_mut()) {
++            phases[1] = started.elapsed();
++            start = Some(std::time::Instant::now());
++        }
+         AudioMixer::mix_audio::<T>(
+             &mut sound_instances,
+             volume,
+             self.num_output_channels,
+             output_buffer,
+             &mut output_memory,
+-        )
++        );
++        if let (Some(started), Some(phases)) = (start, timing.as_mut()) {
++            phases[2] = started.elapsed();
++        }
+     }
+ }
+ 
+diff --git a/frontend-utils/src/backends/audio.rs b/frontend-utils/src/backends/audio.rs
+index 07f01d0..0040ee4 100644
+--- a/frontend-utils/src/backends/audio.rs
++++ b/frontend-utils/src/backends/audio.rs
+@@ -1,8 +1,10 @@
+-use cpal::SampleFormat;
++mod timing;
++
+ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
++use cpal::SampleFormat;
+ use ruffle_core::backend::audio::{
+-    AudioBackend, AudioMixer, DecodeError, RegisterError, SoundHandle, SoundInstanceHandle,
+-    SoundStreamInfo, SoundTransform, swf,
++    swf, AudioBackend, AudioMixer, DecodeError, RegisterError, SoundHandle, SoundInstanceHandle,
++    SoundStreamInfo, SoundTransform,
+ };
+ use ruffle_core::impl_audio_mixer_backend;
+ 
+@@ -31,6 +33,7 @@ pub struct CpalAudioBackend {
+     config: cpal::StreamConfig,
+     stream: cpal::Stream,
+     mixer: AudioMixer,
++    timing: Option<timing::Reporter>,
+ }
+ 
+ impl CpalAudioBackend {
+@@ -47,6 +50,17 @@ impl CpalAudioBackend {
+         let sample_format = config.sample_format();
+         let config = cpal::StreamConfig::from(config);
+         let mixer = AudioMixer::new(config.channels as u8, config.sample_rate.0);
++        let (timing, mut callback_timing) = if std::env::var("RUFFLE_DDD_AUDIO_TIMING")
++            .is_ok_and(|value| value == "1")
++        {
++            tracing::info!(target: "ddd_audio_timing", channels = config.channels,
++                rate = config.sample_rate.0, ?sample_format, buffer = ?config.buffer_size,
++                "Audio timing enabled; wall time only; playback behavior unchanged");
++            let (reporter, callback) = timing::Reporter::new(config.channels, config.sample_rate.0);
++            (Some(reporter), Some(callback))
++        } else {
++            (None, None)
++        };
+ 
+         // Start the audio stream.
+         let stream = {
+@@ -56,26 +70,69 @@ impl CpalAudioBackend {
+             match sample_format {
+                 cpal::SampleFormat::F32 => device.build_output_stream(
+                     &config,
+-                    move |buffer, _| mixer.mix::<f32>(buffer),
++                    move |buffer, info| {
++                        let measure = callback_timing.as_mut().map(|timing| {
++                            let stamp = info.timestamp();
++                            timing
++                                .begin(buffer.len(), stamp.playback.duration_since(&stamp.callback))
++                        });
++                        let phases = if measure.is_some() {
++                            mixer.mix_with_timing::<f32>(buffer)
++                        } else {
++                            mixer.mix::<f32>(buffer);
++                            [std::time::Duration::ZERO; 3]
++                        };
++
++                        if let (Some(timing), Some(measure)) = (&mut callback_timing, measure) {
++                            timing.end(measure, phases);
++                        }
++                    },
+                     error_handler,
+                     None,
+                 ),
+                 cpal::SampleFormat::I16 => device.build_output_stream(
+                     &config,
+-                    move |buffer, _| mixer.mix::<i16>(buffer),
++                    move |buffer, info| {
++                        let measure = callback_timing.as_mut().map(|timing| {
++                            let stamp = info.timestamp();
++                            timing
++                                .begin(buffer.len(), stamp.playback.duration_since(&stamp.callback))
++                        });
++                        let phases = if measure.is_some() {
++                            mixer.mix_with_timing::<i16>(buffer)
++                        } else {
++                            mixer.mix::<i16>(buffer);
++                            [std::time::Duration::ZERO; 3]
++                        };
++
++                        if let (Some(timing), Some(measure)) = (&mut callback_timing, measure) {
++                            timing.end(measure, phases);
++                        }
++                    },
+                     error_handler,
+                     None,
+                 ),
+                 cpal::SampleFormat::U16 => device.build_output_stream(
+                     &config,
+-                    move |buffer: &mut [u16], _| {
+-                        // Since I couldn't easily make `mixer` work with `u16` samples,
+-                        // we fill the buffer as if it was `&[i16]`, and then rotate
+-                        // the sample values to make 32768 the equilibrium.
+-                        mixer.mix::<i16>(bytemuck::cast_slice_mut(buffer));
++                    move |buffer: &mut [u16], info| {
++                        let measure = callback_timing.as_mut().map(|timing| {
++                            let stamp = info.timestamp();
++                            timing
++                                .begin(buffer.len(), stamp.playback.duration_since(&stamp.callback))
++                        });
++                        let phases = if measure.is_some() {
++                            mixer.mix_with_timing::<i16>(bytemuck::cast_slice_mut(buffer))
++                        } else {
++                            mixer.mix::<i16>(bytemuck::cast_slice_mut(buffer));
++                            [std::time::Duration::ZERO; 3]
++                        };
++                        // Preserve unsigned equilibrium conversion after signed mixing.
+                         for s in buffer.iter_mut() {
+                             *s = (*s).wrapping_add(32768);
+                         }
++                        if let (Some(timing), Some(measure)) = (&mut callback_timing, measure) {
++                            timing.end(measure, phases);
++                        }
+                     },
+                     error_handler,
+                     None,
+@@ -91,6 +148,7 @@ impl CpalAudioBackend {
+             config,
+             stream,
+             mixer,
++            timing,
+         })
+     }
+ }
+@@ -98,6 +156,13 @@ impl CpalAudioBackend {
+ impl AudioBackend for CpalAudioBackend {
+     impl_audio_mixer_backend!(mixer);
+ 
++    fn tick(&mut self) {
++        if let Some(report) = self.timing.as_mut().and_then(timing::Reporter::poll) {
++            tracing::info!(target: "ddd_audio_timing", ?report,
++                "Audio callback wall time in microseconds: total,instance_lock,other_locks,mix; gaps and queue-delay overruns are indicators, not measured audible dropouts");
++        }
++    }
++
+     fn play(&mut self) {
+         self.stream.play().expect("Error trying to resume CPAL audio stream. This feature may not be supported by your audio device.");
+     }
+diff --git a/frontend-utils/src/backends/audio/timing.rs b/frontend-utils/src/backends/audio/timing.rs
+new file mode 100644
+index 0000000..84a0dff
+--- /dev/null
++++ b/frontend-utils/src/backends/audio/timing.rs
+@@ -0,0 +1,225 @@
++//! Opt-in audio measurements. The callback never logs or waits for the reporter.
++use std::sync::{Arc, Mutex};
++use std::time::{Duration, Instant};
++
++#[derive(Clone, Copy, Debug, Default)]
++pub(super) struct Report {
++    pub callbacks: u64,
++    pub frames: u64,
++    pub interval_us: u64,
++    // Total callback, instance-lock wait, other-lock wait, and mixing work.
++    pub totals_us: [u64; 4],
++    pub maxima_us: [u64; 4],
++    pub chunk_total_us: u64,
++    pub gap_max_us: u64,
++    pub gap_gt_previous_chunk: u64,
++    pub zero_queue_delay: u64,
++    pub past_queue_delay: u64,
++    pub queue_delay_min_us: Option<u64>,
++}
++
++fn micros(value: Duration) -> u64 {
++    value.as_micros().min(u128::from(u64::MAX)) as u64
++}
++
++impl Report {
++    fn record(
++        &mut self,
++        frames: u64,
++        chunk: Duration,
++        gap: Option<(Duration, Duration)>,
++        queue_delay: Option<Duration>,
++        total: Duration,
++        phases: [Duration; 3],
++    ) {
++        self.callbacks += 1;
++        self.frames += frames;
++        self.chunk_total_us += micros(chunk);
++        for (i, value) in [total, phases[0], phases[1], phases[2]]
++            .into_iter()
++            .enumerate()
++        {
++            let value = micros(value);
++            self.totals_us[i] += value;
++            self.maxima_us[i] = self.maxima_us[i].max(value);
++        }
++        if let Some((gap, previous_chunk)) = gap {
++            self.gap_max_us = self.gap_max_us.max(micros(gap));
++            self.gap_gt_previous_chunk += u64::from(gap > previous_chunk);
++        }
++        if let Some(delay) = queue_delay {
++            let us = micros(delay);
++            self.queue_delay_min_us = Some(self.queue_delay_min_us.map_or(us, |old| old.min(us)));
++            if delay.is_zero() {
++                self.zero_queue_delay += 1;
++            } else {
++                self.past_queue_delay += u64::from(total > delay);
++            }
++        }
++    }
++}
++
++pub(super) struct Reporter {
++    slot: Arc<Mutex<Option<Report>>>,
++    last_poll: Instant,
++}
++
++pub(super) struct Callback {
++    slot: Arc<Mutex<Option<Report>>>,
++    report: Report,
++    since: Instant,
++    previous: Option<(Instant, Duration)>,
++    channels: u16,
++    rate: u32,
++}
++
++pub(super) struct Measurement {
++    start: Instant,
++    frames: u64,
++    chunk: Duration,
++    gap: Option<(Duration, Duration)>,
++    queue_delay: Option<Duration>,
++}
++
++impl Reporter {
++    pub fn new(channels: u16, rate: u32) -> (Self, Callback) {
++        assert!(channels > 0 && rate > 0);
++        let slot = Arc::new(Mutex::new(None));
++        let now = Instant::now();
++        (
++            Self {
++                slot: slot.clone(),
++                last_poll: now,
++            },
++            Callback {
++                slot,
++                report: Report::default(),
++                since: now,
++                previous: None,
++                channels,
++                rate,
++            },
++        )
++    }
++
++    pub fn poll(&mut self) -> Option<Report> {
++        if self.last_poll.elapsed() < Duration::from_secs(1) {
++            return None;
++        }
++        self.last_poll = Instant::now();
++        self.slot.try_lock().ok()?.take()
++    }
++}
++
++impl Callback {
++    pub fn begin(&mut self, samples: usize, queue_delay: Option<Duration>) -> Measurement {
++        let start = Instant::now();
++        let frames = (samples / usize::from(self.channels)) as u64;
++        let chunk = Duration::from_secs_f64(frames as f64 / f64::from(self.rate));
++        let gap = self
++            .previous
++            .map(|(previous, duration)| (start.duration_since(previous), duration));
++        self.previous = Some((start, chunk));
++        Measurement {
++            start,
++            frames,
++            chunk,
++            gap,
++            queue_delay,
++        }
++    }
++
++    pub fn end(&mut self, measure: Measurement, phases: [Duration; 3]) {
++        self.report.record(
++            measure.frames,
++            measure.chunk,
++            measure.gap,
++            measure.queue_delay,
++            measure.start.elapsed(),
++            phases,
++        );
++        if self.since.elapsed() >= Duration::from_secs(2) {
++            self.publish();
++        }
++    }
++
++    fn publish(&mut self) {
++        // A busy reader or unconsumed report only postpones publication. Never
++        // block the callback or discard an interval to make a timing log.
++        if let Ok(mut slot) = self.slot.try_lock() {
++            if slot.is_none() {
++                self.report.interval_us = micros(self.since.elapsed());
++                *slot = Some(std::mem::take(&mut self.report));
++                self.since = Instant::now();
++            }
++        }
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    fn ms(n: u64) -> Duration {
++        Duration::from_millis(n)
++    }
++
++    #[test]
++    fn separates_work_deadlines_zero_delay_and_scheduling_gaps() {
++        let mut r = Report::default();
++        r.record(
++            480,
++            ms(10),
++            None,
++            Some(ms(0)),
++            ms(12),
++            [ms(3), ms(1), ms(7)],
++        );
++        r.record(
++            960,
++            ms(20),
++            Some((ms(15), ms(10))),
++            Some(ms(15)),
++            ms(16),
++            [ms(1), ms(2), ms(12)],
++        );
++        r.record(
++            480,
++            ms(10),
++            Some((ms(20), ms(20))),
++            Some(ms(10)),
++            ms(10),
++            [ms(1), ms(1), ms(7)],
++        );
++        assert_eq!((r.callbacks, r.frames, r.chunk_total_us), (3, 1920, 40000));
++        assert_eq!(r.totals_us, [38000, 5000, 4000, 26000]);
++        assert_eq!(r.maxima_us, [16000, 3000, 2000, 12000]);
++        assert_eq!(
++            (
++                r.zero_queue_delay,
++                r.past_queue_delay,
++                r.gap_gt_previous_chunk
++            ),
++            (1, 1, 1)
++        );
++        assert_eq!((r.gap_max_us, r.queue_delay_min_us), (20000, Some(0)));
++    }
++
++    #[test]
++    fn busy_or_unread_slot_retains_measurements() {
++        let (reporter, mut cb) = Reporter::new(2, 48000);
++        cb.report.callbacks = 7;
++        let slot = reporter.slot.clone();
++        let held = slot.lock().unwrap();
++        cb.publish();
++        assert_eq!(cb.report.callbacks, 7);
++        drop(held);
++        cb.publish();
++        assert_eq!(cb.report.callbacks, 0);
++        cb.report.callbacks = 3;
++        cb.publish();
++        assert_eq!(cb.report.callbacks, 3);
++        assert_eq!(slot.lock().unwrap().take().unwrap().callbacks, 7);
++        cb.publish();
++        assert_eq!(slot.lock().unwrap().take().unwrap().callbacks, 3);
++    }
++}

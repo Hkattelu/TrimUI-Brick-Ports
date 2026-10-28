@@ -1,0 +1,135 @@
+diff --git a/frontend-utils/src/backends/audio.rs b/frontend-utils/src/backends/audio.rs
+index 0040ee4..e271f78 100644
+--- a/frontend-utils/src/backends/audio.rs
++++ b/frontend-utils/src/backends/audio.rs
+@@ -1,3 +1,4 @@
++mod pcm16;
+ mod timing;
+ 
+ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+@@ -62,6 +63,14 @@ impl CpalAudioBackend {
+             (None, None)
+         };
+ 
++        // Allocate before starting the callback, never on its real-time path.
++        let mut float_scratch = std::env::var("RUFFLE_DDD_FLOAT_MIX")
++            .is_ok_and(|value| value == "1")
++            .then(|| vec![0.0_f32; usize::from(config.channels) * 2048].into_boxed_slice());
++        if float_scratch.is_some() {
++            tracing::info!("Floating-point accumulation enabled for integer audio output");
++        }
++
+         // Start the audio stream.
+         let stream = {
+             let mixer = mixer.proxy();
+@@ -98,7 +107,16 @@ impl CpalAudioBackend {
+                             timing
+                                 .begin(buffer.len(), stamp.playback.duration_since(&stamp.callback))
+                         });
+-                        let phases = if measure.is_some() {
++                        let phases = if let Some(scratch) = float_scratch.as_mut() {
++                            pcm16::mix(buffer, scratch, |float_buffer| {
++                                if measure.is_some() {
++                                    mixer.mix_with_timing::<f32>(float_buffer)
++                                } else {
++                                    mixer.mix::<f32>(float_buffer);
++                                    [std::time::Duration::ZERO; 3]
++                                }
++                            })
++                        } else if measure.is_some() {
+                             mixer.mix_with_timing::<i16>(buffer)
+                         } else {
+                             mixer.mix::<i16>(buffer);
+@@ -120,7 +138,16 @@ impl CpalAudioBackend {
+                             timing
+                                 .begin(buffer.len(), stamp.playback.duration_since(&stamp.callback))
+                         });
+-                        let phases = if measure.is_some() {
++                        let phases = if let Some(scratch) = float_scratch.as_mut() {
++                            pcm16::mix(bytemuck::cast_slice_mut(buffer), scratch, |float_buffer| {
++                                if measure.is_some() {
++                                    mixer.mix_with_timing::<f32>(float_buffer)
++                                } else {
++                                    mixer.mix::<f32>(float_buffer);
++                                    [std::time::Duration::ZERO; 3]
++                                }
++                            })
++                        } else if measure.is_some() {
+                             mixer.mix_with_timing::<i16>(bytemuck::cast_slice_mut(buffer))
+                         } else {
+                             mixer.mix::<i16>(bytemuck::cast_slice_mut(buffer));
+diff --git a/frontend-utils/src/backends/audio/pcm16.rs b/frontend-utils/src/backends/audio/pcm16.rs
+new file mode 100644
+index 0000000..75746fb
+--- /dev/null
++++ b/frontend-utils/src/backends/audio/pcm16.rs
+@@ -0,0 +1,69 @@
++//! Convert once after floating-point voice accumulation, avoiding I16 wraparound.
++use std::time::Duration;
++
++pub(super) fn mix(
++    buffer: &mut [i16],
++    scratch: &mut [f32],
++    mut fill: impl FnMut(&mut [f32]) -> [Duration; 3],
++) -> [Duration; 3] {
++    let mut phases = [Duration::ZERO; 3];
++    // Scratch is preallocated as a whole number of output frames.
++    for chunk in buffer.chunks_mut(scratch.len()) {
++        let floats = &mut scratch[..chunk.len()];
++        let elapsed = fill(floats);
++        for (total, part) in phases.iter_mut().zip(elapsed) {
++            *total += part;
++        }
++        for (dest, sample) in chunk.iter_mut().zip(floats.iter()) {
++            // Rust float-to-integer casts saturate; NaN becomes silence.
++            *dest = (*sample * 32768.0) as i16;
++        }
++    }
++    phases
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn overlaps_clip_only_after_all_voices_and_preserve_cancellation() {
++        let loud = 30000.0 / 32768.0;
++        let values = [
++            loud + loud,
++            -loud - loud,
++            loud + loud - loud,
++            -loud - loud + loud,
++            0.0,
++            f32::NAN,
++        ];
++        let mut result = [0_i16; 6];
++        let mut scratch = [0.0; 4];
++        let mut offset = 0;
++        let phases = mix(&mut result, &mut scratch, |part| {
++            part.copy_from_slice(&values[offset..offset + part.len()]);
++            offset += part.len();
++            [Duration::from_micros(1); 3]
++        });
++        assert_eq!(result, [32767, -32768, 30000, -30000, 0, 0]);
++        assert_eq!(phases, [Duration::from_micros(2); 3]);
++    }
++
++    #[test]
++    fn every_i16_value_roundtrips_and_unsigned_equilibrium_is_preserved() {
++        let mut result = vec![0_i16; 65536];
++        let mut scratch = [0.0; 4096];
++        let mut next = i16::MIN as i32;
++        mix(&mut result, &mut scratch, |part| {
++            for value in part {
++                *value = next as f32 / 32768.0;
++                next += 1;
++            }
++            [Duration::ZERO; 3]
++        });
++        for (index, value) in result.iter().enumerate() {
++            assert_eq!(*value as i32, index as i32 - 32768);
++            assert_eq!((*value as u16).wrapping_add(32768), index as u16);
++        }
++    }
++}

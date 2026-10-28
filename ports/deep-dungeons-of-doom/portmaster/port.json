@@ -1,0 +1,24 @@
+{
+  "version": 4,
+  "name": "deepdungeonsofdoom.zip",
+  "items": ["Deep Dungeons of Doom.sh", "deepdungeonsofdoom/"],
+  "items_opt": null,
+  "attr": {
+    "title": "Deep Dungeons of Doom",
+    "porter": ["Hkattelu"],
+    "desc": "A dungeon crawler about timing attacks, defending and choosing equipment. This experimental port uses Ruffle and requires a purchased Windows copy. Prepared for the original TrimUI Brick with NX Redux; other devices and firmware are unverified.",
+    "desc_md": null,
+    "inst": "Unpack setup/ddd-preparation-tools.zip on a Windows PC with PowerShell 7.2 or later. Follow README.md to prepare your purchased game, then copy the generated ddd.swf into ports/deepdungeonsofdoom. Install WestonPack 0.2 through PortMaster. The current build has been tested on the original TrimUI Brick with NX Redux. No Steam client is required on the handheld.",
+    "inst_md": null,
+    "genres": ["rpg", "action"],
+    "image": {},
+    "rtr": false,
+    "exp": true,
+    "runtime": ["weston_pkg_0.2.squashfs"],
+    "store": [{"name": "Steam", "gameurl": "https://store.steampowered.com/app/325090/", "developerurl": "https://store.steampowered.com/search/?developer=Bossa%20Studios"}],
+    "availability": "paid",
+    "reqs": [],
+    "arch": ["aarch64"],
+    "min_glibc": "2.33"
+  }
+}

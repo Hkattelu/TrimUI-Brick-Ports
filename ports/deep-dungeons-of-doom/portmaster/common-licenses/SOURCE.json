@@ -1,0 +1,43 @@
+{
+  "files": [
+    {
+      "name": "Apache-2.0",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "name": "BSD",
+      "sha256": "5d588eb3b157d52112afea935c88a7ff9efddc1e2d95a42c25d3b96ad9055008"
+    },
+    {
+      "name": "CC0-1.0",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499"
+    },
+    {
+      "name": "GPL-2",
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+    },
+    {
+      "name": "GPL-3",
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "name": "LGPL-2",
+      "sha256": "681e386e44a19d7d0674b4320272c90e66b6610b741e7e6305f8219c42e85366"
+    },
+    {
+      "name": "LGPL-2.1",
+      "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551"
+    },
+    {
+      "name": "LGPL-3",
+      "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118"
+    }
+  ],
+  "source": {
+    "package": "base-files",
+    "version": "13ubuntu10",
+    "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/b/base-files/base-files_13ubuntu10_arm64.deb",
+    "sha256": "73e8496b051df45fa567c2530042f4a37e109218d24b1647599f244abf97f1f6",
+    "bytes": 73758
+  }
+}

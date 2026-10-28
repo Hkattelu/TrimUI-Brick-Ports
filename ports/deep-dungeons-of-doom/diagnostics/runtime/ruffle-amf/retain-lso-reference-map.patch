@@ -1,0 +1,18 @@
+diff --git a/core/src/avm2/amf.rs b/core/src/avm2/amf.rs
+--- a/core/src/avm2/amf.rs
++++ b/core/src/avm2/amf.rs
+@@ -535,11 +535,12 @@ pub fn deserialize_lso<'gc>(
+     lso: &Lso,
+ ) -> Result<Object<'gc>, Error<'gc>> {
+     let obj = ScriptObject::new_object(activation.context);
++    let mut object_map = BTreeMap::new();
+-
++
+     for child in &lso.body {
+         obj.set_dynamic_property(
+             AvmString::new_utf8(activation.gc(), &child.name),
+-            deserialize_value(activation, child.value())?,
++            deserialize_value_impl(activation, child.value(), &mut object_map)?,
+             activation.gc(),
+         );
+     }

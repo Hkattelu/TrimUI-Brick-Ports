@@ -1,0 +1,37 @@
+# Fancy Pants PortMaster reference notice
+
+Source: https://github.com/crxssrazr93/fancypants-portmaster/blob/86a641c2aa6a3901efddcaa492b37e8f3e27ce13/LICENSE
+
+The following notice is retained from that revision. This DDD source package
+contains an adaptation of the Ruffle constant-region design, not the Fancy Pants
+game or its game patches.
+
+---
+
+MIT License
+
+Copyright (c) 2026 crxssrazr93
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+The above applies to the files written for this port. The game and Ruffle keep their
+own licenses. The patches in build/ruffle-patches/ modify Ruffle and are offered under
+Ruffle's license (MIT or Apache 2.0, at your option), see ports/fancypants/fancypants/licenses/.
+No part of the game is included in this repository: the xdelta3 files in
+ports/fancypants/fancypants/tools/patch/ only apply to the player's own copy.

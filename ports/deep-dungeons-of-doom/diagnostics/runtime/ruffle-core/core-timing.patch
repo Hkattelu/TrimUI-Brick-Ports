@@ -1,0 +1,120 @@
+diff --git a/core/src/ddd_core_timing.rs b/core/src/ddd_core_timing.rs
+new file mode 100644
+index 0000000..153af2e
+--- /dev/null
++++ b/core/src/ddd_core_timing.rs
+@@ -0,0 +1,21 @@
++//! Opt-in wall-time diagnostics. Durations may overlap and include descheduling.
++use std::sync::OnceLock;
++use web_time::Instant;
++
++pub(crate) fn start() -> Option<Instant> {
++    static ENABLED: OnceLock<bool> = OnceLock::new();
++    ENABLED
++        .get_or_init(|| std::env::var_os("RUFFLE_DDD_CORE_TIMING").is_some_and(|v| v == "1"))
++        .then(Instant::now)
++}
++
++pub(crate) fn finish(phase: &'static str, started: Option<Instant>) {
++    if let Some(started) = started {
++        let elapsed = started.elapsed();
++        if elapsed.as_micros() >= 8_000 {
++            tracing::info!(target: "ddd_core_timing", phase,
++                elapsed_us = elapsed.as_micros() as u64,
++                "Core slow phase: overlapping wall time, not CPU time");
++        }
++    }
++}
+diff --git a/core/src/lib.rs b/core/src/lib.rs
+index d76c1cb..ce4dd77 100644
+--- a/core/src/lib.rs
++++ b/core/src/lib.rs
+@@ -21,6 +21,7 @@ pub mod bitmap;
+ mod character;
+ pub mod context;
+ pub mod context_menu;
++mod ddd_core_timing;
+ mod drawing;
+ mod ecma_conversions;
+ pub mod events;
+diff --git a/core/src/player.rs b/core/src/player.rs
+index c375662..00f0ac7 100644
+--- a/core/src/player.rs
++++ b/core/src/player.rs
+@@ -608,11 +608,17 @@ impl Player {
+ 
+         self.update_sockets();
+         self.update_net_connections();
++        let timing = crate::ddd_core_timing::start();
+         self.update_timers(dt);
++        crate::ddd_core_timing::finish("timers", timing);
++        let timing = crate::ddd_core_timing::start();
+         self.update(|context| {
+             StreamManager::tick(context, dt);
+         });
++        crate::ddd_core_timing::finish("stream_update", timing);
++        let timing = crate::ddd_core_timing::start();
+         self.audio.tick();
++        crate::ddd_core_timing::finish("audio_tick", timing);
+     }
+ 
+     pub fn time_til_next_timer(&self) -> Option<f64> {
+@@ -2072,7 +2078,9 @@ impl Player {
+             ),
+             LoadBehavior::Blocking => (ExecutionLimit::none(), false),
+         };
++        let timing = crate::ddd_core_timing::start();
+         let preload_finished = self.preload(&mut execution_limit);
++        crate::ddd_core_timing::finish("preload", timing);
+ 
+         if !preload_finished && !may_execute_while_streaming {
+             return;
+@@ -2080,16 +2088,22 @@ impl Player {
+ 
+         self.update(|context| {
+             // TODO: Is this order correct?
++            let timing = crate::ddd_core_timing::start();
+             run_all_phases_avm2(context);
++            crate::ddd_core_timing::finish("avm2_frame", timing);
++            let timing = crate::ddd_core_timing::start();
+             Avm1::run_frame(context);
+             AudioManager::update_sounds(context);
+             LocalConnections::update_connections(context);
++            crate::ddd_core_timing::finish("frame_audio_connections", timing);
+ 
+             // Only run the current list of callbacks - any callbacks added during callback execution
+             // will be run at the end of the *next* frame.
++            let timing = crate::ddd_core_timing::start();
+             for cb in std::mem::take(context.post_frame_callbacks) {
+                 (cb.callback)(context, cb.data);
+             }
++            crate::ddd_core_timing::finish("post_frame_callbacks", timing);
+         });
+ 
+         self.needs_render = true;
+@@ -2438,19 +2452,25 @@ impl Player {
+         let rval = self.mutate_with_update_context(|context| {
+             let rval = func(context);
+ 
++            let timing = crate::ddd_core_timing::start();
+             Self::run_actions(context);
++            crate::ddd_core_timing::finish("post_update_actions", timing);
+ 
+             rval
+         });
+ 
++        let timing = crate::ddd_core_timing::start();
+         // Update mouse state (check for new hovered button, etc.)
+         self.mutate_with_update_context(|context| {
+             Self::update_drag(context);
+         });
+         self.update_mouse_state(EnumSet::empty(), false, &mut false);
++        crate::ddd_core_timing::finish("mouse_drag", timing);
+ 
+         // GC
++        let timing = crate::ddd_core_timing::start();
+         self.gc_arena.borrow_mut().collect_debt();
++        crate::ddd_core_timing::finish("gc_debt", timing);
+ 
+         rval
+     }

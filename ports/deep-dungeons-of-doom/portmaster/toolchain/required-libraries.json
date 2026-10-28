@@ -1,0 +1,64 @@
+{
+  "schema": 2,
+  "packages": [
+    {
+      "package": "libssl1.1",
+      "version": "1.1.1f-1ubuntu2.24",
+      "sourcePackage": "openssl",
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.24_arm64.deb",
+      "sha256": "dded4572af8b0a9e0310909f211a519cc6409fda31ea81132a77e268b0ec0f2f",
+      "reason": "Brick firmware exposes OPENSSL_1_1_0, but the runtime requires OPENSSL_1_1_1.",
+      "libraries": [
+        {
+          "file": "libssl.so.1.1",
+          "sha256": "278540b39ba74524366bfd3bc6f40f23d3e798951413924075c67938212a337f"
+        },
+        {
+          "file": "libcrypto.so.1.1",
+          "sha256": "7f78e54add153922f5fcbbff4742673b37ae93e0b4fe224131e91afa9864f6f6"
+        }
+      ],
+      "sourceVersion": "1.1.1f-1ubuntu2.24",
+      "sourceSuites": [
+        "focal-security"
+      ]
+    },
+    {
+      "package": "zlib1g",
+      "version": "1:1.2.11.dfsg-2ubuntu1.5",
+      "sourcePackage": "zlib",
+      "sourceVersion": "1:1.2.11.dfsg-2ubuntu1.5",
+      "sourceSuites": [
+        "focal-security"
+      ],
+      "url": "https://ports.ubuntu.com/ubuntu-ports/pool/main/z/zlib/zlib1g_1.2.11.dfsg-2ubuntu1.5_arm64.deb",
+      "sha256": "2c5f4ba1539a6126f0f04a07bcf2dd920c9505eb4afc7aefcec6f27d0a397578",
+      "reason": "Firmware zlib lacks inflateValidate (ZLIB_1.2.9), required by WestonPack libpng16.",
+      "libraries": [
+        {
+          "file": "libz.so.1",
+          "sha256": "f7421fde8036391750dc2b1dd7299a0a3305a93cb95846fcc381590f565215c1"
+        }
+      ]
+    },
+    {
+      "package": "alsa-lib",
+      "version": "1.2.11-1ubuntu0.3",
+      "sourcePackage": "alsa-lib",
+      "sourceVersion": "1.2.11-1ubuntu0.3",
+      "sourceSuites": [
+        "noble-security",
+        "noble-updates"
+      ],
+      "builtFromSource": true,
+      "buildScript": "build-alsa.sh",
+      "reason": "Firmware ALSA returns invalid frame counts repeatedly; the rebuilt version needs only one bounded reset after an underrun.",
+      "libraries": [
+        {
+          "file": "libasound.so.2",
+          "sha256": "b10868766f4464dcad3edfe56340fba7c88bbf98dddcebabebc22a4f6a0767cb"
+        }
+      ]
+    }
+  ]
+}

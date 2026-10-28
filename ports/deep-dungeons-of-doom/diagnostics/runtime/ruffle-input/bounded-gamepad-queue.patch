@@ -1,0 +1,262 @@
+diff --git a/desktop/src/app.rs b/desktop/src/app.rs
+--- a/desktop/src/app.rs
++++ b/desktop/src/app.rs
+@@ -364,19 +364,21 @@
+         // moves, so that they can get coalesced properly.
+         self.flush_mouse_move();
+
+-        if let Some(Event { event, .. }) = gilrs.and_then(|gilrs| gilrs.next_event()) {
+-            match event {
+-                EventType::ButtonPressed(button, _) => {
+-                    if let Some(button) = gilrs_button_to_gamepad_button(button) {
+-                        self.handle_player_event(PlayerEvent::GamepadButtonDown { button });
+-                    }
+-                }
+-                EventType::ButtonReleased(button, _) => {
+-                    if let Some(button) = gilrs_button_to_gamepad_button(button) {
+-                        self.handle_player_event(PlayerEvent::GamepadButtonUp { button });
+-                    }
+-                }
+-                _ => {}
++        if let Some(gilrs) = gilrs {
++            // Skip unused events, leaving every later button transition for the
++            // next poll. The following player tick is not necessarily a movie frame.
++            let event = crate::gamepad_queue::next_mapped_event(
++                || gilrs.next_event(),
++                |Event { event, .. }| match event {
++                    EventType::ButtonPressed(button, _) => gilrs_button_to_gamepad_button(button)
++                        .map(|button| PlayerEvent::GamepadButtonDown { button }),
++                    EventType::ButtonReleased(button, _) => gilrs_button_to_gamepad_button(button)
++                        .map(|button| PlayerEvent::GamepadButtonUp { button }),
++                    _ => None,
++                },
++            );
++            if let Some(event) = event {
++                self.handle_player_event(event);
+             }
+         }
+
+diff --git a/desktop/src/main.rs b/desktop/src/main.rs
+--- a/desktop/src/main.rs
++++ b/desktop/src/main.rs
+@@ -11,6 +11,7 @@
+ mod cli;
+ mod custom_event;
+ mod dbus;
++mod gamepad_queue;
+ mod gui;
+ mod log;
+ mod player;
+diff --git a/desktop/src/gamepad_queue.rs b/desktop/src/gamepad_queue.rs
+new file mode 100644
+--- /dev/null
++++ b/desktop/src/gamepad_queue.rs
+@@ -0,0 +1,208 @@
++/// Fetch at most 64 queued events, stopping at the first convertible transition.
++///
++/// `next` retains the input library's filtering and state updates. `convert`
++/// returns `None` only for events the caller already ignores. A returned event
++/// ends this poll even if the player later reports it was not handled.
++/// This preserves one delivered transition per poll, not one per movie frame.
++pub(crate) fn next_mapped_event<E, M>(
++    mut next: impl FnMut() -> Option<E>,
++    mut convert: impl FnMut(E) -> Option<M>,
++) -> Option<M> {
++    for _ in 0..64 {
++        let event = next()?;
++        if let Some(mapped) = convert(event) {
++            return Some(mapped);
++        }
++    }
++    None
++}
++
++#[cfg(test)]
++mod tests {
++    use super::next_mapped_event;
++    use std::collections::VecDeque;
++
++    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
++    enum Button {
++        Left,
++        Right,
++        Enter,
++        Unsupported,
++    }
++
++    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
++    enum Event {
++        Down(Button),
++        Up(Button),
++        Repeated(Button),
++        Changed(Button),
++        Axis,
++        Connected,
++        Disconnected,
++    }
++
++    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
++    enum Transition {
++        Down(Button),
++        Up(Button),
++    }
++
++    fn convert(event: Event) -> Option<Transition> {
++        match event {
++            Event::Down(Button::Unsupported) | Event::Up(Button::Unsupported) => None,
++            Event::Down(button) => Some(Transition::Down(button)),
++            Event::Up(button) => Some(Transition::Up(button)),
++            _ => None,
++        }
++    }
++
++    #[test]
++    fn skips_ignored_events_without_consuming_past_the_first_transition() {
++        let mut queue = VecDeque::from([
++            Event::Connected,
++            Event::Axis,
++            Event::Changed(Button::Enter),
++            Event::Down(Button::Unsupported),
++            Event::Disconnected,
++            Event::Down(Button::Enter),
++            Event::Up(Button::Enter),
++        ]);
++        let mut fetched = 0;
++        let result = next_mapped_event(
++            || {
++                fetched += 1;
++                queue.pop_front()
++            },
++            convert,
++        );
++        assert_eq!(result, Some(Transition::Down(Button::Enter)));
++        assert_eq!(fetched, 6);
++        assert_eq!(queue, VecDeque::from([Event::Up(Button::Enter)]));
++    }
++
++    #[test]
++    fn a_queued_short_tap_keeps_down_and_up_in_separate_polls() {
++        let mut queue = VecDeque::from([
++            Event::Down(Button::Enter),
++            Event::Changed(Button::Enter),
++            Event::Up(Button::Enter),
++            Event::Changed(Button::Enter),
++        ]);
++        assert_eq!(
++            next_mapped_event(|| queue.pop_front(), convert),
++            Some(Transition::Down(Button::Enter))
++        );
++        assert_eq!(queue.front(), Some(&Event::Changed(Button::Enter)));
++        assert_eq!(queue.len(), 3);
++        assert_eq!(
++            next_mapped_event(|| queue.pop_front(), convert),
++            Some(Transition::Up(Button::Enter))
++        );
++        assert_eq!(queue, VecDeque::from([Event::Changed(Button::Enter)]));
++        assert_eq!(next_mapped_event(|| queue.pop_front(), convert), None);
++    }
++
++    #[test]
++    fn a_hold_skips_repeats_but_preserves_every_actual_edge() {
++        let mut queue = VecDeque::from([
++            Event::Down(Button::Right),
++            Event::Repeated(Button::Right),
++            Event::Changed(Button::Right),
++            Event::Down(Button::Right),
++            Event::Repeated(Button::Right),
++            Event::Up(Button::Right),
++        ]);
++        for expected in [
++            Transition::Down(Button::Right),
++            Transition::Down(Button::Right),
++            Transition::Up(Button::Right),
++        ] {
++            assert_eq!(
++                next_mapped_event(|| queue.pop_front(), convert),
++                Some(expected)
++            );
++        }
++        assert!(queue.is_empty());
++    }
++
++    #[test]
++    fn opposite_direction_reversal_keeps_release_before_press() {
++        let mut queue = VecDeque::from([
++            Event::Down(Button::Left),
++            Event::Changed(Button::Left),
++            Event::Up(Button::Left),
++            Event::Changed(Button::Left),
++            Event::Down(Button::Right),
++            Event::Changed(Button::Right),
++            Event::Up(Button::Right),
++        ]);
++        for expected in [
++            Transition::Down(Button::Left),
++            Transition::Up(Button::Left),
++            Transition::Down(Button::Right),
++            Transition::Up(Button::Right),
++        ] {
++            assert_eq!(
++                next_mapped_event(|| queue.pop_front(), convert),
++                Some(expected)
++            );
++        }
++        assert!(queue.is_empty());
++    }
++
++    #[test]
++    fn sixty_four_ignored_events_leave_the_next_transition_queued() {
++        let mut queue = VecDeque::from(vec![Event::Axis; 64]);
++        queue.push_back(Event::Down(Button::Enter));
++        let mut fetched = 0;
++        assert_eq!(
++            next_mapped_event(
++                || {
++                    fetched += 1;
++                    queue.pop_front()
++                },
++                convert
++            ),
++            None
++        );
++        assert_eq!(fetched, 64);
++        assert_eq!(queue, VecDeque::from([Event::Down(Button::Enter)]));
++        assert_eq!(
++            next_mapped_event(|| queue.pop_front(), convert),
++            Some(Transition::Down(Button::Enter))
++        );
++    }
++
++    #[test]
++    fn transition_at_the_limit_is_delivered_without_a_sixty_fifth_fetch() {
++        let mut queue = VecDeque::from(vec![Event::Axis; 63]);
++        queue.extend([Event::Down(Button::Enter), Event::Up(Button::Enter)]);
++        let mut fetched = 0;
++        assert_eq!(
++            next_mapped_event(
++                || {
++                    fetched += 1;
++                    queue.pop_front()
++                },
++                convert
++            ),
++            Some(Transition::Down(Button::Enter))
++        );
++        assert_eq!(fetched, 64);
++        assert_eq!(queue, VecDeque::from([Event::Up(Button::Enter)]));
++    }
++
++    #[test]
++    fn empty_queue_returns_without_calling_the_converter() {
++        let mut converted = false;
++        let result = next_mapped_event(
++            || None::<Event>,
++            |event| {
++                converted = true;
++                convert(event)
++            },
++        );
++        assert_eq!(result, None);
++        assert!(!converted);
++    }
++}

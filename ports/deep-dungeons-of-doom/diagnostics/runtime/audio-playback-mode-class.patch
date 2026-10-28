@@ -1,0 +1,63 @@
+--- a/src/allclasses.h
++++ b/src/allclasses.h
+@@ -267,6 +267,7 @@
+ REGISTER_CLASS_NAME(Sound,"flash.media")
+ REGISTER_CLASS_NAME(SoundChannel,"flash.media")
+ REGISTER_CLASS_NAME(SoundLoaderContext,"flash.media")
++REGISTER_CLASS_NAME(AudioPlaybackMode,"flash.media")
+ REGISTER_CLASS_NAME(SoundMixer,"flash.media")
+ REGISTER_CLASS_NAME(SoundTransform,"flash.media")
+ REGISTER_CLASS_NAME(StageVideo,"flash.media")
+--- a/src/forwards/scripting/flash/media/flashmedia.h
++++ b/src/forwards/scripting/flash/media/flashmedia.h
+@@ -30,6 +30,7 @@
+ class SoundTransform;
+ class SoundChannel;
+ class Video;
++class AudioPlaybackMode;
+ class SoundMixer;
+ class SoundLoaderContext;
+ class StageVideo;
+--- a/src/scripting/flash/media/flashmedia.h
++++ b/src/scripting/flash/media/flashmedia.h
+@@ -225,6 +225,13 @@
+ 	_NR<DisplayObject> hitTestImpl(const Vector2f& globalPoint, const Vector2f& localPoint, HIT_TYPE type,bool interactiveObjectsOnly) override;
+ };
+ 
++class AudioPlaybackMode : public ASObject
++{
++public:
++	AudioPlaybackMode(ASWorker* wrk,Class_base* c):ASObject(wrk,c){}
++	static void sinit(Class_base*);
++};
++
+ class SoundMixer : public ASObject
+ {
+ public:
+--- a/src/scripting/abc_flashmedia.cpp
++++ b/src/scripting/abc_flashmedia.cpp
+@@ -54,6 +54,7 @@
+ 	builtin->registerBuiltin("Sound","flash.media",Class<Sound>::getRef(m_sys));
+ 	builtin->registerBuiltin("SoundLoaderContext","flash.media",Class<SoundLoaderContext>::getRef(m_sys));
+ 	builtin->registerBuiltin("SoundChannel","flash.media",Class<SoundChannel>::getRef(m_sys));
++	builtin->registerBuiltin("AudioPlaybackMode","flash.media",Class<AudioPlaybackMode>::getRef(m_sys));
+ 	builtin->registerBuiltin("SoundMixer","flash.media",Class<SoundMixer>::getRef(m_sys));
+ 	builtin->registerBuiltin("StageVideo","flash.media",Class<StageVideo>::getRef(m_sys));
+ 	builtin->registerBuiltin("StageVideoAvailability","flash.media",Class<StageVideoAvailability>::getRef(m_sys));
+--- a/src/scripting/flash/media/flashmedia.cpp
++++ b/src/scripting/flash/media/flashmedia.cpp
+@@ -973,6 +973,14 @@
+ ASFUNCTIONBODY_GETTER(Sound,bytesTotal)
+ ASFUNCTIONBODY_GETTER(Sound,length)
+ 
++void AudioPlaybackMode::sinit(Class_base* c)
++{
++	CLASS_SETUP(c, ASObject, _constructor, CLASS_SEALED | CLASS_FINAL);
++	c->setVariableAtomByQName("AMBIENT",nsNameAndKind(),asAtomHandler::fromString(c->getSystemState(),"ambient"),CONSTANT_TRAIT);
++	c->setVariableAtomByQName("MEDIA",nsNameAndKind(),asAtomHandler::fromString(c->getSystemState(),"media"),CONSTANT_TRAIT);
++	c->setVariableAtomByQName("VOICE",nsNameAndKind(),asAtomHandler::fromString(c->getSystemState(),"voice"),CONSTANT_TRAIT);
++}
++
+ void SoundMixer::sinit(Class_base* c)
+ {
+ 	CLASS_SETUP_NO_CONSTRUCTOR(c, ASObject, CLASS_FINAL | CLASS_SEALED);

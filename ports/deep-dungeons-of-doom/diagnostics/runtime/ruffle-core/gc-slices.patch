@@ -1,0 +1,228 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index aaf84ef..4583915 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -2076,8 +2076,6 @@ dependencies = [
+ [[package]]
+ name = "gc-arena"
+ version = "0.7.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "160a11f93020eea95cb4c59e2eda2e4c6353f75aa4fbb01f2bf8729b2e4d6dd2"
+ dependencies = [
+  "enum-map",
+  "gc-arena-derive",
+diff --git a/Cargo.toml b/Cargo.toml
+index f5528f3..8579b53 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -206,3 +206,6 @@ lto = "off"
+ incremental = true
+ # Right between the defaults of 16 and 256, for crate fragment caching.
+ codegen-units = 64
++
++[patch.crates-io]
++gc-arena = { path = "core/vendor/gc-arena" }
+diff --git a/core/src/ddd_gc.rs b/core/src/ddd_gc.rs
+new file mode 100644
+index 0000000..cb0b831
+--- /dev/null
++++ b/core/src/ddd_gc.rs
+@@ -0,0 +1,166 @@
++//! Optional incremental cleanup for the constrained DDD runtime.
++//!
++//! The time limit is soft: tracing or dropping one value cannot be interrupted.
++//! Excessive debt falls back to the collector's normal full debt payment.
++use gc_arena::arena::Root;
++use gc_arena::{Arena, Collect, Rootable};
++use std::sync::OnceLock;
++use std::time::Duration;
++use web_time::Instant;
++
++const CHUNK_STEPS: usize = 256;
++const MAX_DEBT: f64 = 65_536.0;
++const SLICE: Duration = Duration::from_millis(3);
++
++pub(crate) fn enabled() -> bool {
++    static ENABLED: OnceLock<bool> = OnceLock::new();
++    *ENABLED.get_or_init(|| {
++        std::env::var_os("RUFFLE_DDD_GC_SLICES").is_some_and(|value| value == "1")
++    })
++}
++
++#[derive(Debug)]
++pub(crate) struct Report {
++    pub debt_before: f64,
++    pub debt_after: f64,
++    pub gc_count: usize,
++    pub chunks: u32,
++    pub pressure_fallback: bool,
++}
++
++fn pay_chunk<R>(arena: &mut Arena<R>)
++where
++    R: for<'a> Rootable<'a>,
++    for<'a> Root<'a, R>: Collect<'a>,
++{
++    arena.collect_debt_steps(CHUNK_STEPS);
++}
++
++pub(crate) fn collect<R>(arena: &mut Arena<R>) -> Report
++where
++    R: for<'a> Rootable<'a>,
++    for<'a> Root<'a, R>: Collect<'a>,
++{
++    let started = Instant::now();
++    let debt_before = arena.metrics().allocation_debt();
++    let pressure_fallback = debt_before > MAX_DEBT;
++    let mut chunks = 0;
++    if pressure_fallback {
++        arena.collect_debt();
++    } else {
++        while arena.metrics().allocation_debt() > 0.0 {
++            pay_chunk(arena);
++            chunks += 1;
++            if started.elapsed() >= SLICE {
++                break;
++            }
++        }
++    }
++    Report {
++        debt_before,
++        debt_after: arena.metrics().allocation_debt(),
++        gc_count: arena.metrics().total_gc_count(),
++        chunks,
++        pressure_fallback,
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use gc_arena::arena::CollectionPhase;
++    use gc_arena::{Gc, RefLock};
++    use std::rc::Rc;
++
++    #[derive(Clone)]
++    struct Tracked(Rc<()>);
++    gc_arena::static_collect!(Tracked);
++
++    #[derive(Collect)]
++    #[collect(no_drop)]
++    struct Graph<'gc> {
++        survivors: Gc<'gc, RefLock<Vec<Gc<'gc, Tracked>>>>,
++    }
++
++    #[test]
++    fn sliced_collection_keeps_live_values_and_reclaims_bursts() {
++        let marker = Rc::new(());
++        let mut arena = Arena::<Rootable![Graph<'_>]>::new(|mc| Graph {
++            survivors: Gc::new(mc, RefLock::new(Vec::new())),
++        });
++        let mut max_count = 0;
++        for round in 0..120 {
++            arena.mutate(|mc, root| {
++                let mut values = root.survivors.unlock(mc).borrow_mut();
++                values.clear();
++                for _ in 0..32 {
++                    values.push(Gc::new(mc, Tracked(marker.clone())));
++                }
++                for _ in 0..if round % 12 == 0 { 12_000 } else { 400 } {
++                    Gc::new(mc, Tracked(marker.clone()));
++                }
++            });
++            collect(&mut arena);
++            max_count = max_count.max(arena.metrics().total_gc_count());
++            arena.mutate(|_, root| {
++                let values = root.survivors.borrow();
++                assert_eq!(values.len(), 32);
++                assert!(values.iter().all(|v| Rc::ptr_eq(&v.0, &marker)));
++            });
++        }
++        for _ in 0..1000 {
++            if arena.metrics().allocation_debt() == 0.0 { break; }
++            pay_chunk(&mut arena);
++        }
++        assert_eq!(arena.metrics().allocation_debt(), 0.0);
++        assert!(max_count < 50_000, "transient allocations grew without collection");
++        arena.finish_cycle();
++        assert_eq!(Rc::strong_count(&marker), 33);
++        arena.mutate(|mc, root| root.survivors.unlock(mc).borrow_mut().clear());
++        arena.finish_cycle();
++        assert_eq!(Rc::strong_count(&marker), 1);
++    }
++
++    #[test]
++    fn excessive_debt_uses_normal_collection() {
++        let mut arena = Arena::<Rootable![()]>::new(|_| ());
++        arena.mutate(|mc, _| { for _ in 0..100_000 { Gc::new(mc, 0u8); } });
++        let report = collect(&mut arena);
++        assert!(report.pressure_fallback);
++        assert_eq!(report.debt_after, 0.0);
++        assert_eq!(report.gc_count, 0);
++    }
++
++    #[test]
++    fn reclaiming_an_empty_heap_clears_debt() {
++        let mut arena = Arena::<Rootable![()]>::new(|_| ());
++        arena.mutate(|mc, _| { for _ in 0..20 { Gc::new(mc, 0u8); } });
++        arena.metrics().adjust_debt(1000.0);
++        pay_chunk(&mut arena);
++        assert_eq!(arena.metrics().allocation_debt(), 0.0);
++        assert_eq!(arena.metrics().total_gc_count(), 0);
++    }
++
++    #[test]
++    fn step_budget_yields_with_unfinished_collection() {
++        let mut arena = Arena::<Rootable![()]>::new(|_| ());
++        arena.mutate(|mc, _| { for _ in 0..30_000 { Gc::new(mc, 0u8); } });
++        let debt = arena.metrics().allocation_debt();
++        let count = arena.metrics().total_gc_count();
++        arena.collect_debt_steps(0);
++        assert_eq!(arena.metrics().allocation_debt(), debt);
++        assert_eq!(arena.metrics().total_gc_count(), count);
++        arena.collect_debt_steps(1);
++        assert_eq!(arena.collection_phase(), CollectionPhase::Marking);
++        assert_eq!(arena.metrics().total_gc_count(), count);
++        pay_chunk(&mut arena);
++        assert!(arena.metrics().total_gc_count() >= count - CHUNK_STEPS);
++        assert!(arena.metrics().allocation_debt() > 0.0);
++        for _ in 0..1000 {
++            if arena.metrics().allocation_debt() == 0.0 { break; }
++            pay_chunk(&mut arena);
++        }
++        assert_eq!(arena.metrics().total_gc_count(), 0);
++        assert_eq!(arena.metrics().allocation_debt(), 0.0);
++    }
++}
+diff --git a/core/src/lib.rs b/core/src/lib.rs
+index ce4dd77..a921ab1 100644
+--- a/core/src/lib.rs
++++ b/core/src/lib.rs
+@@ -22,6 +22,7 @@ mod character;
+ pub mod context;
+ pub mod context_menu;
+ mod ddd_core_timing;
++mod ddd_gc;
+ mod drawing;
+ mod ecma_conversions;
+ pub mod events;
+diff --git a/core/src/player.rs b/core/src/player.rs
+index 00f0ac7..340e3b4 100644
+--- a/core/src/player.rs
++++ b/core/src/player.rs
+@@ -2469,7 +2469,14 @@ impl Player {
+ 
+         // GC
+         let timing = crate::ddd_core_timing::start();
+-        self.gc_arena.borrow_mut().collect_debt();
++        if crate::ddd_gc::enabled() {
++            let report = crate::ddd_gc::collect(&mut self.gc_arena.borrow_mut());
++            if timing.is_some() && report.debt_before > 0.0 {
++                tracing::info!(target: "ddd_core_timing", ?report, "GC slice debt and object count");
++            }
++        } else {
++            self.gc_arena.borrow_mut().collect_debt();
++        }
+         crate::ddd_core_timing::finish("gc_debt", timing);
+ 
+         rval

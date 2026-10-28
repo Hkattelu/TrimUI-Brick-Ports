@@ -1,0 +1,137 @@
+diff --git a/src/amf3/element_cache.rs b/src/amf3/element_cache.rs
+index 3925594..f1559ac 100644
+--- a/src/amf3/element_cache.rs
++++ b/src/amf3/element_cache.rs
+@@ -32,6 +32,15 @@ impl<T: PartialEq + Clone + Debug> ElementCache<T> {
+         }
+     }
+ 
++    /// Record an object emitted inline, even when its contents equal an earlier object.
++    /// AMF3 readers reserve one reference-table slot for every inline object.
++    pub(crate) fn record_inline(&self, val: T) -> usize {
++        let mut cache = self.cache.borrow_mut();
++        let index = cache.len();
++        cache.push(val);
++        index
++    }
++
+     /// Retrieve the item at the given index from the cache
+     #[inline]
+     pub fn get_element(&self, index: usize) -> Option<T> {
+diff --git a/src/amf3/write.rs b/src/amf3/write.rs
+index b048bcd..43f00d6 100644
+--- a/src/amf3/write.rs
++++ b/src/amf3/write.rs
+@@ -154,6 +154,10 @@ impl AMF3Encoder {
+             items.len() as u32,
+         );
+ 
++        if len.is_size() {
++            self.object_reference_table.record_inline(Value::VectorInt(items.to_vec(), fixed_length));
++        }
++
+         self.write_type_marker(writer, TypeMarker::VectorInt)?;
+         if len.is_reference() {
+             len.write(writer, self)?;
+@@ -178,6 +182,10 @@ impl AMF3Encoder {
+             items.len() as u32,
+         );
+ 
++        if len.is_size() {
++            self.object_reference_table.record_inline(Value::VectorUInt(items.to_vec(), fixed_length));
++        }
++
+         self.write_type_marker(writer, TypeMarker::VectorUInt)?;
+         if len.is_reference() {
+             len.write(writer, self)?;
+@@ -202,6 +210,10 @@ impl AMF3Encoder {
+             items.len() as u32,
+         );
+ 
++        if len.is_size() {
++            self.object_reference_table.record_inline(Value::VectorDouble(items.to_vec(), fixed_length));
++        }
++
+         self.write_type_marker(writer, TypeMarker::VectorDouble)?;
+         if len.is_reference() {
+             len.write(writer, self)?;
+@@ -224,6 +236,10 @@ impl AMF3Encoder {
+             .object_reference_table
+             .to_length(Value::Date(time, None), 0);
+ 
++        if len.is_size() {
++            self.object_reference_table.record_inline(Value::Date(time, None));
++        }
++
+         self.write_type_marker(writer, TypeMarker::Date)?;
+         len.write(writer, self)?;
+         if len.is_size() {
+@@ -251,6 +267,10 @@ impl AMF3Encoder {
+             .object_reference_table
+             .to_length(Value::ByteArray(bytes.to_vec()), bytes.len() as u32);
+ 
++        if len.is_size() {
++            self.object_reference_table.record_inline(Value::ByteArray(bytes.to_vec()));
++        }
++
+         self.write_type_marker(writer, TypeMarker::ByteArray)?;
+         len.write(writer, self)?;
+         if len.is_size() {
+@@ -267,6 +287,9 @@ impl AMF3Encoder {
+     ) -> Result<()> {
+         let len = Length::Size(bytes.len() as u32);
+ 
++        self.object_reference_table
++            .record_inline(Value::XML(bytes.to_string(), string));
++
+         if string {
+             self.write_type_marker(writer, TypeMarker::XmlString)?;
+         } else {
+@@ -433,12 +456,10 @@ impl AMF3Encoder {
+         let had_object = Length::Size(0);
+ 
+         let obj = Value::Object(id, children.to_vec(), class_def.clone());
+-        self.object_reference_table.store(obj.clone());
+-        if let Length::Reference(r) = self.object_reference_table.to_length(obj, 0) {
+-            self.object_id_to_reference
+-                .borrow_mut()
+-                .insert(id, (TypeMarker::Object, r));
+-        }
++        let index = self.object_reference_table.record_inline(obj);
++        self.object_id_to_reference
++            .borrow_mut()
++            .insert(id, (TypeMarker::Object, index));
+ 
+         let def = class_def.clone().unwrap_or_default();
+         let def2 = def.clone();
+@@ -608,22 +629,18 @@ impl AMF3Encoder {
+             Value::Null => self.write_null_element(writer),
+             Value::Undefined => self.write_undefined_element(writer),
+             Value::ECMAArray(id, dense, elements, _) => {
+-                self.object_reference_table.store(s.clone());
+-                if let Length::Reference(r) = self.object_reference_table.to_length(s.clone(), 0) {
+-                    self.object_id_to_reference
+-                        .borrow_mut()
+-                        .insert(*id, (TypeMarker::Array, r));
+-                }
++                let index = self.object_reference_table.record_inline(s.clone());
++                self.object_id_to_reference
++                    .borrow_mut()
++                    .insert(*id, (TypeMarker::Array, index));
+ 
+                 self.write_ecma_array_element(writer, dense, elements)
+             }
+             Value::StrictArray(id, children) => {
+-                self.object_reference_table.store(s.clone());
+-                if let Length::Reference(r) = self.object_reference_table.to_length(s.clone(), 0) {
+-                    self.object_id_to_reference
+-                        .borrow_mut()
+-                        .insert(*id, (TypeMarker::Array, r));
+-                }
++                let index = self.object_reference_table.record_inline(s.clone());
++                self.object_id_to_reference
++                    .borrow_mut()
++                    .insert(*id, (TypeMarker::Array, index));
+ 
+                 self.write_strict_array_element(writer, children)
+             }

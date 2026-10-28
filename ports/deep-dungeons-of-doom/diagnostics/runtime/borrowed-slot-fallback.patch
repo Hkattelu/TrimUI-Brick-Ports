@@ -1,0 +1,13 @@
+--- a/src/scripting/abc_interpreter_preload_callproperty.cpp
++++ b/src/scripting/abc_interpreter_preload_callproperty.cpp
+@@ -178,8 +178,8 @@
+ 				}
+ 				if (isoverridden && !needSuper)
+ 				{
+-					if (cls && cls->is<Class_base>())
+-						classBorrowedSlotID = cls->as<Class_base>()->findBorrowedSlotID(v);
++					// Keep UINT32_MAX: use generic dispatch for overridden names.
++					// A class receiver may also have a static method with this name.
+ 					func=nullptr;
+ 					v=nullptr;
+ 				}

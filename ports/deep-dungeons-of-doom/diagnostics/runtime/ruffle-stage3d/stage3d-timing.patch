@@ -1,0 +1,283 @@
+diff --git a/render/wgpu/src/context3d/mod.rs b/render/wgpu/src/context3d/mod.rs
+index 63acceb..296bd30 100644
+--- a/render/wgpu/src/context3d/mod.rs
++++ b/render/wgpu/src/context3d/mod.rs
+@@ -11,16 +11,16 @@ use swf::{Rectangle, Twips};
+ 
+ use wgpu::util::StagingBelt;
+ use wgpu::{
+-    BindGroup, BufferDescriptor, BufferUsages, COPY_BUFFER_ALIGNMENT, COPY_BYTES_PER_ROW_ALIGNMENT,
+-    TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, TextureView,
+-    TextureViewDescriptor,
++    BindGroup, BufferDescriptor, BufferUsages, TextureDescriptor, TextureDimension, TextureFormat,
++    TextureUsages, TextureView, TextureViewDescriptor, COPY_BUFFER_ALIGNMENT,
++    COPY_BYTES_PER_ROW_ALIGNMENT,
+ };
+ use wgpu::{CommandEncoder, Extent3d, RenderPass};
+ 
+-use crate::Texture;
+-use crate::context3d::current_pipeline::{AGAL_FLOATS_PER_REGISTER, BoundTextureData, IntoWgpu};
++use crate::context3d::current_pipeline::{BoundTextureData, IntoWgpu, AGAL_FLOATS_PER_REGISTER};
+ use crate::descriptors::Descriptors;
+ use crate::utils::supported_sample_count;
++use crate::Texture;
+ 
+ use std::num::NonZeroU64;
+ use std::rc::Rc;
+@@ -29,6 +29,10 @@ use tracing::instrument;
+ 
+ mod current_pipeline;
+ mod shader_pair;
++mod timing;
++
++use std::time::Instant;
++use timing::{Phase, Stage3dTiming};
+ 
+ use current_pipeline::CurrentPipeline;
+ 
+@@ -45,6 +49,7 @@ pub struct WgpuContext3D {
+     // we need in individual `Arc`s.
+     descriptors: Arc<Descriptors>,
+     profile: Context3DProfile,
++    stage3d_timing: Option<Stage3dTiming>,
+ 
+     buffer_staging_belt: StagingBelt,
+ 
+@@ -137,6 +142,9 @@ impl WgpuContext3D {
+ 
+         Self {
+             profile,
++            stage3d_timing: std::env::var("RUFFLE_DDD_STAGE3D_TIMING")
++                .is_ok_and(|value| value == "1")
++                .then(|| Stage3dTiming::new(Instant::now())),
+             descriptors,
+             buffer_staging_belt,
+             back_buffer_raw_texture_handle,
+@@ -507,7 +515,20 @@ impl Context3D for WgpuContext3D {
+     }
+ 
+     fn process_command(&mut self, command: Context3DCommand<'_>) {
+-        match command {
++        let command_timer = self.stage3d_timing.as_ref().map(|_| {
++            let phase = match &command {
++                Context3DCommand::DrawTriangles { .. } => Phase::Draw,
++                Context3DCommand::UploadToIndexBuffer { .. } => Phase::UploadIndex,
++                Context3DCommand::UploadToVertexBuffer { .. } => Phase::UploadVertex,
++                Context3DCommand::SetProgramConstants { .. } => Phase::Constants,
++                Context3DCommand::CopyBitmapToTexture { .. } => Phase::TextureUpload,
++                Context3DCommand::ConfigureBackBuffer { .. } => Phase::Configure,
++                _ => Phase::Other,
++            };
++            (phase, Instant::now())
++        });
++        // Keep early command returns local so that empty uploads are counted too.
++        (|| match command {
+             Context3DCommand::Clear {
+                 red,
+                 green,
+@@ -877,6 +898,7 @@ impl Context3D for WgpuContext3D {
+                 let indices =
+                     (first_index as u32)..((first_index as u32) + (num_triangles as u32 * 3));
+ 
++                let phase_start = self.stage3d_timing.as_ref().map(|_| Instant::now());
+                 let (can_draw, new_pipeline) =
+                     if self.current_pipeline.has_unbound_required_textures() {
+                         (false, None)
+@@ -897,12 +919,16 @@ impl Context3D for WgpuContext3D {
+                         }
+                     };
+ 
++                if let (Some(start), Some(timing)) = (phase_start, &mut self.stage3d_timing) {
++                    timing.record(Phase::Pipeline, start.elapsed());
++                }
+                 if !self.seen_clear_command {
+                     tracing::warn!(
+                         "Context3D::present: drawTriangles called without first calling clear()"
+                     );
+                 }
+ 
++                let phase_start = self.stage3d_timing.as_ref().map(|_| Instant::now());
+                 self.buffer_staging_belt.finish();
+                 let new_encoder = self.descriptors.device.create_command_encoder(
+                     &wgpu::CommandEncoderDescriptor {
+@@ -920,6 +946,10 @@ impl Context3D for WgpuContext3D {
+                     self.bind_group = Some(new_bind_group);
+                 }
+ 
++                if let (Some(start), Some(timing)) = (phase_start, &mut self.stage3d_timing) {
++                    timing.record(Phase::Prepare, start.elapsed());
++                }
++                let phase_start = self.stage3d_timing.as_ref().map(|_| Instant::now());
+                 let mut render_command_encoder = self.descriptors.device.create_command_encoder(
+                     &wgpu::CommandEncoderDescriptor {
+                         label: create_debug_label!("Render command encoder").as_deref(),
+@@ -939,11 +969,22 @@ impl Context3D for WgpuContext3D {
+                 // easily re-use it across multiple `DrawTriangles` calls.
+                 drop(render_pass);
+ 
++                if let (Some(start), Some(timing)) = (phase_start, &mut self.stage3d_timing) {
++                    timing.record(Phase::Encode, start.elapsed());
++                }
++                let phase_start = self.stage3d_timing.as_ref().map(|_| Instant::now());
+                 self.descriptors.queue.submit([
+                     finished_buffer_command_encoder.finish(),
+                     render_command_encoder.finish(),
+                 ]);
++                if let (Some(start), Some(timing)) = (phase_start, &mut self.stage3d_timing) {
++                    timing.record(Phase::Submit, start.elapsed());
++                }
++                let phase_start = self.stage3d_timing.as_ref().map(|_| Instant::now());
+                 self.buffer_staging_belt.recall();
++                if let (Some(start), Some(timing)) = (phase_start, &mut self.stage3d_timing) {
++                    timing.record(Phase::Recall, start.elapsed());
++                }
+             }
+ 
+             Context3DCommand::SetVertexBufferAt {
+@@ -1242,11 +1283,15 @@ impl Context3D for WgpuContext3D {
+                     write_mask,
+                 );
+             }
++        })();
++        if let (Some((phase, start)), Some(timing)) = (command_timer, &mut self.stage3d_timing) {
++            timing.record(phase, start.elapsed());
+         }
+     }
+ 
+     #[instrument(level = "debug", skip_all)]
+     fn present(&mut self) {
++        let present_start = self.stage3d_timing.as_ref().map(|_| Instant::now());
+         std::mem::swap(
+             &mut self.back_buffer_raw_texture_handle,
+             &mut self.front_buffer_raw_texture_handle,
+@@ -1267,6 +1312,21 @@ impl Context3D for WgpuContext3D {
+         self.set_render_to_back_buffer();
+         self.seen_clear_command = false;
+         self.clear_color = None;
++        if let (Some(start), Some(timing)) = (present_start, &mut self.stage3d_timing) {
++            timing.record(Phase::Present, start.elapsed());
++            if let Some(report) = timing.take_report(Instant::now()) {
++                let counts = report.phases.map(|m| m.count);
++                let totals_ms = report.phases.map(|m| m.total.as_secs_f64() * 1000.0);
++                let maxima_ms = report.phases.map(|m| m.max.as_secs_f64() * 1000.0);
++                tracing::info!(target: "ddd_stage3d_timing",
++                    interval_ms = report.elapsed.as_secs_f64() * 1000.0,
++                    width = self.back_buffer_size.map_or(0, |s| s.width),
++                    height = self.back_buffer_size.map_or(0, |s| s.height),
++                    samples = self.back_buffer_sample_count,
++                    ?counts, ?totals_ms, ?maxima_ms,
++                    "Stage3D wall time: draw,index,vertex,constants,texture,configure,other,pipeline,prepare,encode,submit,recall,present; draw includes its five subphases; not GPU completion");
++            }
++        }
+     }
+ }
+ 
+diff --git a/render/wgpu/src/context3d/timing.rs b/render/wgpu/src/context3d/timing.rs
+new file mode 100644
+index 0000000..64a1ea4
+--- /dev/null
++++ b/render/wgpu/src/context3d/timing.rs
+@@ -0,0 +1,103 @@
++use std::time::{Duration, Instant};
++
++#[derive(Clone, Copy)]
++pub(super) enum Phase {
++    Draw,
++    UploadIndex,
++    UploadVertex,
++    Constants,
++    TextureUpload,
++    Configure,
++    Other,
++    Pipeline,
++    Prepare,
++    Encode,
++    Submit,
++    Recall,
++    Present,
++}
++
++#[derive(Clone, Copy, Default, Debug, PartialEq, Eq)]
++pub(super) struct Metric {
++    pub count: u64,
++    pub total: Duration,
++    pub max: Duration,
++}
++
++pub(super) struct Report {
++    pub elapsed: Duration,
++    pub phases: [Metric; 13],
++}
++
++pub(super) struct Stage3dTiming {
++    start: Instant,
++    phases: [Metric; 13],
++}
++
++impl Stage3dTiming {
++    pub fn new(start: Instant) -> Self {
++        Self {
++            start,
++            phases: [Metric::default(); 13],
++        }
++    }
++
++    pub fn record(&mut self, phase: Phase, elapsed: Duration) {
++        let metric = &mut self.phases[phase as usize];
++        metric.count += 1;
++        metric.total += elapsed;
++        metric.max = metric.max.max(elapsed);
++    }
++
++    pub fn take_report(&mut self, now: Instant) -> Option<Report> {
++        let elapsed = now.saturating_duration_since(self.start);
++        if elapsed < Duration::from_secs(2) {
++            return None;
++        }
++        self.start = now;
++        Some(Report {
++            elapsed,
++            phases: std::mem::take(&mut self.phases),
++        })
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn window_retains_early_samples_and_resets_after_reporting() {
++        let start = Instant::now();
++        let mut timing = Stage3dTiming::new(start);
++        timing.record(Phase::Draw, Duration::from_millis(15));
++        timing.record(Phase::Draw, Duration::from_millis(5));
++        timing.record(Phase::Submit, Duration::from_millis(12));
++        assert!(timing
++            .take_report(start + Duration::from_millis(1999))
++            .is_none());
++        let report = timing.take_report(start + Duration::from_secs(2)).unwrap();
++        assert_eq!(report.elapsed, Duration::from_secs(2));
++        assert_eq!(
++            report.phases[Phase::Draw as usize],
++            Metric {
++                count: 2,
++                total: Duration::from_millis(20),
++                max: Duration::from_millis(15),
++            }
++        );
++        assert_eq!(
++            report.phases[Phase::Submit as usize].total,
++            Duration::from_millis(12)
++        );
++        assert_eq!(report.phases[Phase::Other as usize], Metric::default());
++        assert!(timing.take_report(start + Duration::from_secs(3)).is_none());
++        assert_eq!(
++            timing
++                .take_report(start + Duration::from_secs(4))
++                .unwrap()
++                .phases,
++            [Metric::default(); 13]
++        );
++    }
++}
