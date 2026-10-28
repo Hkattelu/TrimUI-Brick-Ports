@@ -48,3 +48,6 @@ tmp/
 *.tmp
 .DS_Store
 Thumbs.db
+*.swf
+*.sol
+gamedata/

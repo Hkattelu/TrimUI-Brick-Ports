@@ -79,6 +79,8 @@ def build(native, runtime, output, weston_egl=None, portable=False):
             add(HERE, 'toolchain/' + name, 'port/portmaster/toolchain/' + name)
         for name in ('Deep Dungeons of Doom.sh', 'run-game.sh', 'payload.lock.json'):
             add(HERE, 'portable/' + name, 'port/portmaster/portable/' + name)
+        for name in ('ddd-prepare.c', 'recipe.h', 'make-recipe.py', 'build.sh', 'test-device.sh', 'README.md'):
+            add(HERE, 'portable/preparation/' + name, 'port/portmaster/portable/preparation/' + name)
         add(HERE.parent.parent.parent, 'LICENSE', 'port/LICENSE')
         add(HERE, 'portable/RUNTIME-SOURCE.md', 'README.md')
     else:

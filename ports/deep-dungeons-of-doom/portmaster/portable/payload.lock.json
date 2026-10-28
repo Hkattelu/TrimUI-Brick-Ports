@@ -349,6 +349,10 @@
     {
       "path": "ruffle",
       "sha256": "29735ea9dc077bf8e1253da74bde1cb9c71906cde18334d5e4ef6434bfe7f3ab"
+    },
+    {
+      "path": "ddd-prepare",
+      "sha256": "4f63e3c9eb30374fbeb698722a181ff47c0ba041c44913db4dc34d178ceec37c"
     }
   ]
 }

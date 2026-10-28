@@ -26,7 +26,11 @@ if [ -e .save-import.lock ]; then
   exit 1
 fi
 if [ ! -f ddd.swf ]; then
-  pm_message 'Prepare your purchased game on the PC and copy ddd.swf here. See deepdungeonsofdoom.md.'
+  pm_message 'Preparing DDD from your game files. Please wait.'
+fi
+chmod +x ddd-prepare
+if ! LD_LIBRARY_PATH="$GAMEDIR/libs.aarch64:${LD_LIBRARY_PATH:-}" ./ddd-prepare >preparation.log 2>&1; then
+  pm_message 'DDD setup failed. Copy the complete Windows Steam game into gamedata. See preparation.log for details.'
   pm_finish
   exit 1
 fi

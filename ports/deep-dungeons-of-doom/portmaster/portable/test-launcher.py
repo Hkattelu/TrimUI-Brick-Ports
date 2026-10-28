@@ -66,6 +66,7 @@ exit "${DDD_TEST_EXIT:-0}"
 ''')
     # This fixture consumes the pipe, just as the separately tested bounded logger does.
     script(game / 'ddd-log-drain', 'cat > "$1"\n')
+    script(game / 'ddd-prepare', '[ -f ddd.swf ] && [ "${DDD_TEST_PREP_FAIL:-0}" = 0 ]\n')
     launcher = root / 'Deep Dungeons of Doom.sh'
     text = (source / launcher.name).read_text()
     assert text.count('weston_dir=/tmp/ddd-weston') == 1
@@ -89,6 +90,7 @@ exit "${DDD_TEST_EXIT:-0}"
     assert 'mount' not in run(1)
     assert lock.read_text() == 'active import'
     lock.unlink()
+    assert 'mount' not in run(1, DDD_TEST_PREP_FAIL='1')
     failed = run(1, DDD_TEST_MOUNT_FAIL='1')
     assert 'runtime' not in failed
     successful = run(0)

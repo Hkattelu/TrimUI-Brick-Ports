@@ -65,7 +65,7 @@ def json_bytes(value):
 
 def executable(name):
     return name.rsplit('/', 1)[-1] in (
-        'ruffle', 'ddd-exit-watch', 'ddd-log-drain', 'ld-linux-aarch64.so.1')
+        'ruffle', 'ddd-exit-watch', 'ddd-log-drain', 'ddd-prepare', 'ld-linux-aarch64.so.1')
 
 
 def write_zip(path, entries):

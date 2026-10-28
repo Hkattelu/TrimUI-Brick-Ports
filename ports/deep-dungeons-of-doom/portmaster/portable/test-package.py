@@ -44,7 +44,7 @@ def check(preview, output):
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(z.read(name))
             target.chmod((item.external_attr >> 16) & 0o777)
-        for name in ('ruffle', 'ddd-log-drain'):
+        for name in ('ruffle', 'ddd-log-drain', 'ddd-prepare'):
             assert ((z.getinfo(folder + '/' + name).external_attr >> 16) & 0o777) == 0o755
         contents = json.loads(z.read(folder + '/PACKAGE-CONTENTS.json'))['files']
         assert {r['path'] for r in contents} == set(names) - {folder + '/PACKAGE-CONTENTS.json'}
@@ -59,7 +59,7 @@ def check(preview, output):
             assert hashlib.sha256(z.read(folder + '/' + name)).hexdigest() == expected
         binaries = {n[len(folder) + 1:] for n in names if z.read(n)[:4] == b'\x7fELF'}
         expected_binaries = {n for n in pins if not n.startswith('alsa/')}
-        assert binaries == expected_binaries and len(binaries) == 8
+        assert binaries == expected_binaries and len(binaries) == 9
         assert not any(n.rsplit('/', 1)[-1].startswith(('libc.', 'libstdc++', 'libpthread', 'libSDL',
                         'libEGL', 'libGL.', 'libGLX', 'libGLES', 'ld-linux', 'libm.')) for n in names)
         metadata = json.loads(z.read(folder + '/port.json'))
@@ -82,12 +82,10 @@ def check(preview, output):
                 original = data[part['offset']:part['offset'] + part['bytes']]
                 assert hashlib.sha256(original).hexdigest() == part['sha256']
                 sections += 1
-        with zipfile.ZipFile(io.BytesIO(z.read(folder + '/setup/ddd-preparation-tools.zip'))) as setup:
-            assert set(setup.namelist()) == set(builder.preview.PREPARATION) | {'README.md', 'LICENSE'}
-            for name in builder.preview.PREPARATION:
-                assert setup.read(name) == (builder.preview.SOURCES / name).read_bytes()
+        assert not any(n.endswith(('.ps1', '.zip')) for n in names)
+        assert folder + '/gamedata/Copy Windows Steam game files here.txt' in names
         # An update must not overwrite purchased data, progress, backups or settings.
-        sentinels = ('ddd.swf', 'profile/keep.sol', 'save-backups/keep.sol', 'config/preferences.toml')
+        sentinels = ('ddd.swf', 'gamedata/ddd-0.1-SNAPSHOT.swf', 'profile/keep.sol', 'save-backups/keep.sol', 'config/preferences.toml')
         for name in sentinels:
             target = game / name
             target.parent.mkdir(parents=True, exist_ok=True)

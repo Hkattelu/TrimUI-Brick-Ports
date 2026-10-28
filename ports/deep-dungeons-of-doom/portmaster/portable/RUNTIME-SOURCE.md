@@ -21,4 +21,11 @@ Before committing, check that `git write-tree` prints `c4deba3cdc60e4889f9e14539
 
 `native/` retains the exact source and packaging materials for three bundled native packages: OpenSSL `1.1.1f-1ubuntu2.24`, zlib `1:1.2.11.dfsg-2ubuntu1.5`, and ALSA `1.2.11-1ubuntu0.3`. The launcher and diagnostic helper sources are under `port/launcher` and `port/diagnostics/brick`. The EGL termination helper build needs the external WestonPack; the archive does not bundle WestonPack, EGL, core system libraries or SDL.
 
-The archive and checks support source inspection and reconstruction. They do not establish a bit-identical rebuild, audible quality, performance or acceptance on other devices. The archive remains local and unpublished. Corresponding sources must be available alongside any eventual binary release.
+## First-launch helper
+
+The helper sources and copy-only recipe are in `port/portmaster/portable/preparation/`.
+Build `ddd-prepare` using its `build.sh` with the same Focal toolchain variables.
+It links the included OpenSSL and zlib versions. Players supply their Windows
+Steam game files, and preparation runs on the handheld without PowerShell.
+
+The archive and checks support source inspection and reconstruction. They do not establish a bit-identical runtime rebuild, audible quality, performance or acceptance on other devices. Corresponding sources must remain available alongside the binary release.

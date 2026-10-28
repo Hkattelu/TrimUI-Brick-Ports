@@ -18,6 +18,7 @@ from license_layout import assemble
 RUNTIME = '29735ea9dc077bf8e1253da74bde1cb9c71906cde18334d5e4ef6434bfe7f3ab'
 GAME_HASH = 'a2700be5d4bdc8c7cd2a9443024af2795b4fd40bc13eede4ce3abef25c876d44'
 HELPERS = {
+    'ddd-prepare': '4f63e3c9eb30374fbeb698722a181ff47c0ba041c44913db4dc34d178ceec37c',
     'ddd-log-drain': '2aa226ceca8327fafeb26396b95553fda067e8114ae99b80f98d62e8c1808a3a',
     'libddd_alsa_poll_recovery.so': '024b11ac0ce08a069f173a4d09b507c3d4d70bbb6d9e6e0e57864d1c5ef42655',
     'libs.aarch64/libCRU.so': '42b4261f2309b5b30acf08866f8f7826d28ea4569b86012fcee0ac52bd871a76',
@@ -99,6 +100,10 @@ def build(payload, notices, screenshot, output):
     game_files['build-provenance.json'] = preview.json_bytes(provenance)
     metadata = json.loads((PM / 'port.json').read_text())
     metadata['attr']['min_glibc'] = '2.31'
+    metadata['attr']['inst'] = ('Copy the contents of your purchased Windows Steam game folder, including '
+                              'ddd-0.1-SNAPSHOT.swf and META-INF, into deepdungeonsofdoom/gamedata. '
+                              'Launch the port to prepare the game automatically. Install WestonPack 0.2 '
+                              'through PortMaster. No Windows PC or PowerShell is required.')
     # Testing status belongs in the matrix, not the catalogue's visibility filter.
     metadata['attr']['exp'] = False
     if metadata['name'] != preview.GAME_DIRECTORY + '.zip' or metadata['items'] != [preview.MENU, preview.GAME_DIRECTORY + '/']:
@@ -109,12 +114,9 @@ def build(payload, notices, screenshot, output):
     output.mkdir()
     catalogue = output / 'catalogue' / preview.GAME_DIRECTORY
     catalogue.mkdir(parents=True)
-    setup = {name: preview.ordinary(preview.SOURCES / name).read_bytes() for name in preview.PREPARATION}
-    setup.update({'README.md': (HERE / 'PLAYER-README.md').read_bytes(), 'LICENSE': port_license})
-    preparation = output / 'ddd-preparation-tools.zip'
-    preview.write_zip(preparation, setup)
-    game_files['setup/ddd-preparation-tools.zip'] = preparation.read_bytes()
-    preparation.unlink()
+    game_files['gamedata/Copy Windows Steam game files here.txt'] = (
+        'Copy the contents of your purchased Windows Steam installation here, including\n'
+        'ddd-0.1-SNAPSHOT.swf and META-INF. Launch the port to prepare them automatically.\n').encode()
     for name, data in {'port.json': json.dumps(metadata, indent=4).encode(), 'gameinfo.xml': (PM / 'gameinfo.xml').read_bytes(),
                        'screenshot.jpg': screenshot.read_bytes(), 'README.md': (HERE / 'PLAYER-README.md').read_bytes(),
                        preview.MENU: (HERE / preview.MENU).read_bytes()}.items():
