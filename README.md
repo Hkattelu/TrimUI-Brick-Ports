@@ -8,12 +8,7 @@ The test build is awaiting review on the [releases page](https://github.com/Hkat
 
 I’ve been playing this unofficial Deep Dungeons of Doom port on my original TrimUI Brick running NX Redux, and I’d like help testing it on other devices and firmware. I developed the port with AI assistance.
 
-You’ll need:
-
-- Your own purchased and installed Windows Steam copy of Deep Dungeons of Doom.
-- A Windows PC with [PowerShell 7.2 or later](https://learn.microsoft.com/powershell/scripting/install/installing-powershell-on-windows).
-
-The download contains no game assets or saves. Back up an existing installation and profile before updating.
+You need your own purchased Windows Steam copy of Deep Dungeons of Doom. You can use a Windows, macOS, or Linux computer to copy the installed game files to your handheld. The download contains no game assets or saves.
 
 ## Device testing
 
@@ -25,26 +20,15 @@ This build requires 64-bit ARM Linux (aarch64), glibc 2.31 or later, and WestonP
 
 ## Install
 
-1. Download `deepdungeonsofdoom.zip` from the release. On your Windows PC, right-click the ZIP, open Properties, and check Unblock if it is shown. Unblock lets Windows run the preparation scripts from the downloaded ZIP. Unzip it, then extract `deepdungeonsofdoom/setup/ddd-preparation-tools.zip` into a separate folder.
-2. Find your installed game folder in Steam using Manage > Browse local files. Keep the installation intact, including `META-INF`.
-3. PowerShell runs the preparation script, which creates a copy of your game with the handheld controls and compatibility fixes. Your Steam installation stays unchanged.
+1. Back up an existing installation and profile before updating. Download `deepdungeonsofdoom.zip`, place it in your firmware’s `PortMaster/autoinstall/` folder, and open PortMaster to install it. Install WestonPack 0.2 through PortMaster.
+2. Find your installed Windows Steam game folder using Steam’s Manage > Browse local files. Copy the **contents** of that folder, including `ddd-0.1-SNAPSHOT.swf` and `META-INF`, into the installed `deepdungeonsofdoom/gamedata/` folder on your handheld. Do not put the game folder itself inside `gamedata/`.
+3. Launch the game from Ports. The first launch automatically prepares a handheld-ready `ddd.swf` with button controls and compatibility changes. It leaves the original files unchanged. Later launches reuse the verified `ddd.swf`. If you already have a current prepared `ddd.swf`, you can keep using it without copying the game files again.
 
-   Open the extracted tools folder in File Explorer, type `pwsh` in the address bar, and press Enter to open PowerShell 7. The command’s permission setting applies only to this run.
-
-   Run the command below, adjusting the game path to match the folder Steam opened. The command creates `DDD-prepared` in your Windows user folder. If that folder already exists, change the output name to `DDD-prepared-2` or another new name.
-
-   ```powershell
-   pwsh -NoProfile -ExecutionPolicy RemoteSigned -File ./Prepare-GameCandidate.ps1 `
-     -GameFile 'C:/Program Files (x86)/Steam/steamapps/common/deepdungeonsofdoom/ddd-0.1-SNAPSHOT.swf' `
-     -OutputDirectory "$env:USERPROFILE/DDD-prepared"
-   ```
-
-4. Put the original `deepdungeonsofdoom.zip` in your firmware’s `PortMaster/autoinstall/` folder and open PortMaster to install it. Install WestonPack 0.2 through PortMaster.
-5. Copy the resulting `ddd.swf` from the output folder into the installed `deepdungeonsofdoom` folder on your handheld. Launch the game from Ports. Keep the prepared files private.
+If an existing `ddd.swf` is unsupported, the port leaves it untouched. To retry preparation, back it up, then remove only `ddd.swf` and launch again with the game files in `gamedata/`. Do not remove your `profile/` folder.
 
 D-pad navigates menus, A confirms, B goes back, and L/R defend and attack. Hold Start and press Select to quit. Trophies and Hi-score are unavailable, while local Missions works.
 
-Report problems by [opening an issue](https://github.com/Hkattelu/TrimUI-Brick-Ports/issues/new). Include v0.1.0, your device, firmware version, and steps to reproduce the problem. Please don’t share game files or saves.
+Report problems by [opening an issue](https://github.com/Hkattelu/TrimUI-Brick-Ports/issues/new). Include v0.1.0, your device, firmware version, and steps to reproduce the problem. `preparation.log`, `log.txt`, and `runtime.log` may help; check them for personal paths before sharing. Please don’t share game files or saves.
 
 ## Developer sources
 

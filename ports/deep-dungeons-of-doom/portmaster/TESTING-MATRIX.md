@@ -5,8 +5,13 @@ October 28 first-launch preparation: the native ARM64 helper produced the exact
 Redux, in about 4 seconds. Repeat verification took 0.26 seconds. Missing/wrong
 inputs, unsupported existing output, concurrent locking, interrupted temporary
 files, input/output symlinks (on tmpfs) and input/save preservation passed in
-isolated fixtures. The runtime and resulting game movie are unchanged. This
-does not add compatibility evidence for any other device or firmware.
+isolated fixtures. A silent run through the ordinary NX launcher then prepared
+the game from those inputs, rendered the title and main menu, accepted button
+input and returned to NX with Start+Select. The settled menu was inspected for
+overlays and layout problems. Temporary services and the Weston mount were
+released. This run used a separate empty profile; the normal installation and
+save were unchanged. The runtime and resulting game movie are unchanged. This
+does not add audio-quality or compatibility evidence for other firmware.
 
 Record actual results before claiming device, firmware or display support. This matrix covers the portable `29735ea9...` runtime. On October 27, 2026, after the NX staging correction, Himan confirmed that it starts normally on the original TrimUI Brick with NX Redux, feels even better than the previous build, and has working buttons. This is ordinary-play acceptance with subjective performance feedback, not an FPS measurement. Audio quality, save/reload and in-game Exit were not separately described in this latest feedback. Earlier acceptance of `9df2b904...` remains evidence for that earlier build.
 
