@@ -1,33 +1,46 @@
-# Testing matrix
+# DDD testing results
 
-October 28 first-launch preparation: the native ARM64 helper produced the exact
-`a2700be5...` output from copied Windows Steam inputs on the original Brick/NX
-Redux, in about 4 seconds. Repeat verification took 0.26 seconds. Missing/wrong
-inputs, unsupported existing output, concurrent locking, interrupted temporary
-files, input/output symlinks (on tmpfs) and input/save preservation passed in
-isolated fixtures. A silent run through the ordinary NX launcher then prepared
-the game from those inputs, rendered the title and main menu, accepted button
-input and returned to NX with Start+Select. The settled menu was inspected for
-overlays and layout problems. Temporary services and the Weston mount were
-released. This run used a separate empty profile; the normal installation and
-save were unchanged. The runtime and resulting game movie are unchanged. This
-does not add audio-quality or compatibility evidence for other firmware.
+Updated October 28, 2026 for v0.1.0 Test Build.
 
-Record actual results before claiming device, firmware or display support. This matrix covers the portable `29735ea9...` runtime. On October 27, 2026, after the NX staging correction, Himan confirmed that it starts normally on the original TrimUI Brick with NX Redux, feels even better than the previous build, and has working buttons. This is ordinary-play acceptance with subjective performance feedback, not an FPS measurement. Audio quality, save/reload and in-game Exit were not separately described in this latest feedback. Earlier acceptance of `9df2b904...` remains evidence for that earlier build.
+## Where it has been tested
 
-The October 28 movie `a2700be5...` disables the unavailable Trophies and Hi-score buttons. Muted copied-profile checks on the same Brick/runtime verified their appearance, skipped navigation, local Missions and Back. The settled popup also passed a separate cleanup review. The real save was preserved. This menu change has agent validation; the October 27 human acceptance covers its `df2b4af6...` predecessor.
+| Device | Firmware | Result |
+| --- | --- | --- |
+| Original TrimUI Brick | NX Redux | Played successfully. Combat and buttons received positive player feedback. |
+| Original TrimUI Brick | Other firmware | Untested. Testers wanted. |
+| Other handhelds | muOS | Untested. Testers wanted. |
+| Other handhelds | dArkOS | Untested. Testers wanted. |
+| Other handhelds | AmberELEC | Untested. Testers wanted. |
+| Other handhelds | Knulli | Untested. Testers wanted. |
+| Other handhelds | ROCKNIX | Untested. Testers wanted. |
 
-| Device | Firmware | Resolution | Status |
-| --- | --- | --- | --- |
-| Original TrimUI Brick | NX Redux | 1024×768 | Ordinary startup, playability and buttons accepted by Himan; feels faster. Silent menu/input/Exit/underrun checks also passed. |
-| Not yet available | Rocknix (Wayland/Sway, Panfrost or libmali) | Not tested | Not tested |
-| Not yet available | muOS (fbdev, libmali) | Not tested | Not tested |
-| Not yet available | dArkOS (kmsdrm, current libmali) | Not tested | Not tested |
-| Not yet available | Knulli (kmsdrm, libmali) | Not tested | Not tested |
-| Not yet available | AmberELEC (legacy libmali) | Not tested | Not tested |
+The untested rows are requests for help, not confirmed compatibility. This build requires 64-bit ARM Linux (aarch64), glibc 2.31 or later, and WestonPack 0.2. Android and 32-bit firmware are not supported.
 
-Only the A133P has hardware evidence. RK3326, RK3566, H700, Snapdragon 865/662 and Amlogic S922X are untested. The recommended 640×480, 1280×720 and 720×720 gameplay checks remain open. Resizing catalogue artwork does not validate gameplay at that resolution.
+## What was checked on the Brick
 
-The contribution candidate still needs tests on the relevant supported firmware and hardware combinations and their native resolutions. Record launch, controls, gameplay, audio, save/reload and Exit results for each combination; do not infer a pass from architecture or display size alone.
+| Area | Result | Still needed |
+| --- | --- | --- |
+| Combat and controls | The player reported smooth combat and working buttons on the October 27 portable build. | Reports from other devices and firmware. |
+| First launch | The October 28 build prepared the game in about four seconds, opened the title and menu, and accepted button input. | Fresh-install reports from testers. |
+| Trophies and Hi-score | The unavailable buttons are dimmed and skipped during navigation. Local Missions and Back were checked. | Player feedback on this latest menu change. |
+| Quitting | Exit Game and Start + Select passed device checks. | Confirm both in normal play. |
+| Audio | Earlier builds received positive player feedback. The latest automated checks were muted. | Listen for music, effects and static on this test build. |
+| Saves | Setup and update checks preserved existing saves. | Confirm progress survives quitting and reopening this test build. |
+| Display | Title and menu inspected at 1024 × 768. | Other resolutions, especially 640 × 480, 1280 × 720 and 720 × 720. |
 
-The Focal runtime also has silent native checks on the original Brick with NX Redux using both NX and catalogue Weston. Menu, Adventure, Back and Exit were exercised with NX Weston; a forced underrun, menu input and Start+Select were exercised with catalogue Weston. Those silent checks establish mechanical coverage only. The later ordinary-play result is recorded above. Other firmware and hardware remain untested.
+The October 28 changes add automatic setup and disable the unavailable online buttons. Combat and the runtime are unchanged from the October 27 portable build. Automated checks do not replace playing and listening.
+
+## Report a test
+
+[Open an issue](https://github.com/Hkattelu/TrimUI-Brick-Ports/issues/new) with the build version, device, firmware version, what you tried and what happened. Include steps to reproduce a problem. Mark anything you did not try as untested. Do not attach purchased game files or saves.
+
+<details>
+<summary>Technical verification details</summary>
+
+- Runtime: `29735ea9…`. Prepared game: `a2700be5…`. The October 27 player report used the preceding `df2b4af6…` game file.
+- First preparation took 3.99 seconds. Subsequent verification took 0.26 seconds. The output matched the existing prepared game byte for byte.
+- Missing or incorrect inputs, unsupported existing output, concurrent preparation, interrupted temporary files and symlinks were checked. Original files and saves were preserved.
+- Device checks used separate profiles and zero volume. Startup, menu input and quick quit passed through NX Redux. Temporary services and mounts were released.
+- Earlier checks exercised menu, Adventure, Back and Exit with NX Weston, plus input, quick quit and audio underrun recovery with PortMaster's WestonPack. Audio recovery logs do not establish audible quality.
+
+</details>
