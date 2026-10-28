@@ -4,7 +4,7 @@ This repository contains unofficial ports for the TrimUI Brick and compatible de
 
 ## Deep Dungeons of Doom v0.1.0 Test Build
 
-The first testing release is being prepared for review and will appear on the [releases page](https://github.com/Hkattelu/TrimUI-Brick-Ports/releases). Port sources are in [ports/deep-dungeons-of-doom/](ports/deep-dungeons-of-doom/).
+The test build is awaiting review on the [releases page](https://github.com/Hkattelu/TrimUI-Brick-Ports/releases). Port sources are in [ports/deep-dungeons-of-doom/](ports/deep-dungeons-of-doom/).
 
 I’ve been playing this unofficial Deep Dungeons of Doom port on my original TrimUI Brick running NX Redux, and I’d like help testing it on other devices and firmware. I developed the port with AI assistance.
 
