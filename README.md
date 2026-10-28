@@ -12,15 +12,26 @@ You’ll need:
 
 - Your own purchased and installed Windows Steam copy of Deep Dungeons of Doom.
 - A Windows PC with [PowerShell 7.2 or later](https://learn.microsoft.com/powershell/scripting/install/installing-powershell-on-windows).
-- An ARM64 Linux handheld with glibc 2.31 or later and WestonPack 0.2.
 
 The download contains no game assets or saves. Back up an existing installation and profile before updating.
 
+## Device testing
+
+- Tested: original TrimUI Brick running NX Redux.
+- Untested: other handhelds, and other firmware on the Brick.
+- Testers wanted: devices running muOS, dArkOS, AmberELEC, Knulli or ROCKNIX. These are testing targets, not confirmed compatible combinations.
+
+This build requires 64-bit ARM Linux (aarch64), glibc 2.31 or later, and WestonPack 0.2. It does not support 32-bit firmware or Android. See the [testing matrix](https://github.com/Hkattelu/TrimUI-Brick-Ports/blob/main/ports/deep-dungeons-of-doom/portmaster/TESTING-MATRIX.md) for recorded results.
+
 ## Install
 
-1. Download `deepdungeonsofdoom.zip` from the release. On your Windows PC, right-click the ZIP, open Properties, and check Unblock if it is shown. Unzip it, then extract `deepdungeonsofdoom/setup/ddd-preparation-tools.zip` into a separate folder.
+1. Download `deepdungeonsofdoom.zip` from the release. On your Windows PC, right-click the ZIP, open Properties, and check Unblock if it is shown. Unblock lets Windows run the preparation scripts from the downloaded ZIP. Unzip it, then extract `deepdungeonsofdoom/setup/ddd-preparation-tools.zip` into a separate folder.
 2. Find your installed game folder in Steam using Manage > Browse local files. Keep the installation intact, including `META-INF`.
-3. In File Explorer, open the extracted tools folder, type `pwsh` in the address bar, and press Enter. Run the command below, adjusting the game path to match the folder Steam opened. The command creates `DDD-prepared` in your Windows user folder. If that folder already exists, change the output name to `DDD-prepared-2` or another new name.
+3. PowerShell runs the preparation script, which creates a copy of your game with the handheld controls and compatibility fixes. Your Steam installation stays unchanged.
+
+   Open the extracted tools folder in File Explorer, type `pwsh` in the address bar, and press Enter to open PowerShell 7. The command’s permission setting applies only to this run.
+
+   Run the command below, adjusting the game path to match the folder Steam opened. The command creates `DDD-prepared` in your Windows user folder. If that folder already exists, change the output name to `DDD-prepared-2` or another new name.
 
    ```powershell
    pwsh -NoProfile -ExecutionPolicy RemoteSigned -File ./Prepare-GameCandidate.ps1 `
@@ -34,5 +45,7 @@ The download contains no game assets or saves. Back up an existing installation 
 D-pad navigates menus, A confirms, B goes back, and L/R defend and attack. Hold Start and press Select to quit. Trophies and Hi-score are unavailable, while local Missions works.
 
 Report problems by [opening an issue](https://github.com/Hkattelu/TrimUI-Brick-Ports/issues/new). Include v0.1.0, your device, firmware version, and steps to reproduce the problem. Please don’t share game files or saves.
+
+## Developer sources
 
 The release also provides `ddd-portable-sources.zip`, the matching runtime sources and reconstruction instructions for developers. Third-party components have their own licenses. See [source and licenses](ports/deep-dungeons-of-doom/portmaster/portable/SOURCE-AND-LICENSES.md).
