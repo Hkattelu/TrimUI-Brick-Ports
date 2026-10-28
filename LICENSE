@@ -22,6 +22,6 @@ SOFTWARE.
 
 ---
 
-Note: This license covers the setup scripts and documentation in this
-repository only. NextUI and the emulator/tool paks are downloaded from their
-authors' official releases at setup time and remain under their own licenses.
+Note: This license covers original port helpers, scripts and documentation.
+Third-party components retain their own licenses. See
+ports/deep-dungeons-of-doom/portmaster/portable/SOURCE-AND-LICENSES.md.
