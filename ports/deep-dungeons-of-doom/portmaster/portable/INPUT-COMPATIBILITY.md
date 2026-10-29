@@ -65,16 +65,17 @@ The actual player ZIP is separately checked for pinned binary hashes, archive
 contents, corresponding sources and preservation of game data, settings and saves.
 The Ruffle binary and prepared game are unchanged from v0.1.0.
 
-## What remains uncertain
+## Tester follow-up
 
-The ignored helper option is a definite bug. The log does not establish why
-native Gilrs input failed on this particular handheld. The SDL route avoids
-depending on that physical controller's direct mapping, but v0.1.1 remains a
-test build until the affected device is tried again. There was no connected
-handheld for this pass, and no new visual, audio or gameplay-acceptance claim.
+Later on October 29, the tester confirmed that v0.1.1 fixed the controls. Their
+new `runtime.log` shows the virtual Xbox controller connected. The original
+native Gilrs failure remains unexplained; this report validates the alternate
+input route on the RG34xxSP. The tester also reported missing audio, investigated
+separately in [audio compatibility](AUDIO-COMPATIBILITY.md).
 
-Retest menu navigation, confirm/back, single taps versus held buttons, L/R in
-combat, Exit Game, Start+Select and save/reload. If input still fails, retain
-both `log.txt` and `runtime.log` from the same launch. The launcher log should
-say `DDD input: SDL virtual Xbox controller`; the runtime log should identify
-the virtual Xbox controller or explain why controller initialization failed.
+For reports from other devices, check menu navigation, confirm/back, single taps
+versus held buttons, L/R in combat, Exit Game, Start+Select and save/reload. If input fails, retain
+both `log.txt` and `runtime.log` from the same launch. For virtual-controller mode,
+the launcher log should say `DDD input: SDL virtual Xbox controller`; the runtime
+log should identify that pad or explain why controller initialization failed.
+The native route is logged as `DDD input: direct controller (Gilrs)`.

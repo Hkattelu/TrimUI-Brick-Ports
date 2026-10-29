@@ -1,17 +1,17 @@
 # DDD testing results
 
-Updated October 29, 2026 for v0.1.1 Test Build.
+Updated October 29, 2026 for v0.1.2 Test Build.
 
 ## Where it has been tested
 
 | Device | Firmware | Result |
 | --- | --- | --- |
-| Original TrimUI Brick | NX Redux | Earlier portable builds played successfully. v0.1.1 preserves their native input route; hardware retest pending. |
+| Original TrimUI Brick | NX Redux | Earlier portable builds played successfully. v0.1.2 preserves their native input and default ALSA setup; hardware retest pending. |
 | Original TrimUI Brick | Other firmware | Untested. Testers wanted. |
-| Other handhelds | muOS | Untested. Testers wanted. |
+| Other handhelds | muOS | Marked tested in the v0.1.1 release. Device and firmware version are not recorded here. |
 | Other handhelds | dArkOS | Untested. Testers wanted. |
 | Other handhelds | AmberELEC | Untested. Testers wanted. |
-| Anbernic RG34xxSP | Knulli Gladiator II | Tester real_draxd reported v0.1.0 starts but has no input. v0.1.1 corrects the helper setup; hardware retest pending. |
+| Anbernic RG34xxSP | Knulli Gladiator II | Tester confirms controls work in v0.1.1, but audio fails to initialize. Audio retest needed with v0.1.2. |
 | Other handhelds | Knulli | Untested. Testers wanted. |
 | Other handhelds | ROCKNIX | Untested. Testers wanted. |
 
@@ -45,9 +45,20 @@ argument handling, error cleanup and saved progress. Real Linux virtual devices,
 the official helpers and Gilrs 0.11.2 reproduced the ignored option and verified
 press/release events for all ten game controls plus rapid taps. The shipped
 Weston filter was inspected; it was not executed on ARM hardware in this pass.
-These checks do not establish that the reported RG34xxSP failure is resolved.
-The tester's `runtime.log` was not supplied, so its original direct-input failure
-remains unexplained.
+The follow-up tester report confirms working input in v0.1.1, and the supplied
+`runtime.log` shows the virtual Xbox pad connected. The original direct-input
+failure remains unexplained.
+
+## October 29 audio correction
+
+v0.1.2 preserves audio-service addresses across Weston startup and locates the
+firmware's ALSA plugins. This applies to other firmware with the same audio setup
+as well as Knulli. An isolated Linux test reproduced the initialization failure;
+the correction passed captured-signal and pause/resume checks. Direct ALSA output,
+launcher behavior and configuration overrides were also checked. The game and
+native runtime binaries are unchanged. Physical output and listening on the
+RG34xxSP still need a tester's confirmation. See the [audio investigation](portable/AUDIO-COMPATIBILITY.md)
+for evidence and limits.
 
 ## Report a test
 

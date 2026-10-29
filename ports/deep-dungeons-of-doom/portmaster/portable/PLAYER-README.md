@@ -1,6 +1,6 @@
-# Deep Dungeons of Doom v0.1.1 Test Build
+# Deep Dungeons of Doom v0.1.2 Test Build
 
-This unofficial port has been played on the original TrimUI Brick with NX Redux. A tester reported that v0.1.0 starts on an RG34xxSP with Knulli Gladiator II but accepts no input. This update corrects the controller-helper setup on Knulli; confirmation on that handheld is still needed. The port was developed with AI assistance.
+This unofficial port brings Deep Dungeons of Doom to compatible Linux handhelds. Please help test it on other devices and firmware. The port was developed with AI assistance.
 
 You need your own purchased Windows Steam game files, a 64-bit ARM Linux (aarch64) handheld with glibc 2.31 or later, and WestonPack 0.2. The package includes no game files or saves.
 
@@ -12,7 +12,7 @@ You need your own purchased Windows Steam game files, a 64-bit ARM Linux (aarch6
 
 An unsupported existing `ddd.swf` is left intact. To retry, back it up and remove only `ddd.swf`, then launch again with the game files in `gamedata/`. Never remove `profile/` to retry.
 
-When updating from v0.1.0, install the new ZIP over the existing port. Keep your `gamedata/`, `ddd.swf`, `config/` and `profile/`. The game files and save format have not changed.
+When updating from v0.1.0 or v0.1.1, install the new ZIP over the existing port. Keep your `gamedata/`, `ddd.swf`, `config/` and `profile/`. The game files and save format have not changed.
 
 ## Controls and saves
 
@@ -20,6 +20,6 @@ D-pad navigates menus, A confirms, B goes back, and L/R defend and attack. Hold 
 
 ## Report problems
 
-[Open an issue](https://github.com/Hkattelu/TrimUI-Brick-Ports/issues/new) with v0.1.1, your device, firmware version, and steps to reproduce the problem. For input problems, include both `log.txt` and `runtime.log` from `deepdungeonsofdoom/` after the same run. Include `preparation.log` if setup fails. Check logs for personal paths before sharing and do not post game files or saves.
+[Open an issue](https://github.com/Hkattelu/TrimUI-Brick-Ports/issues/new) with v0.1.2, your device, firmware version, and steps to reproduce the problem. For gameplay, input or audio problems, include both `log.txt` and `runtime.log` from `deepdungeonsofdoom/` after the same run. Include `preparation.log` if setup fails. Check logs for personal paths before sharing and do not post game files or saves.
 
 This project is not endorsed by Bossa Studios or PortMaster. Port helpers are MIT licensed; see `licenses/` and `SOURCE-AND-LICENSES.md` for component notices and source information.
