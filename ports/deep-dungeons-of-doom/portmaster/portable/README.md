@@ -17,6 +17,13 @@ python3 test-launcher.py
 
 The launcher fixture needs Bash and tests fake platform services without starting a game. The archive check verifies the actual ZIP, notices, native file allowlist, script modes, preparation tools and update preservation. Neither check establishes hardware support.
 
+Input mode defaults to `auto`: Knulli uses a virtual Xbox controller through the
+firmware-provided `GPTOKEYB2` command, or legacy `GPTOKEYB` when the newer command
+is absent. Other firmware uses native Gilrs input. `DDD_INPUT_MODE=native` and
+`DDD_INPUT_MODE=xbox360` are developer overrides for comparison runs. See
+[the input investigation](INPUT-COMPATIBILITY.md) before drawing conclusions from
+synthetic controller tests.
+
 Collect and assemble the matching native and runtime sources separately:
 
 ```sh

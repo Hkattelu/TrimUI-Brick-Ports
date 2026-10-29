@@ -1,16 +1,17 @@
 # DDD testing results
 
-Updated October 28, 2026 for v0.1.0 Test Build.
+Updated October 29, 2026 for v0.1.1 Test Build.
 
 ## Where it has been tested
 
 | Device | Firmware | Result |
 | --- | --- | --- |
-| Original TrimUI Brick | NX Redux | Played successfully. Combat and buttons received positive player feedback. |
+| Original TrimUI Brick | NX Redux | Earlier portable builds played successfully. v0.1.1 preserves their native input route; hardware retest pending. |
 | Original TrimUI Brick | Other firmware | Untested. Testers wanted. |
 | Other handhelds | muOS | Untested. Testers wanted. |
 | Other handhelds | dArkOS | Untested. Testers wanted. |
 | Other handhelds | AmberELEC | Untested. Testers wanted. |
+| Anbernic RG34xxSP | Knulli Gladiator II | Tester real_draxd reported v0.1.0 starts but has no input. v0.1.1 corrects the helper setup; hardware retest pending. |
 | Other handhelds | Knulli | Untested. Testers wanted. |
 | Other handhelds | ROCKNIX | Untested. Testers wanted. |
 
@@ -29,6 +30,24 @@ The untested rows are requests for help, not confirmed compatibility. This build
 | Display | Title and menu inspected at 1024 × 768. | Other resolutions, especially 640 × 480, 1280 × 720 and 720 × 720. |
 
 The October 28 changes add automatic setup and disable the unavailable online buttons. Combat and the runtime are unchanged from the October 27 portable build. Automated checks do not replace playing and listening.
+
+## October 29 input correction
+
+The launcher passed `-x` to legacy `gptokeyb`, which ignores that option and never
+creates the intended virtual pad. Knulli now uses `gptokeyb2 -x`, with the older
+helper's `xbox360` syntax as a fallback. Other firmware retains native input.
+The game-side Weston filter is enabled for the virtual-pad route to avoid reading
+both physical and virtual controllers. Input initialization messages are retained
+in the existing bounded `runtime.log`.
+
+Launcher checks passed, including both helper APIs, firmware selection, NX
+argument handling, error cleanup and saved progress. Real Linux virtual devices,
+the official helpers and Gilrs 0.11.2 reproduced the ignored option and verified
+press/release events for all ten game controls plus rapid taps. The shipped
+Weston filter was inspected; it was not executed on ARM hardware in this pass.
+These checks do not establish that the reported RG34xxSP failure is resolved.
+The tester's `runtime.log` was not supplied, so its original direct-input failure
+remains unexplained.
 
 ## Report a test
 

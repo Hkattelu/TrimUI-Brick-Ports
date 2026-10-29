@@ -4,11 +4,26 @@ This is a compatibility experiment for a locally supplied, purchased copy of
 Deep Dungeons of Doom on the original TrimUI Brick with NX Redux and PortMaster.
 The player has accepted combat responsiveness, audio, quick quit, the skill tree,
 Encyclopedia and Options after successive private playtests.
-Full-game compatibility and clean installation for other players remain unverified.
+Full-game compatibility remains unverified.
 The selected route uses ARM64 Ruffle and the existing PortMaster display runtime.
 It requires no Steam client on the Brick.
 
-## Current status — October 26, 2026
+## Current status — October 29, 2026
+
+The public [v0.1.1 test build](https://github.com/Hkattelu/TrimUI-Brick-Ports/releases/tag/ddd-v0.1.1-test)
+corrects controller-helper arguments and adds an SDL virtual-controller route on
+Knulli. A community tester reported that v0.1.0 starts on an RG34xxSP with Knulli
+Gladiator II but accepts no input. The helper mismatch is reproduced and the
+corrected helper routes pass synthetic Linux event checks. Confirmation on the
+affected handheld is pending; the test does not reproduce its complete firmware.
+
+The runtime, prepared game and save format are unchanged. The Brick continues
+to use direct controller input. See the [testing matrix](portmaster/TESTING-MATRIX.md)
+for current results and [input investigation](portmaster/portable/INPUT-COMPATIBILITY.md)
+for the evidence and remaining uncertainty. Publication is a community test
+release and does not establish PortMaster catalogue acceptance.
+
+## Historical development status — October 26, 2026
 
 The stash information panel now exposes the game's Move and Discard buttons,
 with steady selection feedback. [Native checks](diagnostics/offline/STASH-ACTIONS.md)
