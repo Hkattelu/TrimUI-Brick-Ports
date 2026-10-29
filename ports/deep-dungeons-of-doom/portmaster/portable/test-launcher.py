@@ -2,11 +2,12 @@
 import os
 from pathlib import Path
 import shlex
+import socket
 import subprocess
 import tempfile
 
 source = Path(__file__).resolve().parent
-for name in ('Deep Dungeons of Doom.sh', 'run-game.sh'):
+for name in ('Deep Dungeons of Doom.sh', 'run-game.sh', 'audio-env.sh'):
     assert b'\r' not in (source / name).read_bytes()
     subprocess.run(['bash', '-n', str(source / name)], check=True)
 
@@ -15,6 +16,7 @@ with tempfile.TemporaryDirectory(prefix='ddd-portable-') as temporary:
     game = root / 'roms with spaces/ports/deepdungeonsofdoom'
     game.mkdir(parents=True)
     (game / 'run-game.sh').write_bytes((source / 'run-game.sh').read_bytes())
+    (game / 'audio-env.sh').write_bytes((source / 'audio-env.sh').read_bytes())
     control, tools, weston = root / 'PortMaster', root / 'tools', root / 'weston'
     (control / 'libs').mkdir(parents=True)
     (control / 'libs/weston_pkg_0.2.squashfs').write_bytes(b'fixture')
@@ -39,7 +41,13 @@ pm_platform_helper() { echo platform >> "$DDD_TEST_EVENTS"; }
 bind_directories() { printf 'bind:%s:%s\n' "$1" "$2" >> "$DDD_TEST_EVENTS"; }
 pm_finish() { echo finish >> "$DDD_TEST_EVENTS"; }
 ''')
-    script(tools / 'fixture-sudo', '[ "${DDD_TEST_CLEAR_MODE:-0}" != 1 ] || unset DDD_INPUT_MODE\nexec "$@"\n')
+    script(tools / 'fixture-sudo', '''
+if [ "${DDD_TEST_CLEAR_MODE:-0}" = 1 ]; then
+  unset DDD_INPUT_MODE PIPEWIRE_RUNTIME_DIR PIPEWIRE_REMOTE PULSE_SERVER PULSE_RUNTIME_PATH PULSE_SINK
+  unset ALSA_CONFIG_DIR ALSA_CONFIG_PATH ALSA_PLUGIN_DIR ALSA_CARD ALSA_PCM_CARD ALSA_CTL_CARD
+fi
+exec "$@"
+''')
     for helper in ('fixture-gamepad', 'fixture-gamepad2'):
         script(tools / helper, r'''
 printf '%s\n' "${0##*/}" "$@" > "$DDD_TEST_HELPER"
@@ -54,6 +62,7 @@ cp "$DDD_TEST_WRAPPER" "$2/westonwrap.sh"
     wrapper = root / 'westonwrap-fixture'
     script(wrapper, '''
 printf '%s\n' "${CRUSTY_BLOCK_INPUT:-unset}" > "$DDD_TEST_WESTON_ENV"
+export XDG_RUNTIME_DIR="$DDD_TEST_WESTON_RUNTIME"
 if [ "${DDD_TEST_NX:-0}" = 1 ]; then
   shift 4
   command="$*"
@@ -68,6 +77,8 @@ eval "$command"
 printf '%s\n' "$@" > "$DDD_TEST_ARGS"
 printf '%s\n' "$LD_LIBRARY_PATH" > "$DDD_TEST_LIBS"
 printf '%s\n' "$DDD_INPUT_MODE" "$CRUSTY_BLOCK_INPUT" "$RUST_LOG" > "$DDD_TEST_INPUT_ENV"
+printf '%s\n' "${PIPEWIRE_RUNTIME_DIR:-}" "${PULSE_SERVER:-}" "$XDG_RUNTIME_DIR" \\
+  "${ALSA_CONFIG_PATH:-}" "${ALSA_PLUGIN_DIR:-}" "${PIPEWIRE_REMOTE:-}" "${PULSE_SINK:-}" > "$DDD_TEST_AUDIO_ENV"
 echo runtime >> "$DDD_TEST_EVENTS"
 exit "${DDD_TEST_EXIT:-0}"
 ''')
@@ -83,8 +94,12 @@ exit "${DDD_TEST_EXIT:-0}"
            'DDD_TEST_WRAPPER': str(wrapper), 'DDD_TEST_ARGS': str(root / 'args'),
            'DDD_TEST_LIBS': str(root / 'libs'), 'DDD_INPUT_MODE': 'auto',
            'DDD_TEST_HELPER': str(root / 'helper'), 'DDD_TEST_HELPER_ENV': str(root / 'helper-env'),
-           'DDD_TEST_WESTON_ENV': str(root / 'weston-env'), 'DDD_TEST_INPUT_ENV': str(root / 'input-env')}
+           'DDD_TEST_WESTON_ENV': str(root / 'weston-env'), 'DDD_TEST_INPUT_ENV': str(root / 'input-env'),
+           'DDD_TEST_AUDIO_ENV': str(root / 'audio-env'), 'DDD_TEST_WESTON_RUNTIME': str(root / 'weston-runtime')}
     env.pop('CRUSTY_BLOCK_INPUT', None)
+    for key in list(env):
+        if key.startswith(('ALSA_', 'PIPEWIRE_', 'PULSE_')) or key == 'XDG_RUNTIME_DIR':
+            env.pop(key)
     def run(code, **changes):
         events.write_text('')
         result = subprocess.run(['bash', str(launcher)], env={**env, **changes}, capture_output=True, text=True)
@@ -138,5 +153,23 @@ exit "${DDD_TEST_EXIT:-0}"
     run(0, DDD_TEST_CFW='knulli', DDD_TEST_GPTOKEYB2=modern_helper, DDD_TEST_CLEAR_MODE='1')
     input_route('xbox360', 'fixture-gamepad2', '-x', preload='preserved')
     assert 'mount' not in run(1, DDD_INPUT_MODE='invalid')
+    audio_runtime = root / "audio ' $(false)"
+    (audio_runtime / 'pulse').mkdir(parents=True)
+    with socket.socket(socket.AF_UNIX) as pipewire, socket.socket(socket.AF_UNIX) as pulse:
+        pipewire.bind(str(audio_runtime / 'pipewire-0'))
+        pulse.bind(str(audio_runtime / 'pulse/native'))
+        run(0, XDG_RUNTIME_DIR=str(audio_runtime), DDD_TEST_CLEAR_MODE='1', DDD_TEST_NX='1')
+        audio = (root / 'audio-env').read_text().splitlines()
+        assert audio[:4] == [str(audio_runtime), 'unix:' + str(audio_runtime / 'pulse/native'),
+                             str(root / 'weston-runtime'), str(game / 'alsa/alsa.conf')], audio
+        explicit = {'PIPEWIRE_RUNTIME_DIR': str(root / "custom ' $(false)"),
+                    'PIPEWIRE_REMOTE': 'custom-server', 'PULSE_SERVER': 'unix:/custom pulse',
+                    'PULSE_SINK': 'chosen sink', 'ALSA_CONFIG_PATH': str(root / 'custom config'),
+                    'ALSA_PLUGIN_DIR': str(root / 'custom plugins')}
+        run(0, XDG_RUNTIME_DIR=str(audio_runtime), DDD_TEST_CLEAR_MODE='1', **explicit)
+        audio = (root / 'audio-env').read_text().splitlines()
+        assert audio == [explicit['PIPEWIRE_RUNTIME_DIR'], explicit['PULSE_SERVER'],
+                         str(root / 'weston-runtime'), explicit['ALSA_CONFIG_PATH'],
+                         explicit['ALSA_PLUGIN_DIR'], explicit['PIPEWIRE_REMOTE'], explicit['PULSE_SINK']], audio
     assert profile.read_bytes() == b'keep progress'
-print('PASS: launch/failure cleanup, saved progress, NX quoting, Knulli input, both helper APIs, overrides and child-only filtering')
+print('PASS: launch/failure cleanup, saved progress, NX quoting, input routes, audio sockets, explicit overrides and sudo environment clearing')

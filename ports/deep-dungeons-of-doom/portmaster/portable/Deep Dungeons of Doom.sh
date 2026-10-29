@@ -51,6 +51,8 @@ case "$input_mode" in
     exit 1
     ;;
 esac
+source "$GAMEDIR/audio-env.sh"
+ddd_capture_audio_environment
 weston_runtime="$controlfolder/libs/weston_pkg_0.2.squashfs"
 if [ ! -f "$weston_runtime" ]; then
   $ESUDO "$controlfolder/harbourmaster" --quiet --no-check runtime_check weston_pkg_0.2.squashfs
@@ -93,9 +95,14 @@ case "$input_mode" in
     ;;
 esac
 rm -f runtime-status
-printf -v game_script '%q' "$GAMEDIR/run-game.sh"
+game_command=(env "${ddd_audio_env[@]}" "DDD_INPUT_MODE=$input_mode"
+  'RUST_LOG=error,ruffle_desktop::app=warn,gilrs=info,gilrs_core=info'
+  GILRS_DISABLE_UDEV=1 bash "$GAMEDIR/run-game.sh")
+for index in "${!game_command[@]}"; do
+  printf -v 'game_command[index]' '%q' "${game_command[index]}"
+done
 $ESUDO bash "$weston_dir/westonwrap.sh" headless noop kiosk crusty_x11egl \
-  env DDD_INPUT_MODE="$input_mode" RUST_LOG=error,ruffle_desktop::app=warn,gilrs=info,gilrs_core=info GILRS_DISABLE_UDEV=1 bash "$game_script"
+  "${game_command[@]}"
 code=$(cat runtime-status 2>/dev/null || printf 1)
 if [ "${PM_CAN_MOUNT:-Y}" != N ]; then
   [ -z "$pm_home_bind" ] || $ESUDO umount "$pm_home_bind"

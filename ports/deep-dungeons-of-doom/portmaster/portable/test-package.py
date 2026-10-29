@@ -67,6 +67,8 @@ def check(preview, output):
         assert metadata['attr']['exp'] is False
         assert metadata['items'] == [builder.preview.MENU, folder + '/']
         assert z.read(folder + '/TESTING-MATRIX.md') == (HERE.parent / 'TESTING-MATRIX.md').read_bytes()
+        for name in ('run-game.sh', 'audio-env.sh'):
+            assert z.read(folder + '/' + name) == (HERE / name).read_bytes()
         info = ET.fromstring(z.read(folder + '/gameinfo.xml')).find('game')
         assert (ports / info.findtext('path')).is_file() and (ports / info.findtext('image')).is_file()
         assert builder.preview.jpeg_size(game / 'screenshot.jpg') == (640, 480)

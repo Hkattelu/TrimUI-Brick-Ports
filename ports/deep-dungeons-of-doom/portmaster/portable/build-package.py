@@ -88,7 +88,7 @@ def build(payload, notices, screenshot, output):
     game_files.update({'licenses/' + name: data for name, data in flat.items()})
     game_files['license-inventory.json'] = preview.json_bytes(index)
     game_files['required-libraries.json'] = preview.json_bytes(requirements)
-    for name in ('run-game.sh', 'SOURCE-AND-LICENSES.md', 'RUNTIME-SOURCE.md'):
+    for name in ('run-game.sh', 'audio-env.sh', 'SOURCE-AND-LICENSES.md', 'RUNTIME-SOURCE.md'):
         game_files[name] = (HERE / name).read_bytes()
     game_files['TESTING-MATRIX.md'] = (PM / 'TESTING-MATRIX.md').read_bytes()
     game_files['manifest.sha256'] = ''.join(f'{h}  {n}\n' for n, h in sorted(
