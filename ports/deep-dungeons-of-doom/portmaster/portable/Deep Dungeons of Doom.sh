@@ -95,7 +95,7 @@ esac
 rm -f runtime-status
 printf -v game_script '%q' "$GAMEDIR/run-game.sh"
 $ESUDO bash "$weston_dir/westonwrap.sh" headless noop kiosk crusty_x11egl \
-  env RUST_LOG=error,ruffle_desktop::app=warn,gilrs=info,gilrs_core=info GILRS_DISABLE_UDEV=1 bash "$game_script"
+  env DDD_INPUT_MODE="$input_mode" RUST_LOG=error,ruffle_desktop::app=warn,gilrs=info,gilrs_core=info GILRS_DISABLE_UDEV=1 bash "$game_script"
 code=$(cat runtime-status 2>/dev/null || printf 1)
 if [ "${PM_CAN_MOUNT:-Y}" != N ]; then
   [ -z "$pm_home_bind" ] || $ESUDO umount "$pm_home_bind"

@@ -39,7 +39,7 @@ pm_platform_helper() { echo platform >> "$DDD_TEST_EVENTS"; }
 bind_directories() { printf 'bind:%s:%s\n' "$1" "$2" >> "$DDD_TEST_EVENTS"; }
 pm_finish() { echo finish >> "$DDD_TEST_EVENTS"; }
 ''')
-    script(tools / 'fixture-sudo', 'exec "$@"\n')
+    script(tools / 'fixture-sudo', '[ "${DDD_TEST_CLEAR_MODE:-0}" != 1 ] || unset DDD_INPUT_MODE\nexec "$@"\n')
     for helper in ('fixture-gamepad', 'fixture-gamepad2'):
         script(tools / helper, r'''
 printf '%s\n' "${0##*/}" "$@" > "$DDD_TEST_HELPER"
@@ -134,6 +134,8 @@ exit "${DDD_TEST_EXIT:-0}"
     run(0, DDD_TEST_CFW='knulli', DDD_INPUT_MODE='native', DDD_TEST_GPTOKEYB2=modern_helper)
     input_route('native', 'fixture-gamepad')
     run(0, DDD_INPUT_MODE='xbox360', DDD_TEST_GPTOKEYB2=modern_helper)
+    input_route('xbox360', 'fixture-gamepad2', '-x', preload='preserved')
+    run(0, DDD_TEST_CFW='knulli', DDD_TEST_GPTOKEYB2=modern_helper, DDD_TEST_CLEAR_MODE='1')
     input_route('xbox360', 'fixture-gamepad2', '-x', preload='preserved')
     assert 'mount' not in run(1, DDD_INPUT_MODE='invalid')
     assert profile.read_bytes() == b'keep progress'
