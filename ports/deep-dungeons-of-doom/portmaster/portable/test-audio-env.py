@@ -5,7 +5,7 @@ import socket
 import subprocess
 import tempfile
 
-source = Path(__file__).with_name('audio-env.sh')
+source = Path(__file__).with_name('audio-env.bash')
 env = {k: v for k, v in os.environ.items() if not k.startswith(('ALSA_', 'PIPEWIRE_', 'PULSE_'))}
 
 

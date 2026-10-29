@@ -37,7 +37,7 @@ def check(preview, output):
             assert stat.S_ISREG(item.external_attr >> 16)
             assert not name.lower().endswith(('.swf', '.sol', '.dll', '.ane', '.log'))
             assert not any(p in ('profile', 'save-backups', 'logs') for p in name.split('/'))
-            if name.endswith('.sh'):
+            if name.endswith(('.sh', '.bash')):
                 assert ((item.external_attr >> 16) & 0o777) == 0o644
                 assert b'\r' not in z.read(name)
             target = ports / name
@@ -67,8 +67,9 @@ def check(preview, output):
         assert metadata['attr']['exp'] is False
         assert metadata['items'] == [builder.preview.MENU, folder + '/']
         assert z.read(folder + '/TESTING-MATRIX.md') == (HERE.parent / 'TESTING-MATRIX.md').read_bytes()
-        for name in ('run-game.sh', 'audio-env.sh'):
+        for name in ('run-game.sh', 'audio-env.bash'):
             assert z.read(folder + '/' + name) == (HERE / name).read_bytes()
+        assert {n for n in names if n.endswith('.sh')} == {builder.preview.MENU, folder + '/run-game.sh'}
         info = ET.fromstring(z.read(folder + '/gameinfo.xml')).find('game')
         assert (ports / info.findtext('path')).is_file() and (ports / info.findtext('image')).is_file()
         assert builder.preview.jpeg_size(game / 'screenshot.jpg') == (640, 480)

@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 
 source = Path(__file__).resolve().parent
-for name in ('Deep Dungeons of Doom.sh', 'run-game.sh', 'audio-env.sh'):
+for name in ('Deep Dungeons of Doom.sh', 'run-game.sh', 'audio-env.bash'):
     assert b'\r' not in (source / name).read_bytes()
     subprocess.run(['bash', '-n', str(source / name)], check=True)
 
@@ -16,7 +16,7 @@ with tempfile.TemporaryDirectory(prefix='ddd-portable-') as temporary:
     game = root / 'roms with spaces/ports/deepdungeonsofdoom'
     game.mkdir(parents=True)
     (game / 'run-game.sh').write_bytes((source / 'run-game.sh').read_bytes())
-    (game / 'audio-env.sh').write_bytes((source / 'audio-env.sh').read_bytes())
+    (game / 'audio-env.bash').write_bytes((source / 'audio-env.bash').read_bytes())
     control, tools, weston = root / 'PortMaster', root / 'tools', root / 'weston'
     (control / 'libs').mkdir(parents=True)
     (control / 'libs/weston_pkg_0.2.squashfs').write_bytes(b'fixture')

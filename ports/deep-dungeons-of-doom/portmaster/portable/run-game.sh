@@ -18,7 +18,7 @@ export RUFFLE_DDD_CONSTANT_RING=1 RUFFLE_DDD_SELECTIVE_BUFFER_BARRIERS=1 RUFFLE_
 unset RUFFLE_DDD_TIMING RUFFLE_DDD_AUDIO_TIMING RUFFLE_DDD_CORE_TIMING RUFFLE_DDD_STAGE3D_TIMING
 unset RUFFLE_DDD_STAGE3D_BATCHING RUFFLE_DDD_ORDERED_SUBMISSIONS
 export LD_LIBRARY_PATH="$root/libs.aarch64:${LD_LIBRARY_PATH:-}"
-source "$root/audio-env.sh"
+source "$root/audio-env.bash"
 ddd_configure_alsa "$root"
 if [ ! -f config/preferences.toml ]; then
   printf 'enable_openh264 = false\n' >config/preferences.toml

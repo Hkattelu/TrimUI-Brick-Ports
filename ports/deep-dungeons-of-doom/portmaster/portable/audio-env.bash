@@ -1,5 +1,5 @@
 #!/bin/bash
-# Keep firmware audio reachable when Weston replaces XDG_RUNTIME_DIR. These
+# Sourced helper: keep firmware audio reachable when Weston replaces XDG_RUNTIME_DIR. These
 # functions only prepare the game's environment; they never change system audio.
 ddd_capture_audio_environment() {
   local dir name value remote=${PIPEWIRE_REMOTE:-pipewire-0}

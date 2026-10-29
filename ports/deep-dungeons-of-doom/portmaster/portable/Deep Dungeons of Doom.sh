@@ -51,7 +51,7 @@ case "$input_mode" in
     exit 1
     ;;
 esac
-source "$GAMEDIR/audio-env.sh"
+source "$GAMEDIR/audio-env.bash"
 ddd_capture_audio_environment
 weston_runtime="$controlfolder/libs/weston_pkg_0.2.squashfs"
 if [ ! -f "$weston_runtime" ]; then

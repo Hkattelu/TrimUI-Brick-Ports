@@ -88,7 +88,7 @@ def build(payload, notices, screenshot, output):
     game_files.update({'licenses/' + name: data for name, data in flat.items()})
     game_files['license-inventory.json'] = preview.json_bytes(index)
     game_files['required-libraries.json'] = preview.json_bytes(requirements)
-    for name in ('run-game.sh', 'audio-env.sh', 'SOURCE-AND-LICENSES.md', 'RUNTIME-SOURCE.md'):
+    for name in ('run-game.sh', 'audio-env.bash', 'SOURCE-AND-LICENSES.md', 'RUNTIME-SOURCE.md'):
         game_files[name] = (HERE / name).read_bytes()
     game_files['TESTING-MATRIX.md'] = (PM / 'TESTING-MATRIX.md').read_bytes()
     game_files['manifest.sha256'] = ''.join(f'{h}  {n}\n' for n, h in sorted(
@@ -134,7 +134,7 @@ def build(payload, notices, screenshot, output):
         if name.lower().endswith(('.swf', '.sol', '.dll', '.ane', '.log')) or any(
                 p in ('profile', 'save-backups', 'logs') for p in name.split('/')):
             raise ValueError('Private content reached package: ' + name)
-        if name.endswith('.sh') and b'\r' in data:
+        if name.endswith(('.sh', '.bash')) and b'\r' in data:
             raise ValueError('Shell scripts must use LF endings.')
     contents = preview.json_bytes({'schema': 1, 'files': [
         {'path': n, 'sha256': hashlib.sha256(d).hexdigest(), 'bytes': len(d)} for n, d in sorted(entries.items())]})
