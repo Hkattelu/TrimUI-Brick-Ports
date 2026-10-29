@@ -34,6 +34,23 @@ if ! LD_LIBRARY_PATH="$GAMEDIR/libs.aarch64:${LD_LIBRARY_PATH:-}" ./ddd-prepare 
   pm_finish
   exit 1
 fi
+# Resolve before starting helpers or mounting Weston so an invalid override is
+# harmless. The existing direct-input route remains the default outside Knulli.
+input_mode=${DDD_INPUT_MODE:-auto}
+if [ "$input_mode" = auto ]; then
+  case "${CFW_NAME,,}" in
+    knulli) input_mode=xbox360 ;;
+    *) input_mode=native ;;
+  esac
+fi
+case "$input_mode" in
+  native|xbox360) export DDD_INPUT_MODE=$input_mode ;;
+  *)
+    pm_message "Invalid DDD_INPUT_MODE: $input_mode"
+    pm_finish
+    exit 1
+    ;;
+esac
 weston_runtime="$controlfolder/libs/weston_pkg_0.2.squashfs"
 if [ ! -f "$weston_runtime" ]; then
   $ESUDO "$controlfolder/harbourmaster" --quiet --no-check runtime_check weston_pkg_0.2.squashfs
@@ -58,11 +75,27 @@ export SDL_GAMECONTROLLERCONFIG="${sdl_controllerconfig:-${SDL_GAMECONTROLLERCON
 export XWAYLAND_NO_GLAMOR=1 CRUSTY_SHOW_CURSOR=0
 chmod +x ruffle ddd-log-drain
 pm_platform_helper "$GAMEDIR/ruffle"
-$GPTOKEYB ruffle -x &
+# Knulli uses SDL to translate its firmware mapping into a standard Xbox pad.
+case "$input_mode" in
+  xbox360)
+    if [ -n "${GPTOKEYB2:-}" ]; then
+      echo 'DDD input: SDL virtual Xbox controller (gptokeyb2)'
+      $GPTOKEYB2 ruffle -x &
+    else
+      echo 'DDD input: SDL virtual Xbox controller (gptokeyb)'
+      # The older helper does not understand -x; its option is xbox360.
+      $GPTOKEYB ruffle xbox360 &
+    fi
+    ;;
+  native)
+    echo 'DDD input: direct controller (Gilrs)'
+    $GPTOKEYB ruffle &
+    ;;
+esac
 rm -f runtime-status
 printf -v game_script '%q' "$GAMEDIR/run-game.sh"
 $ESUDO bash "$weston_dir/westonwrap.sh" headless noop kiosk crusty_x11egl \
-  env RUST_LOG=error GILRS_DISABLE_UDEV=1 bash "$game_script"
+  env RUST_LOG=error,ruffle_desktop::app=warn,gilrs=info,gilrs_core=info GILRS_DISABLE_UDEV=1 bash "$game_script"
 code=$(cat runtime-status 2>/dev/null || printf 1)
 if [ "${PM_CAN_MOUNT:-Y}" != N ]; then
   [ -z "$pm_home_bind" ] || $ESUDO umount "$pm_home_bind"

@@ -4,6 +4,14 @@ cd "$root" || exit 1
 unset WAYLAND_DISPLAY
 export XDG_SESSION_TYPE=x11
 export RUST_LOG_STYLE=never
+# Set this after Weston has started: its input devices must remain accessible.
+# Crusty's game-side filter admits the virtual Xbox pad and hides the original
+# controller, preventing two copies of every press from reaching Ruffle.
+if [ "${DDD_INPUT_MODE:-native}" = xbox360 ]; then
+  export CRUSTY_BLOCK_INPUT=1
+else
+  export CRUSTY_BLOCK_INPUT=0
+fi
 export RUFFLE_DDD_GC_SLICES=1 RUFFLE_DDD_FLOAT_MIX=1
 export RUFFLE_DDD_DRAIN_GAMEPAD=1 RUFFLE_DDD_STAGE3D_PIPELINE_CACHE=1
 export RUFFLE_DDD_CONSTANT_RING=1 RUFFLE_DDD_SELECTIVE_BUFFER_BARRIERS=1 RUFFLE_DDD_MERGE_PASSES=1
