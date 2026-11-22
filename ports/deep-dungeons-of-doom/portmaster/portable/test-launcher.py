@@ -28,12 +28,12 @@ with tempfile.TemporaryDirectory(prefix='ddd-portable-') as temporary:
     (control / 'control.txt').write_text('''
 directory=${DDD_TEST_ROMS#/}
 CFW_NAME=${DDD_TEST_CFW:-Fixture}
-PM_CAN_MOUNT=Y
+PM_CAN_MOUNT=${DDD_TEST_MOUNTS:-Y}
 ESUDO=fixture-sudo
 GPTOKEYB='fixture-gamepad -1'
 GPTOKEYB2=${DDD_TEST_GPTOKEYB2:-}
-DISPLAY_WIDTH=720
-DISPLAY_HEIGHT=720
+DISPLAY_WIDTH=${DDD_TEST_WIDTH:-720}
+DISPLAY_HEIGHT=${DDD_TEST_HEIGHT:-720}
 export DISPLAY_WIDTH DISPLAY_HEIGHT
 get_controls() { echo controls >> "$DDD_TEST_EVENTS"; }
 pm_message() { echo "message:$1" >> "$DDD_TEST_EVENTS"; }
@@ -149,11 +149,19 @@ exit "${DDD_TEST_EXIT:-0}"
     # Reproduce the NX wrapper's separate HOME lookup and firmware zlib path.
     (control / 'lib').mkdir()
     (control / 'lib/libz.so.1').touch()
+    failed = run(1, DDD_TEST_CFW='TrimUI', DDD_TEST_MOUNTS='N')
+    assert not any(line.startswith('bind:') for line in failed)
+    assert not (root / 'home/.local/share/PortMaster').exists()
     run(0, DDD_TEST_CFW='TrimUI', DDD_TEST_NX='1')
     assert str(control / 'lib/libz.so.1') in (root / 'preloads').read_text()
     assert any(line.startswith('bind:') for line in events.read_text().splitlines())
-    for driver in ('libmali', 'panfrost'):
-        run(0, DDD_TEST_CFW='ROCKNIX', DDD_TEST_DRIVER=driver)
+    for driver, width, height in [('libmali', '640', '480'), ('panfrost', '1280', '720')]:
+        run(0, DDD_TEST_CFW='ROCKNIX', DDD_TEST_DRIVER=driver, DDD_TEST_WIDTH=width, DDD_TEST_HEIGHT=height)
+        args = (root / 'args').read_text().splitlines()
+        assert '--fullscreen' in args
+        assert args[args.index('--width') + 1] == width and args[args.index('--height') + 1] == height
+        assert (root / 'preloads').read_text().startswith('./libddd_alsa_poll_recovery.so')
+
         libpath, session, wayland = (root / 'display').read_text().splitlines()
         assert (str(game / 'libs/crusty') in libpath) == (driver == 'libmali')
         assert (session, wayland) == (('x11', '') if driver == 'libmali' else ('wayland', 'wayland-1'))

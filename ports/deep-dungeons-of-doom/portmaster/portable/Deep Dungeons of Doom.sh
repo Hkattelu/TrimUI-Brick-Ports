@@ -55,10 +55,10 @@ if [[ "$CFW_NAME" == TrimUI ]]; then
   fi
   weston_home="$HOME/.local/share/PortMaster"
   if [[ "$controlfolder" == */Emus/* && ! -f "$weston_home/control.txt" ]]; then
-    if [[ -f "$controlfolder/control.txt" && ! -L "$weston_home" ]] && ! mountpoint -q "$weston_home"; then
+    if [[ "$PM_CAN_MOUNT" == Y && -f "$controlfolder/control.txt" && ! -L "$weston_home" ]] && ! mountpoint -q "$weston_home"; then
       mkdir -p "$controlfolder"
       bind_directories "$weston_home" "$controlfolder"
-      if [[ -f "$weston_home/control.txt" && "$PM_CAN_MOUNT" != N ]]; then
+      if [ -f "$weston_home/control.txt" ]; then
         pm_home_bind="$weston_home"
       fi
     fi

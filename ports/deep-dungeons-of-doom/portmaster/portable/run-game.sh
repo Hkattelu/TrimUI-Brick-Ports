@@ -29,7 +29,7 @@ if [ ! -f config/preferences.toml ]; then
   printf 'enable_openh264 = false\n' >config/preferences.toml
 fi
 rm -f runtime.log
-LD_PRELOAD="$root/libddd_alsa_poll_recovery.so${DDD_NX_ZLIB:+:$DDD_NX_ZLIB}${LD_PRELOAD:+:$LD_PRELOAD}" "$root/ruffle" \
+LD_PRELOAD="./libddd_alsa_poll_recovery.so${DDD_NX_ZLIB:+:$DDD_NX_ZLIB}${LD_PRELOAD:+:$LD_PRELOAD}" "$root/ruffle" \
   --player-runtime air --graphics gl --no-gui --fullscreen \
   --width "${DISPLAY_WIDTH:-640}" --height "${DISPLAY_HEIGHT:-480}" --volume 1 \
   --spoof-url file:///ddd-offline/ddd-offline.swf --base "file://$root/" \
