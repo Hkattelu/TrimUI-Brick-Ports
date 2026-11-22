@@ -21,12 +21,13 @@ HELPERS = {
     'ddd-prepare': '4f63e3c9eb30374fbeb698722a181ff47c0ba041c44913db4dc34d178ceec37c',
     'ddd-log-drain': '2aa226ceca8327fafeb26396b95553fda067e8114ae99b80f98d62e8c1808a3a',
     'libddd_alsa_poll_recovery.so': '024b11ac0ce08a069f173a4d09b507c3d4d70bbb6d9e6e0e57864d1c5ef42655',
-    'libs.aarch64/libCRU.so': '42b4261f2309b5b30acf08866f8f7826d28ea4569b86012fcee0ac52bd871a76',
+    'libs/crusty/libCRU.so': '42b4261f2309b5b30acf08866f8f7826d28ea4569b86012fcee0ac52bd871a76',
 }
 
 
 def build(payload, notices, screenshot, output):
     payload, notices, screenshot = map(preview.ordinary, (payload, notices, screenshot))
+    cover = preview.ordinary(screenshot.with_name('cover.png'))
     output = preview.ordinary(output, exists=False)
     if output.exists() or not output.parent.is_dir():
         raise ValueError('Use a new output directory with an existing parent.')
@@ -45,21 +46,14 @@ def build(payload, notices, screenshot, output):
     required = {'ruffle': RUNTIME, **HELPERS}
     for package in requirements['packages']:
         for library in package['libraries']:
-            required['libs.aarch64/' + library['file']] = library['sha256']
-    # Only the explicit binaries and matching ALSA text configuration are admitted.
-    if {n: h for n, h in pins.items() if not n.startswith('alsa/')} != required:
+            required['libs/' + library['file']] = library['sha256']
+    if pins != required:
         raise ValueError('Payload contains missing, changed or extra native binaries.')
-    if 'alsa/alsa.conf' not in pins:
-        raise ValueError('Matching ALSA configuration is required.')
     game_files = {}
     for name, expected in pins.items():
         data = preview.ordinary(payload / name).read_bytes()
         if hashlib.sha256(data).hexdigest() != expected:
             raise ValueError('Payload checksum mismatch: ' + name)
-        if name.startswith('alsa/'):
-            data.decode('utf-8')
-            if b'\0' in data:
-                raise ValueError('Binary content in ALSA configuration.')
         game_files[name] = data
     inventory = json.loads((notices / 'inventory.json').read_text())
     if inventory['sourceCommit'] != preview.SOURCE_COMMIT or inventory['missingNotices']:
@@ -74,17 +68,34 @@ def build(payload, notices, screenshot, output):
         if name in notice_files or preview.sha(path) != row['sha256']:
             raise ValueError('Duplicate or changed notice: ' + name)
         notice_files[name] = path
-    native_notices = {'libssl1.1': 'OpenSSL', 'zlib1g': 'Zlib', 'alsa-lib': 'ALSA'}
+    native_notices = {'libssl1.1': 'OpenSSL'}
     for package in requirements['packages']:
         component = native_notices[package['package']]
         notice_files['debian/' + package['package'] + '/copyright'] = preview.ordinary(
             PM / ('toolchain/LICENSE.' + component + '.txt'))
     inventory['native'] = requirements['packages']
     flat, index = assemble(inventory, notice_files)
+    # Keep every original notice and its byte offsets in one file for the linked runtime.
+    rust = bytearray()
+    sections = []
+    for record in index['files']:
+        if record['component'].startswith('libssl1.1-'):
+            continue
+        rust.extend(('Component: ' + record['component'] + '\n\n').encode())
+        offset = len(rust)
+        rust.extend(flat.pop(record['path']))
+        sections.extend({**part, 'component': record['component'], 'offset': offset + part['offset']}
+                        for part in record['sections'])
+    index['files'] = [r for r in index['files'] if r['path'] in flat]
+    if {section['source'] for section in sections} != {n for n in notice_files if not n.startswith('debian/')}:
+        raise ValueError('The consolidated runtime notice is incomplete.')
     port_license = preview.ordinary(preview.SOURCES.parent.parent / 'LICENSE').read_bytes()
-    flat['LICENSE.port.txt'] = port_license
-    index['files'].append({'path': 'LICENSE.port.txt', 'component': 'port',
-                          'sha256': hashlib.sha256(port_license).hexdigest(), 'sections': []})
+    for component, data, parts in [('Ruffle', bytes(rust), sections)] + [
+            (name, port_license, []) for name in ('libCRU', 'ddd-prepare', 'ddd-log-drain', 'libddd_alsa_poll_recovery', 'port')]:
+        filename = 'LICENSE.' + component + '.txt'
+        flat[filename] = data
+        index['files'].append({'path': filename, 'component': component,
+                               'sha256': hashlib.sha256(data).hexdigest(), 'sections': parts})
     game_files.update({'licenses/' + name: data for name, data in flat.items()})
     game_files['license-inventory.json'] = preview.json_bytes(index)
     game_files['required-libraries.json'] = preview.json_bytes(requirements)
@@ -96,10 +107,11 @@ def build(payload, notices, screenshot, output):
     provenance = {key: value for key, value in lock.items() if key != 'files'}
     provenance.update(runtimeSha256=RUNTIME, requiredGameSha256=GAME_HASH,
                       gameIncluded=False, saveIncluded=False, published=False,
-                      nativeSilentChecksPassed=True, playerAccepted=False, otherFirmwareTested=False)
+                      hardwareTestedOnThisBuild=False)
     game_files['build-provenance.json'] = preview.json_bytes(provenance)
     metadata = json.loads((PM / 'port.json').read_text())
     metadata['attr']['min_glibc'] = '2.31'
+    metadata['attr']['desc'] = 'Time your attacks and blocks as you explore dungeons, fight monsters and choose equipment. Requires the Windows Steam edition.'
     metadata['attr']['inst'] = ('Copy the contents of your purchased Windows Steam game folder, including '
                               'ddd-0.1-SNAPSHOT.swf and META-INF, into deepdungeonsofdoom/gamedata. '
                               'Launch the port to prepare the game automatically. Install WestonPack 0.2 '
@@ -108,8 +120,12 @@ def build(payload, notices, screenshot, output):
     metadata['attr']['exp'] = False
     if metadata['name'] != preview.GAME_DIRECTORY + '.zip' or metadata['items'] != [preview.MENU, preview.GAME_DIRECTORY + '/']:
         raise ValueError('Catalogue identity mismatch.')
-    if preview.jpeg_size(screenshot) != (640, 480):
+    if preview.jpeg_size(screenshot) != (640, 480) or screenshot.stat().st_size > 100 * 1024:
         raise ValueError('Artwork must be a 640x480 JPEG gameplay capture.')
+    artwork = cover.read_bytes()
+    if (artwork[:16] != bytes.fromhex('89504e470d0a1a0a0000000d49484452') or
+            artwork[16:24] != bytes.fromhex('00000280000001e0') or len(artwork) > 100 * 1024):
+        raise ValueError('cover.png must be a 640x480 PNG under the PortMaster size limit.')
     # All input checks precede writing a new output tree.
     output.mkdir()
     catalogue = output / 'catalogue' / preview.GAME_DIRECTORY
@@ -117,8 +133,8 @@ def build(payload, notices, screenshot, output):
     game_files['gamedata/Copy Windows Steam game files here.txt'] = (
         'Copy the contents of your purchased Windows Steam installation here, including\n'
         'ddd-0.1-SNAPSHOT.swf and META-INF. Launch the port to prepare them automatically.\n').encode()
-    for name, data in {'port.json': json.dumps(metadata, indent=4).encode(), 'gameinfo.xml': (PM / 'gameinfo.xml').read_bytes(),
-                       'screenshot.jpg': screenshot.read_bytes(), 'README.md': (HERE / 'PLAYER-README.md').read_bytes(),
+    for name, data in {'port.json': json.dumps(metadata, indent=4).encode(), 'gameinfo.xml': (HERE / 'gameinfo.xml').read_bytes(),
+                       'screenshot.jpg': screenshot.read_bytes(), 'cover.png': artwork, 'README.md': (HERE / 'PLAYER-README.md').read_bytes(),
                        preview.MENU: (HERE / preview.MENU).read_bytes()}.items():
         (catalogue / name).write_bytes(data)
     for name, data in game_files.items():
@@ -127,9 +143,8 @@ def build(payload, notices, screenshot, output):
         target.write_bytes(data)
     entries = {preview.MENU: (catalogue / preview.MENU).read_bytes()}
     entries.update({preview.GAME_DIRECTORY + '/' + n: d for n, d in game_files.items()})
-    for name in ('port.json', 'gameinfo.xml', 'screenshot.jpg', 'README.md'):
-        installed = preview.GAME_DIRECTORY + '.md' if name == 'README.md' else name
-        entries[preview.GAME_DIRECTORY + '/' + installed] = (catalogue / name).read_bytes()
+    for name in ('port.json', 'gameinfo.xml', 'screenshot.jpg', 'cover.png', 'README.md'):
+        entries[preview.GAME_DIRECTORY + '/' + name] = (catalogue / name).read_bytes()
     for name, data in entries.items():
         if name.lower().endswith(('.swf', '.sol', '.dll', '.ane', '.log')) or any(
                 p in ('profile', 'save-backups', 'logs') for p in name.split('/')):

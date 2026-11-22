@@ -1,3 +1,7 @@
+# v0.1.3 audio path
+
+Firmware supplies ALSA, its configuration and plugins. The launcher still forwards active audio-service addresses across Weston startup. The comparison below documents the earlier v0.1.2 setup with bundled ALSA.
+
 # Audio compatibility investigation
 
 October 29, 2026. The RG34xxSP tester reports working controls in v0.1.1, but no

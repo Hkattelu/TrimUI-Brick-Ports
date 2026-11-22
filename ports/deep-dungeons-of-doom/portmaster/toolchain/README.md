@@ -22,21 +22,14 @@ The fetcher requires a new output directory. It downloads Ubuntu indexes and pac
 
 Focal's FreeType is too old for this build. `build-freetype.sh` verifies the pinned `freetype-sys` 0.23.0 crate and builds its FreeType 2.13.2 source into the private sysroot. Its work directory must be new. The runtime script uses the cross-linker wrappers, locked offline Cargo dependencies and two build jobs. Output stays in the supplied private target directory.
 
-## Native audio compatibility
+## Native helpers and libraries
 
-Firmware and Focal ALSA returned invalid available-frame counts, including about `4.23e18` frames for a 3,763-frame buffer. The recovery helper checks the buffer count, attempts one `snd_pcm_prepare` reset, and backs off after persistent invalid counts or errors. Real-preload host tests passed. Firmware ALSA still needed hundreds of resets and was rejected.
-
-The candidate uses ALSA 1.2.11-1ubuntu0.3 rebuilt against Focal with matching configuration. Its ELF SHA256 begins `b108687`, requires at most GLIBC 2.29 and has no RPATH. The complete `build-alsa.sh` build passed with pinned hashes and patched source. The helper SHA256 begins `024b11ac` and requires at most GLIBC 2.17. Focal OpenSSL 1.1 and zlib 1.2.11 are also needed; firmware zlib lacks `inflateValidate` used by Weston PNG. `required-libraries.json` records package versions, library hashes and the failures that justify each dependency. Original package notices are retained beside it.
-
-With the sysroot and toolchain variables above still set, build ALSA and the small helpers:
+Use the same Focal sysroot to build the log drain, ALSA recovery and Crusty termination helpers:
 
 ```sh
-export DDD_PM_ALSA_SOURCE=/private/source-archive/native/alsa-lib_1.2.11-1ubuntu0.3
-export DDD_PM_ALSA_WORK=/private/alsa-build
-bash build-alsa.sh
 export DDD_PM_WESTON=/private/extracted-westonpack
 export DDD_PM_HELPERS=/private/helper-build
 bash build-helpers.sh
 ```
 
-Copy the built `libasound.so.2.0.0` as `libs.aarch64/libasound.so.2`, and copy the matching `install/usr/share/alsa` tree as `alsa/`. The helper script uses the preserved `launcher/` and `diagnostics/brick/` source paths. WestonPack supplies `libcrusty` for linking `libCRU.so` and stays separate from the player ZIP. The launcher uses the firmware's core libraries, SDL and EGL.
+Place the pinned OpenSSL pair in `libs/` and the Weston-specific termination helper in `libs/crusty/`. Firmware supplies ALSA and zlib. On the Brick, NX Redux's PortMaster library directory contains the versioned zlib needed by WestonPack's libpng. The earlier firmware ALSA test recorded repeated underrun resets. Check music and effects on the Brick after switching to firmware audio.

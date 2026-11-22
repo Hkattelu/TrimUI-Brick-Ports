@@ -73,9 +73,9 @@ def build(native, runtime, output, weston_egl=None, portable=False):
         for name in ('launcher/ddd-log-drain.c', 'diagnostics/brick/alsa-poll-recovery.c',
                      'diagnostics/brick/egl-shutdown.c', 'diagnostics/brick/test-alsa-recovery.sh'):
             add(HERE.parent, name, 'port/' + name)
-        for name in ('build-alsa.sh', 'build-focal-runtime.sh', 'build-freetype.sh', 'build-helpers.sh',
+        for name in ('build-focal-runtime.sh', 'build-freetype.sh', 'build-helpers.sh',
                      'cross-cxx.sh', 'cross-link.sh', 'fetch-focal-sysroot.py', 'README.md',
-                     'required-libraries.json', 'LICENSE.OpenSSL.txt', 'LICENSE.Zlib.txt', 'LICENSE.ALSA.txt'):
+                     'required-libraries.json', 'LICENSE.OpenSSL.txt'):
             add(HERE, 'toolchain/' + name, 'port/portmaster/toolchain/' + name)
         for name in ('Deep Dungeons of Doom.sh', 'run-game.sh', 'audio-env.bash', 'payload.lock.json'):
             add(HERE, 'portable/' + name, 'port/portmaster/portable/' + name)

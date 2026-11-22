@@ -17,7 +17,7 @@ with tempfile.TemporaryDirectory(prefix='ddd-portable-') as temporary:
     game.mkdir(parents=True)
     (game / 'run-game.sh').write_bytes((source / 'run-game.sh').read_bytes())
     (game / 'audio-env.bash').write_bytes((source / 'audio-env.bash').read_bytes())
-    control, tools, weston = root / 'PortMaster', root / 'tools', root / 'weston'
+    control, tools, weston = root / 'Emus/shared/PortMaster', root / 'tools', root / 'weston'
     (control / 'libs').mkdir(parents=True)
     (control / 'libs/weston_pkg_0.2.squashfs').write_bytes(b'fixture')
     tools.mkdir()
@@ -38,7 +38,7 @@ export DISPLAY_WIDTH DISPLAY_HEIGHT
 get_controls() { echo controls >> "$DDD_TEST_EVENTS"; }
 pm_message() { echo "message:$1" >> "$DDD_TEST_EVENTS"; }
 pm_platform_helper() { echo platform >> "$DDD_TEST_EVENTS"; }
-bind_directories() { printf 'bind:%s:%s\n' "$1" "$2" >> "$DDD_TEST_EVENTS"; }
+bind_directories() { mkdir -p "$1"; cp "$2/control.txt" "$1/control.txt"; printf 'bind:%s:%s\n' "$1" "$2" >> "$DDD_TEST_EVENTS"; }
 pm_finish() { echo finish >> "$DDD_TEST_EVENTS"; }
 ''')
     script(tools / 'fixture-sudo', '''
@@ -63,6 +63,10 @@ cp "$DDD_TEST_WRAPPER" "$2/westonwrap.sh"
     script(wrapper, '''
 printf '%s\n' "${CRUSTY_BLOCK_INPUT:-unset}" > "$DDD_TEST_WESTON_ENV"
 export XDG_RUNTIME_DIR="$DDD_TEST_WESTON_RUNTIME"
+case "$DDD_TEST_DRIVER" in
+  libmali) export LD_PRELOAD=/fixture/crusty_x11egl//libcrusty.so ;;
+  panfrost) export WAYLAND_DISPLAY=wayland-1 XDG_SESSION_TYPE=wayland ;;
+esac
 if [ "${DDD_TEST_NX:-0}" = 1 ]; then
   shift 4
   command="$*"
@@ -79,6 +83,8 @@ printf '%s\n' "$LD_LIBRARY_PATH" > "$DDD_TEST_LIBS"
 printf '%s\n' "$DDD_INPUT_MODE" "$CRUSTY_BLOCK_INPUT" "$RUST_LOG" > "$DDD_TEST_INPUT_ENV"
 printf '%s\n' "${PIPEWIRE_RUNTIME_DIR:-}" "${PULSE_SERVER:-}" "$XDG_RUNTIME_DIR" \\
   "${ALSA_CONFIG_PATH:-}" "${ALSA_PLUGIN_DIR:-}" "${PIPEWIRE_REMOTE:-}" "${PULSE_SINK:-}" > "$DDD_TEST_AUDIO_ENV"
+printf '%s\n' "$LD_PRELOAD" > "$DDD_TEST_ROOT/preloads"
+printf '%s\n' "$LD_LIBRARY_PATH" "$XDG_SESSION_TYPE" "$WAYLAND_DISPLAY" > "$DDD_TEST_ROOT/display"
 echo runtime >> "$DDD_TEST_EVENTS"
 exit "${DDD_TEST_EXIT:-0}"
 ''')
@@ -89,11 +95,11 @@ exit "${DDD_TEST_EXIT:-0}"
     text = (source / launcher.name).read_text()
     assert text.count('weston_dir=/tmp/ddd-weston') == 1
     launcher.write_text(text.replace('weston_dir=/tmp/ddd-weston', 'weston_dir=' + shlex.quote(str(weston))))
-    env = {**os.environ, 'HOME': str(root / 'home'), 'PATH': str(tools) + ':' + os.environ['PATH'], 'controlfolder': str(control),
+    env = {**os.environ, 'HOME': str(root / 'home'), 'PATH': str(tools) + ':' + os.environ['PATH'], 'XDG_DATA_HOME': str(control.parent),
            'DDD_TEST_ROMS': str(game.parent.parent), 'DDD_TEST_EVENTS': str(events),
            'DDD_TEST_WRAPPER': str(wrapper), 'DDD_TEST_ARGS': str(root / 'args'),
            'DDD_TEST_LIBS': str(root / 'libs'), 'DDD_INPUT_MODE': 'auto',
-           'DDD_TEST_HELPER': str(root / 'helper'), 'DDD_TEST_HELPER_ENV': str(root / 'helper-env'),
+           'DDD_TEST_ROOT': str(root), 'DDD_TEST_HELPER': str(root / 'helper'), 'DDD_TEST_HELPER_ENV': str(root / 'helper-env'),
            'DDD_TEST_WESTON_ENV': str(root / 'weston-env'), 'DDD_TEST_INPUT_ENV': str(root / 'input-env'),
            'DDD_TEST_AUDIO_ENV': str(root / 'audio-env'), 'DDD_TEST_WESTON_RUNTIME': str(root / 'weston-runtime')}
     env.pop('CRUSTY_BLOCK_INPUT', None)
@@ -127,32 +133,39 @@ exit "${DDD_TEST_EXIT:-0}"
     failed = run(1, DDD_TEST_MOUNT_FAIL='1')
     assert 'runtime' not in failed
     successful = run(0)
-    assert successful.count('unmount') == 2 and 'runtime' in successful
+    assert successful.count('unmount') == 1 and 'runtime' in successful
     input_route('native', 'fixture-gamepad')
     args = (root / 'args').read_text().splitlines()
     assert args[args.index('--width') + 1] == args[args.index('--height') + 1] == '720'
     assert args[args.index('--save-directory') + 1] == str(game / 'profile')
     assert args[-1] == str(game / 'ddd.swf')
-    assert (root / 'libs').read_text().startswith(str(game / 'libs.aarch64') + ':')
+    assert (root / 'libs').read_text().startswith(str(game / 'libs') + ':')
     profile = game / 'profile/sentinel'
     profile.write_bytes(b'keep progress')
     run(27, DDD_TEST_EXIT='27')
     assert profile.read_bytes() == b'keep progress'
-    run(0, controlfolder='', EMU_DIR=str(control))
     run(0, DDD_TEST_NX='1')
     input_route('native', 'fixture-gamepad')
+    # Reproduce the NX wrapper's separate HOME lookup and firmware zlib path.
+    (control / 'lib').mkdir()
+    (control / 'lib/libz.so.1').touch()
+    run(0, DDD_TEST_CFW='TrimUI', DDD_TEST_NX='1')
+    assert str(control / 'lib/libz.so.1') in (root / 'preloads').read_text()
+    assert any(line.startswith('bind:') for line in events.read_text().splitlines())
+    for driver in ('libmali', 'panfrost'):
+        run(0, DDD_TEST_CFW='ROCKNIX', DDD_TEST_DRIVER=driver)
+        libpath, session, wayland = (root / 'display').read_text().splitlines()
+        assert (str(game / 'libs/crusty') in libpath) == (driver == 'libmali')
+        assert (session, wayland) == (('x11', '') if driver == 'libmali' else ('wayland', 'wayland-1'))
+        assert 'libz.so.1' not in (root / 'preloads').read_text()
     modern_helper = 'env DDD_TEST_PRELOAD=preserved fixture-gamepad2 -1'
     run(0, DDD_TEST_CFW='Knulli', DDD_TEST_GPTOKEYB2=modern_helper)
     input_route('xbox360', 'fixture-gamepad2', '-x', preload='preserved')
     run(0, DDD_TEST_CFW='knulli')
     input_route('xbox360', 'fixture-gamepad', 'xbox360')
-    run(0, DDD_TEST_CFW='knulli', DDD_INPUT_MODE='native', DDD_TEST_GPTOKEYB2=modern_helper)
-    input_route('native', 'fixture-gamepad')
-    run(0, DDD_INPUT_MODE='xbox360', DDD_TEST_GPTOKEYB2=modern_helper)
-    input_route('xbox360', 'fixture-gamepad2', '-x', preload='preserved')
     run(0, DDD_TEST_CFW='knulli', DDD_TEST_GPTOKEYB2=modern_helper, DDD_TEST_CLEAR_MODE='1')
     input_route('xbox360', 'fixture-gamepad2', '-x', preload='preserved')
-    assert 'mount' not in run(1, DDD_INPUT_MODE='invalid')
+
     audio_runtime = root / "audio ' $(false)"
     (audio_runtime / 'pulse').mkdir(parents=True)
     with socket.socket(socket.AF_UNIX) as pipewire, socket.socket(socket.AF_UNIX) as pulse:
@@ -161,7 +174,7 @@ exit "${DDD_TEST_EXIT:-0}"
         run(0, XDG_RUNTIME_DIR=str(audio_runtime), DDD_TEST_CLEAR_MODE='1', DDD_TEST_NX='1')
         audio = (root / 'audio-env').read_text().splitlines()
         assert audio[:4] == [str(audio_runtime), 'unix:' + str(audio_runtime / 'pulse/native'),
-                             str(root / 'weston-runtime'), str(game / 'alsa/alsa.conf')], audio
+                             str(root / 'weston-runtime'), ''], audio
         explicit = {'PIPEWIRE_RUNTIME_DIR': str(root / "custom ' $(false)"),
                     'PIPEWIRE_REMOTE': 'custom-server', 'PULSE_SERVER': 'unix:/custom pulse',
                     'PULSE_SINK': 'chosen sink', 'ALSA_CONFIG_PATH': str(root / 'custom config'),

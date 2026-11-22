@@ -2,13 +2,13 @@
 
 This directory contains the current contribution candidate. Use Python 3.11 or later for package assembly. The earlier builder in the parent directory reconstructs the historical accepted installation and includes libraries that PortMaster prohibits in new submissions.
 
-Build the runtime and helpers with [the Focal toolchain](../toolchain/README.md). Arrange the outputs in a separate input directory using the paths in `payload.lock.json`: the runtime and helpers, four required native libraries under `libs.aarch64/`, and the matching ALSA configuration under `alsa/`. The lock records the tested binaries and configuration. Rebuilt inputs require an explicit lock update and relevant validation; the builder refuses unreviewed changes.
+Build the runtime and helpers with [the Focal toolchain](../toolchain/README.md). Arrange the outputs in a separate input directory using the paths in `payload.lock.json`: the runtime and helpers, the two OpenSSL libraries under `libs/`, and the Weston-specific termination helper under `libs/crusty/`. The lock records the binary hashes. Rebuilt inputs require an explicit lock update and relevant validation; the builder refuses unreviewed changes.
 
-Use the collected notice directory for the same Ruffle source checkpoint. The builder verifies its Rust notices, replaces the historical native notices with the three current package notices, and flattens the result without altering the original text. The gameplay capture must be a 640×480 JPEG.
+Use the collected notice directory for the same Ruffle source checkpoint. The builder retains the OpenSSL notices and indexes every original Ruffle dependency notice in a single file. Supply the 640 by 480 gameplay screenshot and its sibling `cover.png` from the tester ZIP. Both images must fit the 100 KiB catalogue limit.
 
 ```sh
 python3 build-package.py --payload /private/portable-inputs \
-  --notices /private/collected-notices --screenshot /private/gameplay.jpg \
+  --notices /private/collected-notices --screenshot /private/artwork/screenshot.jpg \
   --output /private/new-portable-preview
 python3 test-package.py --preview /private/new-portable-preview \
   --output /private/new-archive-check
@@ -18,19 +18,9 @@ python3 test-audio-env.py
 
 The launcher fixture needs Bash and tests fake platform services without starting a game. The archive check verifies the actual ZIP, notices, native file allowlist, script modes, preparation tools and update preservation. Neither check establishes hardware support.
 
-Input mode defaults to `auto`: Knulli uses a virtual Xbox controller through the
-firmware-provided `GPTOKEYB2` command, or legacy `GPTOKEYB` when the newer command
-is absent. Other firmware uses native Gilrs input. `DDD_INPUT_MODE=native` and
-`DDD_INPUT_MODE=xbox360` are developer overrides for comparison runs. See
-[the input investigation](INPUT-COMPATIBILITY.md) before drawing conclusions from
-synthetic controller tests.
+Knulli uses the firmware-provided virtual Xbox controller. Other systems keep native Gilrs input. WestonPack selects the graphics path. Ruffle uses the Crusty shutdown helper only when Weston has loaded its X11/EGL wrapper. On the ROCKNIX desktop bypass the game inherits the display session.
 
-Audio service addresses are captured before Weston changes `XDG_RUNTIME_DIR` and
-passed explicitly to the game. The bundled ALSA library uses the firmware's audio
-plugins, with aarch64 and lib64 directories checked before `/usr/lib/alsa-lib`.
-Explicit ALSA, PipeWire and PulseAudio configuration is preserved. The ordinary
-direct ALSA route keeps the existing bundled library and configuration. See
-[audio compatibility](AUDIO-COMPATIBILITY.md) for the reproduction and limits.
+The game uses the firmware's ALSA library, configuration and plugins. Before Weston starts, the launcher captures any active PipeWire or PulseAudio connection. It passes that connection and explicit audio settings into the game. NX Redux supplies the zlib required by Weston libpng in the PortMaster install's own lib directory. The current runtime searches `libs/`, so a v0.1.2 overlay leaves the old ALSA and zlib outside the game's library search path.
 
 Collect and assemble the matching native and runtime sources separately:
 

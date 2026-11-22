@@ -1,3 +1,7 @@
+# Historical v0.1.1 input investigation
+
+v0.1.3 selects the input route from the firmware automatically. The developer overrides described below applied to earlier test builds.
+
 # RG34xxSP / Knulli input investigation
 
 October 29, 2026. Community report from real_draxd: the game starts on Knulli

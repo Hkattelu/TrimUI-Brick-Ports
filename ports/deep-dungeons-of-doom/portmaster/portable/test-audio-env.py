@@ -16,13 +16,6 @@ def capture(directories, **changes):
     return dict(word.split('=', 1) for word in result.stdout.decode().split('\0') if word)
 
 
-def configure(root, directories, **changes):
-    result = subprocess.run(['bash', '-eu', '-c',
-        'source "$1"; shift; ddd_configure_alsa "$@" >/dev/null; printf "%s\\0" "$ALSA_CONFIG_PATH" "${ALSA_CONFIG_DIR:-}" "${ALSA_PLUGIN_DIR:-}"',
-        'audio-test', str(source), str(root), *map(str, directories)], env={**env, **changes}, check=True, capture_output=True)
-    return result.stdout.decode().split('\0')[:-1]
-
-
 with tempfile.TemporaryDirectory(prefix='ddd-audio-') as temporary:
     root = Path(temporary)
     preferred, fallback, absent = (root / name for name in ('preferred', 'fallback', 'absent'))
@@ -54,14 +47,4 @@ with tempfile.TemporaryDirectory(prefix='ddd-audio-') as temporary:
         custom.bind(str(fallback / 'custom-pipewire'))
         assert capture([fallback], PIPEWIRE_REMOTE='custom-pipewire') == {
             'PIPEWIRE_REMOTE': 'custom-pipewire', 'PIPEWIRE_RUNTIME_DIR': str(fallback)}
-    empty, lib64, lib32 = (root / name for name in ('empty', 'lib64', 'lib32'))
-    for directory in (empty, lib64, lib32):
-        directory.mkdir()
-    for directory in (lib64, lib32):
-        (directory / 'libasound_module_pcm_pipewire.so').touch()
-    assert configure(root, [empty, lib64, lib32]) == [str(root / 'alsa/alsa.conf'), str(root / 'alsa'), str(lib64)]
-    assert configure(root, [empty]) == [str(root / 'alsa/alsa.conf'), str(root / 'alsa'), '']
-    assert configure(root, [lib64], ALSA_PLUGIN_DIR='/chosen')[-1] == '/chosen'
-    assert configure(root, [empty], ALSA_CONFIG_DIR='/chosen')[:2] == ['/chosen/alsa.conf', '/chosen']
-    assert configure(root, [empty], ALSA_CONFIG_PATH='/chosen/config')[:2] == ['/chosen/config', '']
-print('PASS: socket discovery, firmware fallbacks, custom endpoints/config, plugin layouts and plain ALSA defaults')
+print('PASS: firmware audio socket discovery and explicit settings')

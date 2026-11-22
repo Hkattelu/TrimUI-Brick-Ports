@@ -18,7 +18,7 @@ builder = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(builder)
 
 
-def check(preview, output):
+def check(preview, output, previous=None):
     report = json.loads((preview / 'preview-report.json').read_text())
     archive = preview / report['archive']
     assert builder.preview.sha(archive) == report['sha256']
@@ -27,6 +27,17 @@ def check(preview, output):
     ports.mkdir(parents=True)
     folder = builder.preview.GAME_DIRECTORY
     game = ports / folder
+    previous_notices = set()
+    if previous:
+        if builder.preview.sha(previous) != '4be8bdb497ec6c9f4b8b05387a01313f1ac778d662a4ffdc4d671f810fc1f456':
+            raise ValueError('Expected the published v0.1.2 ZIP as the upgrade fixture.')
+        with zipfile.ZipFile(previous) as old:
+            old.extractall(ports)
+            inventory = json.loads(old.read(folder + '/license-inventory.json'))
+            for row in inventory['files']:
+                for part in row['sections']:
+                    if not part['source'].startswith('debian/'):
+                        previous_notices.add((row['component'], part['source'], part['sha256']))
     with zipfile.ZipFile(archive) as z:
         names = z.namelist()
         assert len(names) == report['files'] == len(set(n.casefold() for n in names))
@@ -58,11 +69,14 @@ def check(preview, output):
         for name, expected in pins.items():
             assert hashlib.sha256(z.read(folder + '/' + name)).hexdigest() == expected
         binaries = {n[len(folder) + 1:] for n in names if z.read(n)[:4] == b'\x7fELF'}
-        expected_binaries = {n for n in pins if not n.startswith('alsa/')}
-        assert binaries == expected_binaries and len(binaries) == 9
+        expected_binaries = set(pins)
+        assert binaries == expected_binaries and len(binaries) == 7
         assert not any(n.rsplit('/', 1)[-1].startswith(('libc.', 'libstdc++', 'libpthread', 'libSDL',
                         'libEGL', 'libGL.', 'libGLX', 'libGLES', 'ld-linux', 'libm.')) for n in names)
         metadata = json.loads(z.read(folder + '/port.json'))
+        assert len(names) <= 100
+        assert folder + '/README.md' in names and not any('/alsa/' in n or '/libs.aarch64/' in n for n in names)
+        assert all((game / image).stat().st_size <= 100 * 1024 for image in ('screenshot.jpg', 'cover.png'))
         assert metadata['attr']['min_glibc'] == '2.31'
         assert metadata['attr']['exp'] is False
         assert metadata['items'] == [builder.preview.MENU, folder + '/']
@@ -77,6 +91,7 @@ def check(preview, output):
         licenses = {n for n in names if n.startswith(folder + '/licenses/')}
         assert licenses == {folder + '/licenses/' + row['path'] for row in index['files']}
         sections = 0
+        verified_notices = set()
         for row in index['files']:
             assert '/' not in row['path'] and row['path'].startswith('LICENSE.') and row['path'].endswith('.txt')
             data = z.read(folder + '/licenses/' + row['path'])
@@ -85,6 +100,12 @@ def check(preview, output):
                 original = data[part['offset']:part['offset'] + part['bytes']]
                 assert hashlib.sha256(original).hexdigest() == part['sha256']
                 sections += 1
+                if 'component' in part:
+                    verified_notices.add((part['component'], part['source'], part['sha256']))
+        if previous:
+            assert verified_notices == previous_notices
+            assert all((game / 'libs.aarch64' / lib).is_file() for lib in ('libasound.so.2', 'libz.so.1'))
+            assert not any((game / 'libs' / lib).exists() for lib in ('libasound.so.2', 'libz.so.1'))
         assert not any(n.endswith(('.ps1', '.zip')) for n in names)
         assert folder + '/gamedata/Copy Windows Steam game files here.txt' in names
         # An update must not overwrite purchased data, progress, backups or settings.
@@ -98,7 +119,7 @@ def check(preview, output):
         assert all((game / n).read_bytes() == b'preserve private content' for n in sentinels)
     result = {'passed': True, 'files': len(names), 'elfFiles': len(binaries), 'licenseFiles': len(licenses),
               'noticeSectionsVerified': sections, 'updatePreserved': True, 'gameStarted': False,
-              'deviceContacted': False}
+              'previousPackageCompared': bool(previous), 'deviceContacted': False}
     (output / 'result.json').write_text(json.dumps(result, indent=2) + '\n')
     print(json.dumps(result, indent=2))
 
@@ -107,4 +128,5 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--preview', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--previous', type=Path, help='Published v0.1.2 ZIP for the upgrade and notice comparison')
     check(**vars(parser.parse_args()))

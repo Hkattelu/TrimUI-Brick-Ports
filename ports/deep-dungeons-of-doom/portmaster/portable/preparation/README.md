@@ -16,8 +16,8 @@ output is reused. Existing unsupported output is refused without replacement.
 An interrupted temporary is ignored on retry. It never opens profile/save files.
 
 Build with `build.sh`, setting `DDD_PM_SYSROOT`, `DDD_PM_TOOLCHAIN` and
-`DDD_PREP_OUTPUT` as for the other Focal helpers. It links the already bundled
-OpenSSL and zlib libraries. Runtime preparation uses under 100 MB of working
+`DDD_PREP_OUTPUT` as for the other Focal helpers. It links OpenSSL 1.1 and
+the system zlib ABI. Runtime preparation uses under 100 MB of working
 memory, plus filesystem caching. On the original Brick/NX Redux, the measured
 first run was about 4 seconds and the repeat check 0.26 seconds.
 
