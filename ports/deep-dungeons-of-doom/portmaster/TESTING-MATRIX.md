@@ -1,6 +1,25 @@
 # DDD testing results
 
-Updated October 29, 2026 for v0.1.2 Test Build.
+## v0.1.3 test candidate · November 22, 2026
+
+Physical checks are pending for this build. Earlier reports mark muOS, Knulli and a higher resolution as tested. The available Knulli v0.1.1 log identifies an RG34XX-SP, Gladiator II and 720×480. Controls worked and audio initialization failed on that run. The newer firmware-level report does not specify which audio path or build was tested.
+
+Please cover ROCKNIX Libmali and Panfrost separately, AmberELEC, dArkOS, muOS, Knulli and original TrimUI Brick NX Redux. Include 640×480 and a higher resolution. Adreno, 480×320 and RGB30 720×720 are optional. Record the GPU driver if known and the outcome of each item in the tester guide.
+
+### Local verification
+
+| Check | Result |
+| --- | --- |
+| Catalogue and tester ZIP | pmcheck 0.2.27 and 0.2.33 returned zero errors and warnings on both. The two shared notes cover the Weston-supplied Crusty dependency and the NX/Knulli launcher exceptions. The newer checker also flags the length of the launcher compared with the Weston template. |
+| Upgrade from the published v0.1.2 ZIP | Purchased files, the prepared game, settings and a profile sentinel survived. The runtime searches the new library directory. The full linked-dependency notice inventory matches the earlier ZIP. |
+| First launch | The shipped ARM64 preparer ran under QEMU with a disposable copy of the Steam inputs. First preparation, repeat launch, interrupted preparation, rejected inputs, locking and save preservation passed. |
+| Graphics and input | The catalogue WestonPack's ROCKNIX selection and dispatch code took the Libmali X11 route and the Panfrost desktop bypass with controlled driver responses. Launcher fixtures passed fullscreen argument and session checks at 640x480 and 1280x720 and exercised both Knulli helper commands. These checks used simulated platform services. |
+| Brick PNG loading | Under ARM64 emulation, both WestonPack libpng builds rejected zlib 1.2.8, then decoded the cover using the zlib from the NX Redux 2.4.0 PortMaster distribution. |
+| Audio | Host ALSA captured the direct PCM samples exactly. The CPAL/PipeWire test captured signal before and after pause/resume at 44.1 kHz. The underrun helper passed its injected invalid-buffer and recovery tests. Earlier Brick firmware audio logged repeated resets, so headphone or speaker playback on the Brick remains a priority. |
+
+No physical handheld was used for v0.1.3. Combat, menu navigation, audible output, in-game save/reload and return to the frontend all need reports from the candidate ZIP.
+
+## Earlier builds through v0.1.2
 
 ## Where it has been tested
 
