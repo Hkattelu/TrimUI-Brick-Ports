@@ -72,7 +72,14 @@ if [[ "$CFW_NAME" == TrimUI ]]; then
     fi
   fi
 fi
-export SDL_GAMECONTROLLERCONFIG="${sdl_controllerconfig:-${SDL_GAMECONTROLLERCONFIG:-}}"
+# get_controls can return the entire database. Keep it out of exec's environment.
+mapping=${sdl_controllerconfig:-${SDL_GAMECONTROLLERCONFIG:-}}
+if (( ${#mapping} > 8192 )); then
+  devices=/proc/bus/input/devices
+  [ -r "$devices" ] || devices=/dev/null
+  mapping=$(LC_ALL=C awk -f "$GAMEDIR/controller-mappings.awk" "$devices" - <<< "$mapping")
+fi
+export SDL_GAMECONTROLLERCONFIG="$mapping"
 export XWAYLAND_NO_GLAMOR=1 CRUSTY_SHOW_CURSOR=0
 chmod +x ruffle ddd-log-drain
 pm_platform_helper "$GAMEDIR/ruffle"
@@ -96,7 +103,7 @@ case "${CFW_NAME,,}" in
     ;;
 esac
 rm -f runtime-status
-game_command=(env "${ddd_audio_env[@]}" "DDD_INPUT_MODE=$input_mode" "DDD_NX_ZLIB=$nx_zlib"
+game_command=(env "${ddd_audio_env[@]}" "SDL_GAMECONTROLLERCONFIG=$mapping" "DDD_INPUT_MODE=$input_mode" "DDD_NX_ZLIB=$nx_zlib"
   'RUST_LOG=error,ruffle_desktop::app=warn,gilrs=info,gilrs_core=info'
   GILRS_DISABLE_UDEV=1 bash "$GAMEDIR/run-game.sh")
 for index in "${!game_command[@]}"; do

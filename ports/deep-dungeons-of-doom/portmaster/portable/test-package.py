@@ -29,15 +29,16 @@ def check(preview, output, previous=None):
     game = ports / folder
     previous_notices = set()
     if previous:
-        if builder.preview.sha(previous) != '4be8bdb497ec6c9f4b8b05387a01313f1ac778d662a4ffdc4d671f810fc1f456':
-            raise ValueError('Expected the published v0.1.2 ZIP as the upgrade fixture.')
+        legacy_libraries = builder.preview.sha(previous) == '4be8bdb497ec6c9f4b8b05387a01313f1ac778d662a4ffdc4d671f810fc1f456'
+        if not legacy_libraries and builder.preview.sha(previous) != 'eb317ce2076a8ff2cd9fac52a8786579b79f6cc1f466042afd4960fb1dd61ab9':
+            raise ValueError('Expected a published v0.1.2 or v0.1.3 upgrade fixture.')
         with zipfile.ZipFile(previous) as old:
             old.extractall(ports)
             inventory = json.loads(old.read(folder + '/license-inventory.json'))
             for row in inventory['files']:
                 for part in row['sections']:
                     if not part['source'].startswith('debian/'):
-                        previous_notices.add((row['component'], part['source'], part['sha256']))
+                        previous_notices.add((part.get('component', row['component']), part['source'], part['sha256']))
     with zipfile.ZipFile(archive) as z:
         names = z.namelist()
         assert len(names) == report['files'] == len(set(n.casefold() for n in names))
@@ -81,7 +82,7 @@ def check(preview, output, previous=None):
         assert metadata['attr']['exp'] is False
         assert metadata['items'] == [builder.preview.MENU, folder + '/']
         assert z.read(folder + '/TESTING-MATRIX.md') == (HERE.parent / 'TESTING-MATRIX.md').read_bytes()
-        for name in ('run-game.sh', 'audio-env.bash'):
+        for name in ('run-game.sh', 'audio-env.bash', 'controller-mappings.awk'):
             assert z.read(folder + '/' + name) == (HERE / name).read_bytes()
         assert {n for n in names if n.endswith('.sh')} == {builder.preview.MENU, folder + '/run-game.sh'}
         info = ET.fromstring(z.read(folder + '/gameinfo.xml')).find('game')
@@ -104,7 +105,7 @@ def check(preview, output, previous=None):
                     verified_notices.add((part['component'], part['source'], part['sha256']))
         if previous:
             assert verified_notices == previous_notices
-            assert all((game / 'libs.aarch64' / lib).is_file() for lib in ('libasound.so.2', 'libz.so.1'))
+            assert all((game / 'libs.aarch64' / lib).is_file() == legacy_libraries for lib in ('libasound.so.2', 'libz.so.1'))
             assert not any((game / 'libs' / lib).exists() for lib in ('libasound.so.2', 'libz.so.1'))
         assert not any(n.endswith(('.ps1', '.zip')) for n in names)
         assert folder + '/gamedata/Copy Windows Steam game files here.txt' in names
@@ -128,5 +129,5 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--preview', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--previous', type=Path, help='Published v0.1.2 ZIP for the upgrade and notice comparison')
+    parser.add_argument('--previous', type=Path, help='Published v0.1.2 or v0.1.3 ZIP for the upgrade and notice comparison')
     check(**vars(parser.parse_args()))

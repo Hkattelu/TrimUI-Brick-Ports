@@ -17,6 +17,7 @@ with tempfile.TemporaryDirectory(prefix='ddd-portable-') as temporary:
     game.mkdir(parents=True)
     (game / 'run-game.sh').write_bytes((source / 'run-game.sh').read_bytes())
     (game / 'audio-env.bash').write_bytes((source / 'audio-env.bash').read_bytes())
+    (game / 'controller-mappings.awk').write_bytes((source / 'controller-mappings.awk').read_bytes())
     control, tools, weston = root / 'Emus/shared/PortMaster', root / 'tools', root / 'weston'
     (control / 'libs').mkdir(parents=True)
     (control / 'libs/weston_pkg_0.2.squashfs').write_bytes(b'fixture')
@@ -35,7 +36,10 @@ GPTOKEYB2=${DDD_TEST_GPTOKEYB2:-}
 DISPLAY_WIDTH=${DDD_TEST_WIDTH:-720}
 DISPLAY_HEIGHT=${DDD_TEST_HEIGHT:-720}
 export DISPLAY_WIDTH DISPLAY_HEIGHT
-get_controls() { echo controls >> "$DDD_TEST_EVENTS"; }
+get_controls() {
+  echo controls >> "$DDD_TEST_EVENTS"
+  [ ! -f "$DDD_TEST_ROOT/controllerdb" ] || sdl_controllerconfig=$(<"$DDD_TEST_ROOT/controllerdb")
+}
 pm_message() { echo "message:$1" >> "$DDD_TEST_EVENTS"; }
 pm_platform_helper() { echo platform >> "$DDD_TEST_EVENTS"; }
 bind_directories() { mkdir -p "$1"; cp "$2/control.txt" "$1/control.txt"; printf 'bind:%s:%s\n' "$1" "$2" >> "$DDD_TEST_EVENTS"; }
@@ -43,7 +47,7 @@ pm_finish() { echo finish >> "$DDD_TEST_EVENTS"; }
 ''')
     script(tools / 'fixture-sudo', '''
 if [ "${DDD_TEST_CLEAR_MODE:-0}" = 1 ]; then
-  unset DDD_INPUT_MODE PIPEWIRE_RUNTIME_DIR PIPEWIRE_REMOTE PULSE_SERVER PULSE_RUNTIME_PATH PULSE_SINK
+  unset DDD_INPUT_MODE SDL_GAMECONTROLLERCONFIG PIPEWIRE_RUNTIME_DIR PIPEWIRE_REMOTE PULSE_SERVER PULSE_RUNTIME_PATH PULSE_SINK
   unset ALSA_CONFIG_DIR ALSA_CONFIG_PATH ALSA_PLUGIN_DIR ALSA_CARD ALSA_PCM_CARD ALSA_CTL_CARD
 fi
 exec "$@"
@@ -84,6 +88,7 @@ printf '%s\n' "$DDD_INPUT_MODE" "$CRUSTY_BLOCK_INPUT" "$RUST_LOG" > "$DDD_TEST_I
 printf '%s\n' "${PIPEWIRE_RUNTIME_DIR:-}" "${PULSE_SERVER:-}" "$XDG_RUNTIME_DIR" \\
   "${ALSA_CONFIG_PATH:-}" "${ALSA_PLUGIN_DIR:-}" "${PIPEWIRE_REMOTE:-}" "${PULSE_SINK:-}" > "$DDD_TEST_AUDIO_ENV"
 printf '%s\n' "$LD_PRELOAD" > "$DDD_TEST_ROOT/preloads"
+printf '%s' "$SDL_GAMECONTROLLERCONFIG" > "$DDD_TEST_ROOT/game-mapping"
 printf '%s\n' "$LD_LIBRARY_PATH" "$XDG_SESSION_TYPE" "$WAYLAND_DISPLAY" > "$DDD_TEST_ROOT/display"
 echo runtime >> "$DDD_TEST_EVENTS"
 exit "${DDD_TEST_EXIT:-0}"
@@ -146,6 +151,23 @@ exit "${DDD_TEST_EXIT:-0}"
     assert profile.read_bytes() == b'keep progress'
     run(0, DDD_TEST_NX='1')
     input_route('native', 'fixture-gamepad')
+    # A short firmware mapping survives sudo, quotes and the wrapper's eval.
+    selected = "190000004b4800000111000000010000,Player's $(false) pad,a:b1,platform:Linux,"
+    database = root / 'controllerdb'
+    database.write_text(selected)
+    run(0, DDD_TEST_CFW='dArkOS', DDD_TEST_CLEAR_MODE='1')
+    assert (root / 'game-mapping').read_text() == selected
+    # A full database exceeds Linux's limit on the size of one environment entry.
+    database.write_text('# unrelated mappings\n' * 10000 + '# Custom Entries\n' + selected + '\n')
+    run(0, DDD_TEST_CFW='dArkOS', DDD_TEST_CLEAR_MODE='1')
+    assert (root / 'game-mapping').read_text() == selected
+    devices = root / 'input-devices'
+    devices.write_text('I: Bus=0019 Vendor=484b Product=1101 Version=0001\n')
+    match = subprocess.run(['awk', '-f', str(game / 'controller-mappings.awk'), str(devices), '-'],
+                           input=selected + '\n' + selected.replace('Linux', 'Windows') + '\n',
+                           text=True, capture_output=True, check=True)
+    assert match.stdout.splitlines() == [selected]
+    database.unlink()
     # Reproduce the NX wrapper's separate HOME lookup and firmware zlib path.
     (control / 'lib').mkdir()
     (control / 'lib/libz.so.1').touch()
