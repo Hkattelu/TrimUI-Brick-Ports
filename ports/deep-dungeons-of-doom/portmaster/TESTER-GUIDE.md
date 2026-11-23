@@ -1,4 +1,4 @@
-# Deep Dungeons of Doom v0.1.3 community test
+# Deep Dungeons of Doom v0.1.4 community test
 
 Please launch this build from your handheld's Ports menu. The installed `deepdungeonsofdoom/TESTING-MATRIX.md` records earlier reports and the remaining hardware checks.
 
@@ -7,10 +7,8 @@ You need your own purchased Windows Steam game files, a 64-bit ARM Linux
 
 ## Install or update
 
-1. Back up the existing DDD installation and profile. Put only
-   `deepdungeonsofdoom.zip` in the firmware's `PortMaster/autoinstall/` folder and
-   open PortMaster. Install WestonPack 0.2 through PortMaster.
-2. When updating from v0.1.0, v0.1.1 or v0.1.2, keep `gamedata/`, `ddd.swf`, `config/` and
+1. Back up your existing installation and profile. Put the unopened player ZIP in the autoinstall folder on the card that holds your ports. On AmberELEC and ROCKNIX, use `/roms/ports/autoinstall/`. On dArkOS, use `/roms/ports/autoinstall/` on SD1 or `/roms2/ports/autoinstall/` if you selected SD2 for ROMs. The active PortMaster installation's own `autoinstall/` folder also works with the standard launcher. Open PortMaster and install WestonPack 0.2. [PortMaster installation guide](https://portmaster.games/installation/installing-ports/)
+2. When updating from an earlier test build, keep `gamedata/`, `ddd.swf`, `config/` and
    `profile/`. Install over the existing port. The next launch reuses your prepared game and profile.
 3. For a first installation, copy the contents of your installed Windows Steam
    game folder, including `ddd-0.1-SNAPSHOT.swf` and `META-INF`, into
@@ -23,19 +21,22 @@ up and remove only that file, then launch with the purchased files in
 
 ## What to test
 
+One handheld and its usual settings are enough for a report. We need an AmberELEC 640×480 run and a dArkOS run that says which ROM card you used. An AmberELEC RG351P/M at 480×320 and a dArkOS RGB30 at 720×720 would also cover the small and square screens. On ROCKNIX, report Libmali or Panfrost separately. A Snapdragon/Adreno report is welcome too. If you do not know the driver, give the device model and leave the driver unknown.
+
 - [ ] First launch finishes setup and opens the game.
 - [ ] During a fight, tap L to defend and R to attack. Note missed or doubled presses.
 - [ ] Menus can be navigated, including skills, stash, Encyclopedia and Options.
+- [ ] All menu choices and combat indicators fit on screen. Give the resolution and describe any cropped edges.
 - [ ] Music and attack effects are audible before and after pausing. Note silence, static or dropouts.
 - [ ] Record a change in progress, quit, reopen the game and confirm that change survived.
-- [ ] Exit Game and Start + Select return to the launcher.
+- [ ] Exit Game returns to Ports. On a separate launch, hold Start and press Select and check that Ports responds afterward.
 
 Mark each item passed, failed or untested.
 
 ## Report the result
 
 Reply in the existing testing thread or [open an issue](https://github.com/Hkattelu/TrimUI-Brick-Ports/issues/new)
-with v0.1.3, the device model, firmware version, display resolution, GPU driver if known, PortMaster version and what worked or
+with v0.1.4, the device model, firmware version, display resolution, GPU driver if known, PortMaster version and what worked or
 failed. Include reproduction steps and the ZIP checksum if possible.
 
 For gameplay, input or audio failures, attach **both `log.txt` and `runtime.log`** from
@@ -43,4 +44,4 @@ For gameplay, input or audio failures, attach **both `log.txt` and `runtime.log`
 runtime diagnostics. Include `preparation.log` if setup fails. Review logs
 for personal paths before sharing. Do not post purchased game files or saves.
 
-On ROCKNIX, identify Libmali, Panfrost or Adreno if known. Leave the developer source archive on your computer.
+Leave the developer source archive on your computer.

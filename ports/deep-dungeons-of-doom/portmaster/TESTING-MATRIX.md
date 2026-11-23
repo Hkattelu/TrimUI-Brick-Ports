@@ -1,5 +1,19 @@
 # DDD testing results
 
+## v0.1.4 community test · November 23, 2026
+
+The v0.1.3 launcher could fail before the first frame when PortMaster supplied its full controller database. The v0.1.4 launcher filters large databases for attached devices and passes the selected mappings through Weston. The game runtime and save format are the same as v0.1.3.
+
+| Firmware | Launcher checks on Linux | Handheld reports needed for v0.1.4 |
+| --- | --- | --- |
+| AmberELEC | 640×480 and 480×320, with PortMaster in the ports folder | 640×480, plus RG351P/M at 480×320 if available |
+| dArkOS | SD1 at 640×480 and SD2 at 720×720, including controller mappings across sudo | Specify SD1 or SD2. An RGB30 on SD2 would cover the square display and second-card save location in one run. |
+| ROCKNIX Libmali | Crusty X11 route at 640×480 | First frame, controls and both ways to exit |
+| ROCKNIX Panfrost | Desktop route at 720×720 | First frame, fullscreen fit and return to Ports |
+| ROCKNIX Adreno (optional) | Same desktop route at 1280×720 | A Snapdragon handheld with the driver and native resolution in the report |
+
+These seven runs used the player launch scripts, upstream firmware detection and WestonPack's session selection with simulated input devices, display responses, mounts and game process. They checked the controller mapping delivered to the process, fullscreen dimensions, audio server address, save path and cleanup. The v0.1.3 ZIP reproduced the startup failure on the four AmberELEC and dArkOS configurations. Hardware rendering, button feel, audible output and in-game save/reload still need a player. Earlier muOS and Knulli reports are listed below. Speaker or headphone retests on Knulli and the original Brick are welcome. [PortMaster control scripts](https://github.com/PortsMaster/PortMaster-GUI/tree/872aadd8ecf1bc08c07968f5a173527a3ec18036/PortMaster) · [ROCKNIX control script](https://github.com/ROCKNIX/distribution/blob/1d806accd02e9bbfeca03cb5497179e77c7c18d8/projects/ROCKNIX/packages/apps/portmaster/sources/control.txt) · [dArkOS SD2 setup](https://github.com/christianhaitian/dArkOS/blob/86bac70b51f6264670b95020aa7d3cf2cede622d/scripts/Switch%20to%20SD2%20for%20Roms.sh)
+
 ## v0.1.3 test candidate · November 22, 2026
 
 Physical checks are pending for this build. Earlier reports mark muOS, Knulli and a higher resolution as tested. The available Knulli v0.1.1 log identifies an RG34XX-SP, Gladiator II and 720×480. Controls worked and audio initialization failed on that run. The newer firmware-level report does not specify which audio path or build was tested.
