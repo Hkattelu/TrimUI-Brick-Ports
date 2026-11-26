@@ -1,4 +1,4 @@
-# Deep Dungeons of Doom v0.1.5 community test
+# Deep Dungeons of Doom v0.1.6 community test
 
 Please launch this build from your handheld's Ports menu. The installed `deepdungeonsofdoom/TESTING-MATRIX.md` records earlier reports and the remaining hardware checks.
 
@@ -38,7 +38,7 @@ Mark each item passed, failed or untested.
 ## Report the result
 
 Reply in the existing testing thread or [open an issue](https://github.com/Hkattelu/TrimUI-Brick-Ports/issues/new)
-with v0.1.5, the device model, firmware version, display resolution, GPU driver if known, PortMaster version and what worked or
+with v0.1.6, the device model, firmware version, display resolution, GPU driver if known, PortMaster version and what worked or
 failed. Include reproduction steps and the ZIP checksum if possible.
 
 For gameplay, input or audio failures, attach **both `log.txt` and `runtime.log`** from

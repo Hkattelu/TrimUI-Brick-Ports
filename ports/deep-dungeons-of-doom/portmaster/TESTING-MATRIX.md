@@ -1,5 +1,11 @@
 # DDD testing results
 
+## v0.1.6 controller checks
+
+The port's Gilrs 0.11.2 library rejected eight of 804 distinct Linux controller profiles sampled from PortMaster and muOS before translation. It accepted all 804 translated profiles. Five simulated Linux layouts delivered both edges of each D-pad direction, all four face buttons, L/R, Start and Select. The layouts covered two Jacaranda and two Andromeda muOS profiles plus PortMaster's `retrogame_joypad`. Parsing a profile alone does not establish which physical button a handheld sends.
+
+The launcher regression covers AmberELEC, dArkOS, ROCKNIX, muOS, Knulli and TrimUI. On Knulli the SDL helper receives the firmware's original layout. On ROCKNIX each graphics driver uses the same controller translation. Physical results for this build are pending across the matrix. Please check Start and Select separately, the quit chord, and potion use in the dungeon.
+
 ## v0.1.5 RG40XX H controller retest
 
 A v0.1.4 tester reached character stats and played on an RG40XX H at 640×480 with the Windows Steam files. Select acted as Left, Start acted as Right, and pressing them together quit. The tester reported Funky Jacaranda. PortMaster logged `2601.0_JACARANDA`, Mali driver `r20p0-01rel0`, and a controller mapping that Gilrs rejected at the volume-down field. Potion use during active play was unconfirmed.

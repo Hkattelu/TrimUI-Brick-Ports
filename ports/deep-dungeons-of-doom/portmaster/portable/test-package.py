@@ -33,8 +33,9 @@ def check(preview, output, previous=None):
         legacy_libraries = previous_hash == '4be8bdb497ec6c9f4b8b05387a01313f1ac778d662a4ffdc4d671f810fc1f456'
         if not legacy_libraries and previous_hash not in (
                 'eb317ce2076a8ff2cd9fac52a8786579b79f6cc1f466042afd4960fb1dd61ab9',
-                '8ef4acea8f266002fdc66506cd40404a2906e2358bca625019cbbdb3c28a5917'):
-            raise ValueError('Expected a published v0.1.2, v0.1.3 or v0.1.4 upgrade fixture.')
+                '8ef4acea8f266002fdc66506cd40404a2906e2358bca625019cbbdb3c28a5917',
+                '305f6c5acbec90635274f92d2038e1191e84a06ce45b2faf18af1589a605dd21'):
+            raise ValueError('Expected a published v0.1.2 through v0.1.5 upgrade fixture.')
         with zipfile.ZipFile(previous) as old:
             old.extractall(ports)
             inventory = json.loads(old.read(folder + '/license-inventory.json'))
@@ -132,5 +133,5 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--preview', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--previous', type=Path, help='Published v0.1.2, v0.1.3 or v0.1.4 ZIP for the upgrade and notice comparison')
+    parser.add_argument('--previous', type=Path, help='Published v0.1.2 through v0.1.5 ZIP for the upgrade and notice comparison')
     check(**vars(parser.parse_args()))
