@@ -29,9 +29,12 @@ def check(preview, output, previous=None):
     game = ports / folder
     previous_notices = set()
     if previous:
-        legacy_libraries = builder.preview.sha(previous) == '4be8bdb497ec6c9f4b8b05387a01313f1ac778d662a4ffdc4d671f810fc1f456'
-        if not legacy_libraries and builder.preview.sha(previous) != 'eb317ce2076a8ff2cd9fac52a8786579b79f6cc1f466042afd4960fb1dd61ab9':
-            raise ValueError('Expected a published v0.1.2 or v0.1.3 upgrade fixture.')
+        previous_hash = builder.preview.sha(previous)
+        legacy_libraries = previous_hash == '4be8bdb497ec6c9f4b8b05387a01313f1ac778d662a4ffdc4d671f810fc1f456'
+        if not legacy_libraries and previous_hash not in (
+                'eb317ce2076a8ff2cd9fac52a8786579b79f6cc1f466042afd4960fb1dd61ab9',
+                '8ef4acea8f266002fdc66506cd40404a2906e2358bca625019cbbdb3c28a5917'):
+            raise ValueError('Expected a published v0.1.2, v0.1.3 or v0.1.4 upgrade fixture.')
         with zipfile.ZipFile(previous) as old:
             old.extractall(ports)
             inventory = json.loads(old.read(folder + '/license-inventory.json'))
@@ -82,7 +85,7 @@ def check(preview, output, previous=None):
         assert metadata['attr']['exp'] is False
         assert metadata['items'] == [builder.preview.MENU, folder + '/']
         assert z.read(folder + '/TESTING-MATRIX.md') == (HERE.parent / 'TESTING-MATRIX.md').read_bytes()
-        for name in ('run-game.sh', 'audio-env.bash', 'controller-mappings.awk'):
+        for name in ('run-game.sh', 'audio-env.bash', 'controller-mappings.awk', 'rg40xxh-gilrs.awk'):
             assert z.read(folder + '/' + name) == (HERE / name).read_bytes()
         assert {n for n in names if n.endswith('.sh')} == {builder.preview.MENU, folder + '/run-game.sh'}
         info = ET.fromstring(z.read(folder + '/gameinfo.xml')).find('game')
@@ -129,5 +132,5 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--preview', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--previous', type=Path, help='Published v0.1.2 or v0.1.3 ZIP for the upgrade and notice comparison')
+    parser.add_argument('--previous', type=Path, help='Published v0.1.2, v0.1.3 or v0.1.4 ZIP for the upgrade and notice comparison')
     check(**vars(parser.parse_args()))

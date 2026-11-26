@@ -102,6 +102,10 @@ case "${CFW_NAME,,}" in
     $GPTOKEYB ruffle &
     ;;
 esac
+if [[ "${CFW_NAME,,}/${DEVICE_NAME:-}" == muos/rg40xx-h ]]; then
+  # Only Ruffle needs Gilrs numbering. Keep the firmware map for the SDL quit helper.
+  mapping=$(awk -f "$GAMEDIR/rg40xxh-gilrs.awk" <<< "$mapping")
+fi
 rm -f runtime-status
 game_command=(env "${ddd_audio_env[@]}" "SDL_GAMECONTROLLERCONFIG=$mapping" "DDD_INPUT_MODE=$input_mode" "DDD_NX_ZLIB=$nx_zlib"
   'RUST_LOG=error,ruffle_desktop::app=warn,gilrs=info,gilrs_core=info'

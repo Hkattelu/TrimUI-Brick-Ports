@@ -1,5 +1,11 @@
 # DDD testing results
 
+## v0.1.5 RG40XX H controller retest
+
+A v0.1.4 tester reached character stats and played on an RG40XX H at 640×480 with the Windows Steam files. Select acted as Left, Start acted as Right, and pressing them together quit. The tester reported Funky Jacaranda. PortMaster logged `2601.0_JACARANDA`, Mali driver `r20p0-01rel0`, and a controller mapping that Gilrs rejected at the volume-down field. Potion use during active play was unconfirmed.
+
+A Linux controller replay reproduced the mapping error and the two unintended combat inputs. The v0.1.5 mapping delivered separate Select and Start events, both shoulders, all four face buttons and all four D-pad directions. A handheld retest is pending for potion use, combat and quitting.
+
 ## v0.1.4 community test · November 23, 2026
 
 The v0.1.3 launcher could fail before the first frame when PortMaster supplied its full controller database. The v0.1.4 launcher filters large databases for attached devices and passes the selected mappings through Weston. The game runtime and save format are the same as v0.1.3.

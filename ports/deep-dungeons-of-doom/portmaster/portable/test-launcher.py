@@ -18,6 +18,7 @@ with tempfile.TemporaryDirectory(prefix='ddd-portable-') as temporary:
     (game / 'run-game.sh').write_bytes((source / 'run-game.sh').read_bytes())
     (game / 'audio-env.bash').write_bytes((source / 'audio-env.bash').read_bytes())
     (game / 'controller-mappings.awk').write_bytes((source / 'controller-mappings.awk').read_bytes())
+    (game / 'rg40xxh-gilrs.awk').write_bytes((source / 'rg40xxh-gilrs.awk').read_bytes())
     control, tools, weston = root / 'Emus/shared/PortMaster', root / 'tools', root / 'weston'
     (control / 'libs').mkdir(parents=True)
     (control / 'libs/weston_pkg_0.2.squashfs').write_bytes(b'fixture')
@@ -55,6 +56,7 @@ exec "$@"
     for helper in ('fixture-gamepad', 'fixture-gamepad2'):
         script(tools / helper, r'''
 printf '%s\n' "${0##*/}" "$@" > "$DDD_TEST_HELPER"
+printf '%s' "$SDL_GAMECONTROLLERCONFIG" > "$DDD_TEST_ROOT/helper-mapping"
 printf '%s\n' "${CRUSTY_BLOCK_INPUT:-unset}" "${DDD_TEST_PRELOAD:-unset}" > "$DDD_TEST_HELPER_ENV"
 ''')
     script(tools / 'mount', '''
@@ -167,6 +169,20 @@ exit "${DDD_TEST_EXIT:-0}"
                            input=selected + '\n' + selected.replace('Linux', 'Windows') + '\n',
                            text=True, capture_output=True, check=True)
     assert match.stdout.splitlines() == [selected]
+    # Jacaranda's controller includes three system keys ahead of its game buttons.
+    pad = '19000000010000000100000000010000,Deeplay-keys,'
+    axes = 'dpup:h0.1,leftx:a0,platform:Linux,'
+    for faces, expected_faces in [('a:b3,b:b4,x:b6,y:b5,', 'a:b0,b:b1,x:b3,y:b2,'),
+                                  ('a:b4,b:b3,x:b5,y:b6,', 'a:b1,b:b0,x:b2,y:b3,')]:
+        firmware = pad + faces + 'leftshoulder:b7,rightshoulder:b8,back:b9,start:b10,volumedown:b1,volumeup:b2,' + axes
+        expected = pad + expected_faces + 'leftshoulder:b4,rightshoulder:b5,back:b6,start:b7,' + axes
+        original = firmware + '\n' + selected
+        database.write_text(original)
+        run(0, DDD_TEST_CFW='muOS', DEVICE_NAME='rg40xx-h', DDD_TEST_CLEAR_MODE='1')
+        assert (root / 'game-mapping').read_text() == expected + '\n' + selected
+        assert (root / 'helper-mapping').read_text() == original
+    run(0, DDD_TEST_CFW='muOS', DEVICE_NAME='tui-brick')
+    assert (root / 'game-mapping').read_text() == original
     database.unlink()
     # Reproduce the NX wrapper's separate HOME lookup and firmware zlib path.
     (control / 'lib').mkdir()

@@ -1,4 +1,4 @@
-# Deep Dungeons of Doom v0.1.4 community test
+# Deep Dungeons of Doom v0.1.5 community test
 
 Please launch this build from your handheld's Ports menu. The installed `deepdungeonsofdoom/TESTING-MATRIX.md` records earlier reports and the remaining hardware checks.
 
@@ -25,6 +25,8 @@ One handheld and its usual settings are enough for a report. We need an AmberELE
 
 - [ ] First launch finishes setup and opens the game.
 - [ ] During a fight, tap L to defend and R to attack. Note missed or doubled presses.
+- [ ] With a potion equipped and some health missing, open character stats. Find the button that flips More Info (try X on the reported RG40XX H layout). Close stats with Back and tap the same button during play. Report the button label, whether health increased and whether the potion disappeared.
+- [ ] In stats, tap Select alone and Start alone. The selected item should stay put. Then check that Left and Right still change the selection.
 - [ ] Menus can be navigated, including skills, stash, Encyclopedia and Options.
 - [ ] All menu choices and combat indicators fit on screen. Give the resolution and describe any cropped edges.
 - [ ] Music and attack effects are audible before and after pausing. Note silence, static or dropouts.
@@ -36,7 +38,7 @@ Mark each item passed, failed or untested.
 ## Report the result
 
 Reply in the existing testing thread or [open an issue](https://github.com/Hkattelu/TrimUI-Brick-Ports/issues/new)
-with v0.1.4, the device model, firmware version, display resolution, GPU driver if known, PortMaster version and what worked or
+with v0.1.5, the device model, firmware version, display resolution, GPU driver if known, PortMaster version and what worked or
 failed. Include reproduction steps and the ZIP checksum if possible.
 
 For gameplay, input or audio failures, attach **both `log.txt` and `runtime.log`** from
