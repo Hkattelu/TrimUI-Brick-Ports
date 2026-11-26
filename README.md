@@ -4,6 +4,6 @@ Unofficial ports for the TrimUI Brick and other compatible handhelds.
 
 | Game | Download and installation instructions |
 | --- | --- |
-| Deep Dungeons of Doom | [v0.1.2 Test Build](https://github.com/Hkattelu/TrimUI-Brick-Ports/releases/tag/ddd-v0.1.2-test) |
+| Deep Dungeons of Doom | [v0.1.4 Test Build](https://github.com/Hkattelu/TrimUI-Brick-Ports/releases/tag/ddd-v0.1.4-test) |
 
 See [all releases](https://github.com/Hkattelu/TrimUI-Brick-Ports/releases) for other versions.
