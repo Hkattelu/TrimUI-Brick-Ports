@@ -73,11 +73,14 @@ if [[ "$CFW_NAME" == TrimUI ]]; then
   fi
 fi
 # get_controls can return the entire database. Keep it out of exec's environment.
+filter_controller_db() {
+  local devices=/proc/bus/input/devices
+  [ -r "$devices" ] || devices=/dev/null
+  LC_ALL=C awk -f "$GAMEDIR/controller-mappings.awk" "$devices" -
+}
 mapping=${sdl_controllerconfig:-${SDL_GAMECONTROLLERCONFIG:-}}
 if (( ${#mapping} > 8192 )); then
-  devices=/proc/bus/input/devices
-  [ -r "$devices" ] || devices=/dev/null
-  mapping=$(LC_ALL=C awk -f "$GAMEDIR/controller-mappings.awk" "$devices" - <<< "$mapping")
+  mapping=$(filter_controller_db <<< "$mapping")
 fi
 export SDL_GAMECONTROLLERCONFIG="$mapping"
 export XWAYLAND_NO_GLAMOR=1 CRUSTY_SHOW_CURSOR=0
@@ -102,10 +105,16 @@ case "${CFW_NAME,,}" in
     $GPTOKEYB ruffle &
     ;;
 esac
-if [[ "${CFW_NAME,,}/${DEVICE_NAME:-}" == muos/rg40xx-h ]]; then
-  # Only Ruffle needs Gilrs numbering. Keep the firmware map for the SDL quit helper.
-  mapping=$(awk -f "$GAMEDIR/rg40xxh-gilrs.awk" <<< "$mapping")
+# Only Ruffle needs the Gilrs form. The helper inherits the original SDL profiles.
+if [[ -z "$mapping" && -r "${SDL_GAMECONTROLLERCONFIG_FILE:-}" ]]; then
+  # Some firmware supplies only an SDL database file. Gilrs reads inline profiles.
+  if (( $(wc -c < "$SDL_GAMECONTROLLERCONFIG_FILE") <= 8192 )); then
+    mapping=$(< "$SDL_GAMECONTROLLERCONFIG_FILE")
+  else
+    mapping=$(filter_controller_db < "$SDL_GAMECONTROLLERCONFIG_FILE")
+  fi
 fi
+mapping=$(LC_ALL=C awk -v firmware="${CFW_NAME,,}" -f "$GAMEDIR/gilrs-mappings.awk" <<< "$mapping")
 rm -f runtime-status
 game_command=(env "${ddd_audio_env[@]}" "SDL_GAMECONTROLLERCONFIG=$mapping" "DDD_INPUT_MODE=$input_mode" "DDD_NX_ZLIB=$nx_zlib"
   'RUST_LOG=error,ruffle_desktop::app=warn,gilrs=info,gilrs_core=info'

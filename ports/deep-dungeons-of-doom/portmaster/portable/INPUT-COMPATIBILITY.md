@@ -1,4 +1,14 @@
-# Historical v0.1.1 input investigation
+# Controller compatibility
+
+Ruffle uses Gilrs 0.11.2 to read controls on every firmware. Knulli first uses SDL to present a virtual Xbox controller. On the other supported firmware Ruffle reads the controller directly. ROCKNIX's Libmali, Panfrost and Adreno routes differ in how they display the game.
+
+The launcher passes the firmware's original SDL mapping to the input helper. It builds a separate mapping for Ruffle, keeping supported buttons and axes and translating PortMaster's alternate D-pad names. Gilrs cannot evaluate SDL's conditional profiles, so those entries cannot override an unconditional profile for the same controller. If Gilrs still falls back to its default layout, the launcher flags it in `log.txt` and the controller details are in `runtime.log`.
+
+The muOS Jacaranda Deeplay layout places three system keys before the game buttons. The Andromeda H700 layout places two there. Gilrs numbers the game buttons first. The translation checks the firmware and the controller profile before changing button numbers. Other controller families keep their original indices. [Jacaranda-era firmware profiles](https://github.com/MustardOS/internal/tree/eb2831b1ce55646ec91bdaf90083d96878513e2b/device) · [Andromeda profiles](https://github.com/MustardOS/internal/tree/2606.0_Andromeda/device) · [PortMaster controller database](https://github.com/PortsMaster/PortMaster-GUI/blob/579c231e8fbbefcd77d7ab723a648b3681ae1864/PortMaster/gamecontrollerdb.txt)
+
+Run `python3 test-launcher.py` on Linux after changing input handling. It exercises both muOS numbering conventions, the firmware helper's original mapping, file-only and inline databases, conditional and malformed fields, D-pad aliases and default-layout reporting. For hardware results, check individual Start/Select, the quit chord, shoulders and the face button that flips More Info and drinks the equipped potion during play.
+
+## Historical v0.1.1 input investigation
 
 v0.1.3 selects the input route from the firmware automatically. The developer overrides described below applied to earlier test builds.
 

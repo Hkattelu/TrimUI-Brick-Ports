@@ -77,7 +77,7 @@ def build(native, runtime, output, weston_egl=None, portable=False):
                      'cross-cxx.sh', 'cross-link.sh', 'fetch-focal-sysroot.py', 'README.md',
                      'required-libraries.json', 'LICENSE.OpenSSL.txt'):
             add(HERE, 'toolchain/' + name, 'port/portmaster/toolchain/' + name)
-        for name in ('Deep Dungeons of Doom.sh', 'run-game.sh', 'audio-env.bash', 'controller-mappings.awk', 'rg40xxh-gilrs.awk', 'payload.lock.json'):
+        for name in ('Deep Dungeons of Doom.sh', 'run-game.sh', 'audio-env.bash', 'controller-mappings.awk', 'gilrs-mappings.awk', 'payload.lock.json'):
             add(HERE, 'portable/' + name, 'port/portmaster/portable/' + name)
         for name in ('ddd-prepare.c', 'recipe.h', 'make-recipe.py', 'build.sh', 'test-device.sh', 'README.md'):
             add(HERE, 'portable/preparation/' + name, 'port/portmaster/portable/preparation/' + name)

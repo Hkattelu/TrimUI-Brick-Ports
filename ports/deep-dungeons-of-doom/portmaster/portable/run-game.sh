@@ -41,5 +41,8 @@ LD_PRELOAD="./libddd_alsa_poll_recovery.so${DDD_NX_ZLIB:+:$DDD_NX_ZLIB}${LD_PREL
   -B south=return -B east=escape -B west=space -B north=c \
   "$root/ddd.swf" 2>&1 | "$root/ddd-log-drain" "$root/runtime.log" 262144
 code=${PIPESTATUS[0]}
+if grep -Eq 'gilrs::gamepad: (No mapping found for UUID|Unable to parse SDL mapping for UUID)' "$root/runtime.log"; then
+  echo 'DDD input: Gilrs used a default layout for a controller. For incorrect buttons, report the device and include log.txt and runtime.log.'
+fi
 printf '%s\n' "$code" >runtime-status
 exit "$code"

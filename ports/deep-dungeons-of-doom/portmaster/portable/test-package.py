@@ -85,7 +85,7 @@ def check(preview, output, previous=None):
         assert metadata['attr']['exp'] is False
         assert metadata['items'] == [builder.preview.MENU, folder + '/']
         assert z.read(folder + '/TESTING-MATRIX.md') == (HERE.parent / 'TESTING-MATRIX.md').read_bytes()
-        for name in ('run-game.sh', 'audio-env.bash', 'controller-mappings.awk', 'rg40xxh-gilrs.awk'):
+        for name in ('run-game.sh', 'audio-env.bash', 'controller-mappings.awk', 'gilrs-mappings.awk'):
             assert z.read(folder + '/' + name) == (HERE / name).read_bytes()
         assert {n for n in names if n.endswith('.sh')} == {builder.preview.MENU, folder + '/run-game.sh'}
         info = ET.fromstring(z.read(folder + '/gameinfo.xml')).find('game')

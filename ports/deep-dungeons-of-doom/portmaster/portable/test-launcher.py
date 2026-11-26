@@ -18,7 +18,7 @@ with tempfile.TemporaryDirectory(prefix='ddd-portable-') as temporary:
     (game / 'run-game.sh').write_bytes((source / 'run-game.sh').read_bytes())
     (game / 'audio-env.bash').write_bytes((source / 'audio-env.bash').read_bytes())
     (game / 'controller-mappings.awk').write_bytes((source / 'controller-mappings.awk').read_bytes())
-    (game / 'rg40xxh-gilrs.awk').write_bytes((source / 'rg40xxh-gilrs.awk').read_bytes())
+    (game / 'gilrs-mappings.awk').write_bytes((source / 'gilrs-mappings.awk').read_bytes())
     control, tools, weston = root / 'Emus/shared/PortMaster', root / 'tools', root / 'weston'
     (control / 'libs').mkdir(parents=True)
     (control / 'libs/weston_pkg_0.2.squashfs').write_bytes(b'fixture')
@@ -85,6 +85,7 @@ eval "$command"
 ''')
     script(game / 'ruffle', '''
 printf '%s\n' "$@" > "$DDD_TEST_ARGS"
+[ -z "${DDD_TEST_PAD_WARNING:-}" ] || echo "$DDD_TEST_PAD_WARNING"
 printf '%s\n' "$LD_LIBRARY_PATH" > "$DDD_TEST_LIBS"
 printf '%s\n' "$DDD_INPUT_MODE" "$CRUSTY_BLOCK_INPUT" "$RUST_LOG" > "$DDD_TEST_INPUT_ENV"
 printf '%s\n' "${PIPEWIRE_RUNTIME_DIR:-}" "${PULSE_SERVER:-}" "$XDG_RUNTIME_DIR" \\
@@ -151,6 +152,9 @@ exit "${DDD_TEST_EXIT:-0}"
     profile.write_bytes(b'keep progress')
     run(27, DDD_TEST_EXIT='27')
     assert profile.read_bytes() == b'keep progress'
+    assert 'Gilrs used a default layout' not in (game / 'log.txt').read_text()
+    run(27, DDD_TEST_EXIT='27', DDD_TEST_PAD_WARNING='WARN gilrs::gamepad: Unable to parse SDL mapping for UUID fixture')
+    assert 'Gilrs used a default layout' in (game / 'log.txt').read_text()
     run(0, DDD_TEST_NX='1')
     input_route('native', 'fixture-gamepad')
     # A short firmware mapping survives sudo, quotes and the wrapper's eval.
@@ -181,9 +185,30 @@ exit "${DDD_TEST_EXIT:-0}"
         run(0, DDD_TEST_CFW='muOS', DEVICE_NAME='rg40xx-h', DDD_TEST_CLEAR_MODE='1')
         assert (root / 'game-mapping').read_text() == expected + '\n' + selected
         assert (root / 'helper-mapping').read_text() == original
-    run(0, DDD_TEST_CFW='muOS', DEVICE_NAME='tui-brick')
-    assert (root / 'game-mapping').read_text() == original
+    run(0, DDD_TEST_CFW='muOS', DEVICE_NAME='rg35xx-h')
+    assert (root / 'game-mapping').read_text() == expected + '\n' + selected
+    newer = '060000006d7500000a0700006f730000,muOS-Keys,'
+    database.write_text(newer + 'a:b2,x:b4,back:b10,start:b11,volumedown:b0,volumeup:b1,rightstick:b14,' + axes)
+    run(0, DDD_TEST_CFW='muOS')
+    assert (root / 'game-mapping').read_text() == newer + 'a:b0,x:b2,back:b8,start:b9,rightstick:b12,' + axes
+    # Metadata must not displace the base profile or break its valid controls.
+    pad = '030000fdaf1e00002400000010010000,ClockworkPI uConsole,'
+    original = pad + 'a:b1,start:b7,leftdp:h0.8,rightdp:h0.2,updp:h0.1,downdp:h0.4,dpup:b13,'
+    original += '+leftx:-a2~,newbutton:b22,touchpad:h0.3,dpright:invalid,y:b65536,platform:Linux,'
+    conditional = pad + 'a:b9,hint:SDL_TEST_FLAG,platform:Linux,'
+    database.write_text(original + '\n' + conditional)
+    expected = pad + 'a:b1,start:b7,dpleft:h0.8,dpright:h0.2,dpdown:h0.4,dpup:b13,+leftx:-a2~,platform:Linux,'
+    for cfw in ('AmberELEC', 'dArkOS', 'ROCKNIX', 'muOS', 'Knulli', 'TrimUI'):
+        run(0, DDD_TEST_CFW=cfw, DDD_TEST_CLEAR_MODE='1', HOME=str(root / 'mapping-test-home'))
+        assert (root / 'game-mapping').read_text() == expected, cfw
+        assert (root / 'helper-mapping').read_text() == original + '\n' + conditional, cfw
     database.unlink()
+    sdl_file = root / 'file-only database'
+    for preamble in ('', '# unrelated mappings\n' * 10000 + '# Custom Entries\n'):
+        sdl_file.write_text(preamble + original + '\n')
+        run(0, SDL_GAMECONTROLLERCONFIG_FILE=str(sdl_file))
+        assert (root / 'game-mapping').read_text() == expected
+        assert (root / 'helper-mapping').read_text() == ''
     # Reproduce the NX wrapper's separate HOME lookup and firmware zlib path.
     (control / 'lib').mkdir()
     (control / 'lib/libz.so.1').touch()
